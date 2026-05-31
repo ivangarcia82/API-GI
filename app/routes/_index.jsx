@@ -1,188 +1,566 @@
-import {Await, useLoaderData, Link} from 'react-router';
-import {Suspense} from 'react';
-import {Image} from '@shopify/hydrogen';
-import {ProductItem} from '~/components/ProductItem';
+import {useLoaderData, useNavigate} from 'react-router';
 import {MockShopNotice} from '~/components/MockShopNotice';
+import {ProductCard} from '~/components/gi/ProductCard';
+import {Button, CountUp, ScrollReveal, PH} from '~/components/gi/ui';
+import {Icon} from '~/components/gi/Icon';
+import {
+  HeroCollage,
+  ImageMarquee,
+  ProductSpotlight,
+  LookbookGrid,
+  StatsBand,
+  CustomizerSection,
+  FAQAccordion,
+} from '~/components/gi/HomeSections';
+import {useApp} from '~/lib/AppContext';
+import {GI_PRODUCTS_QUERY, fetchCollectionCards} from '~/lib/giFragments';
+import {
+  normalizeProduct,
+  HOME_CATEGORIES,
+  FEATURED_COLLECTIONS,
+  LIFESTYLE,
+  REVIEWS,
+  FAQ,
+} from '~/lib/gi';
 
-/**
- * @type {Route.MetaFunction}
- */
-export const meta = () => {
-  return [{title: 'Hydrogen | Home'}];
-};
+export const meta = () => [
+  {title: 'Generando Ideas — Promocionales que generan memoria'},
+  {
+    name: 'description',
+    content:
+      'Headless commerce B2B de productos promocionales personalizables. Cotiza, aprueba arte y produce en una sola plataforma.',
+  },
+];
 
-/**
- * @param {Route.LoaderArgs} args
- */
 export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
+  return criticalData;
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {Route.LoaderArgs}
- */
 async function loadCriticalData({context}) {
-  const [{collections}] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
-    // Add other queries here, so that they are loaded in parallel
+  const {storefront} = context;
+
+  const [categories, featuredCollections, productsRes] = await Promise.all([
+    fetchCollectionCards(storefront, HOME_CATEGORIES.map((c) => c.handle)),
+    fetchCollectionCards(storefront, FEATURED_COLLECTIONS),
+    storefront.query(GI_PRODUCTS_QUERY, {
+      variables: {first: 16, sortKey: 'BEST_SELLING'},
+    }),
   ]);
+
+  const products = (productsRes?.products?.nodes || [])
+    .map(normalizeProduct)
+    .filter(Boolean);
+
+  // Merge category display config (icon + label) with fetched images
+  const catMap = Object.fromEntries(categories.map((c) => [c.handle, c]));
+  const categoryCards = HOME_CATEGORIES.map((c) => ({
+    ...c,
+    image: catMap[c.handle]?.image || null,
+  }));
 
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
-    featuredCollection: collections.nodes[0],
-  };
-}
-
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context}) {
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
-
-  return {
-    recommendedProducts,
+    categoryCards,
+    featuredCollections: featuredCollections.slice(0, 3),
+    products,
   };
 }
 
 export default function Homepage() {
-  /** @type {LoaderReturnData} */
   const data = useLoaderData();
+  const navigate = useNavigate();
+  const {isLoggedIn} = useApp();
+  const {categoryCards, featuredCollections, products} = data;
+
+  const heroImages = products.map((p) => p.image).filter(Boolean).slice(0, 8);
+  const featured = products[0];
+  const spotlight =
+    products.find((p) => p.image && p.description?.length > 40) || products[0];
+  const customizer = products.find((p) => p.image) || products[0];
+
   return (
-    <div className="home">
-      {data.isShopLinked ? null : <MockShopNotice />}
-      <FeaturedCollection collection={data.featuredCollection} />
-      <RecommendedProducts products={data.recommendedProducts} />
+    <div data-screen-label="01 Home">
+      {data.isShopLinked ? null : (
+        <div className="container" style={{paddingTop: 24}}>
+          <MockShopNotice />
+        </div>
+      )}
+
+      {/* HERO */}
+      <section className="home-hero">
+        <div className="container">
+          <div className="home-hero-grid">
+            <div>
+              <div className="fade-up">
+                <div className="home-hero-eyebrow">
+                  <span className="tag-ink tag">v2.0</span>
+                  <span style={{fontSize: 13, color: 'var(--ink-3)'}}>
+                    Catálogo 2026 disponible
+                  </span>
+                  <Icon name="arrow_right" size={14} className="muted-2" />
+                </div>
+              </div>
+
+              <h1 className="fade-up" style={{animationDelay: '80ms'}}>
+                Promocionales<br />
+                que <em>generan</em><br />
+                memoria.
+              </h1>
+
+              <p className="home-hero-sub fade-up" style={{animationDelay: '160ms'}}>
+                Más de 1,800 productos personalizables para tu próxima campaña, kit
+                de bienvenida o evento corporativo. Cotiza, aprueba arte y produce en
+                una sola plataforma.
+              </p>
+
+              <div className="home-hero-actions fade-up" style={{animationDelay: '220ms'}}>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  iconRight="arrow_right"
+                  onClick={() => navigate('/catalogo')}
+                >
+                  Explorar catálogo
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  icon="quote"
+                  onClick={() => navigate(isLoggedIn ? '/cotizacion' : '/registro')}
+                >
+                  {isLoggedIn ? 'Solicitar cotización' : 'Crear cuenta gratis'}
+                </Button>
+              </div>
+
+              <div className="home-hero-meta fade-up stagger" style={{animationDelay: '280ms'}}>
+                <div>
+                  <span className="n ticker"><CountUp to={1847} /></span>
+                  <span className="l">Productos en catálogo</span>
+                </div>
+                <div>
+                  <span className="n ticker"><CountUp to={12} suffix=" años" /></span>
+                  <span className="l">En la industria</span>
+                </div>
+                <div>
+                  <span className="n ticker"><CountUp to={420} suffix="+" /></span>
+                  <span className="l">Clientes corporativos</span>
+                </div>
+                <div>
+                  <span className="n ticker">8–15d</span>
+                  <span className="l">Producción promedio</span>
+                </div>
+              </div>
+            </div>
+
+            <HeroCollage images={heroImages} featured={featured} isLoggedIn={isLoggedIn} />
+          </div>
+        </div>
+      </section>
+
+      {/* MARQUEE */}
+      <div className="home-marquee-wrap">
+        <div
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            textAlign: 'center',
+            color: 'var(--ink-4)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            padding: '20px 0 0',
+          }}
+        >
+          // Una muestra del inventario · 1,800+ productos disponibles
+        </div>
+        <ImageMarquee products={products} speed={60} />
+      </div>
+
+      {/* SPOTLIGHT */}
+      <ProductSpotlight product={spotlight} />
+
+      {/* CATEGORIES */}
+      <section className="section container" style={{paddingTop: 60}}>
+        <div className="section-head">
+          <div>
+            <div className="eyebrow">// Catálogo · 01</div>
+            <h2>Encuentra por categoría.</h2>
+          </div>
+          <p>
+            Productos curados en grandes familias, todas con opciones de
+            personalización.
+          </p>
+        </div>
+        <ScrollReveal>
+          <div className="cat-grid">
+            {categoryCards.map((c) => (
+              <a
+                key={c.handle}
+                href={`/collections/${c.handle}`}
+                className="cat-card cat-card-photo"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(`/collections/${c.handle}`);
+                }}
+              >
+                <div className="cat-card-bg">
+                  {c.image ? (
+                    <img src={c.image} alt={c.name} loading="lazy" />
+                  ) : (
+                    <div style={{width: '100%', height: '100%', background: 'var(--bg-deep)'}} />
+                  )}
+                </div>
+                <div className="cat-card-overlay" />
+                <div className="cat-card-arrow">
+                  <Icon name="arrow_up_right" size={14} />
+                </div>
+                <div className="cat-card-bottom">
+                  <div className="cat-card-name">{c.name}</div>
+                  <div className="cat-card-count">Ver productos</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* FEATURED COLLECTIONS */}
+      <section className="section container" style={{paddingTop: 40}}>
+        <div className="section-head">
+          <div>
+            <div className="eyebrow">// Colecciones · 02</div>
+            <h2>Líneas curadas para campañas precisas.</h2>
+          </div>
+          <p>
+            Cada colección une calidad, oferta y propósito. Diseñadas por nuestro
+            equipo creativo.
+          </p>
+        </div>
+        <ScrollReveal>
+          <div className="collections">
+            {featuredCollections.map((c, i) => (
+              <div
+                key={c.handle}
+                className={`coll-card ${i === 0 ? 'coll-card-large' : ''}`}
+                onClick={() => navigate(`/collections/${c.handle}`)}
+              >
+                <div className="coll-card-img">
+                  <PH
+                    src={c.image}
+                    alt={c.title}
+                    zoom
+                    className={i === 0 ? '' : 'ph-square'}
+                  />
+                  <div className="coll-card-tag">// {String(i + 1).padStart(2, '0')}</div>
+                </div>
+                <div className="coll-card-info">
+                  <div>
+                    <div className="coll-card-name">{c.title}</div>
+                    <div className="coll-card-meta">
+                      {c.description?.slice(0, 60) || 'Colección curada'}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: 'var(--bg-soft)',
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    <Icon name="arrow_right" size={16} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+        <div style={{display: 'flex', justifyContent: 'center', marginTop: 32}}>
+          <Button
+            variant="ghost"
+            size="lg"
+            iconRight="arrow_right"
+            onClick={() => navigate('/collections')}
+          >
+            Ver todas las colecciones
+          </Button>
+        </div>
+      </section>
+
+      {/* LOOKBOOK */}
+      <section className="section container" style={{paddingTop: 40}}>
+        <div className="section-head">
+          <div>
+            <div className="eyebrow">// Lookbook · 03</div>
+            <h2>Ediciones curadas por temporada.</h2>
+          </div>
+          <Button variant="ghost" iconRight="arrow_right" onClick={() => navigate('/lookbook')}>
+            Ver lookbook completo
+          </Button>
+        </div>
+        <LookbookGrid limit={6} />
+      </section>
+
+      {/* STATS */}
+      <StatsBand />
+
+      {/* HOW IT WORKS */}
+      <section className="section container">
+        <div className="how">
+          <div className="how-bg">
+            <img src={LIFESTYLE.team} alt="" />
+          </div>
+          <div className="how-head">
+            <div className="eyebrow">// Proceso · 04</div>
+            <h2>
+              De la idea al inventario,<br />en una plataforma.
+            </h2>
+          </div>
+          <div className="how-steps">
+            {[
+              {num: '01', title: 'Explora el catálogo', desc: '1,800+ productos visibles. Crea favoritos y compara sin registro previo.'},
+              {num: '02', title: 'Cotiza o compra', desc: 'Compradores aprobados pagan directo. Clientes nuevos solicitan cotización con un clic.'},
+              {num: '03', title: 'Aprueba arte', desc: 'Subes tu logo, preparamos dummies digitales para tu validación en 24h.'},
+              {num: '04', title: 'Recibe y rastrea', desc: 'Producción 8-15 días. Fulfillment opcional con envíos individuales.'},
+            ].map((s) => (
+              <div key={s.num} className="how-step">
+                <div className="num">{s.num}</div>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURED PRODUCTS */}
+      <section className="section container" style={{paddingTop: 80}}>
+        <div className="section-head">
+          <div>
+            <div className="eyebrow">// Destacados · 05</div>
+            <h2>Lo más cotizado este mes.</h2>
+          </div>
+          <Button variant="ghost" iconRight="arrow_right" onClick={() => navigate('/catalogo')}>
+            Ver todos los productos
+          </Button>
+        </div>
+        <ScrollReveal>
+          <div className="product-grid">
+            {products.slice(0, 4).map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* MARQUEE 2 */}
+      <div style={{paddingTop: 24}}>
+        <ImageMarquee products={[...products].reverse()} speed={70} direction="right" />
+      </div>
+
+      {/* CUSTOMIZER */}
+      <CustomizerSection product={customizer} />
+
+      {/* FEATURE STRIP */}
+      <section className="section container">
+        <div className="feat-strip-photo">
+          <div className="feat-strip-img">
+            <img src={LIFESTYLE.printing} alt="" />
+            <div className="feat-strip-img-overlay" />
+            <div className="feat-strip-img-meta">
+              <div className="eyebrow" style={{color: 'var(--accent)'}}>
+                // Producción
+              </div>
+              <h3
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 700,
+                  fontSize: 32,
+                  letterSpacing: '-0.02em',
+                  color: 'var(--bg-elev)',
+                  margin: '12px 0 0',
+                  maxWidth: 320,
+                  lineHeight: 1,
+                }}
+              >
+                Producción nacional,<br />estándares globales.
+              </h3>
+            </div>
+          </div>
+          <div className="feat-strip-list">
+            {[
+              {icon: 'shield', title: 'Calidad garantizada', desc: 'Inspección al 100% antes de envío. Reposición sin costo en cualquier defecto.'},
+              {icon: 'truck', title: 'Logística nacional', desc: 'Cobertura en CDMX, Yucatán, Sonora y Baja California Sur. Fulfillment punto a punto.'},
+              {icon: 'sparkle', title: 'Diseño incluido', desc: 'Dummies digitales y propuestas creativas sin costo para clientes registrados.'},
+            ].map((f) => (
+              <div key={f.title} className="feat-row">
+                <div className="feat-icon">
+                  <Icon name={f.icon} size={18} />
+                </div>
+                <div>
+                  <h4>{f.title}</h4>
+                  <p>{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="section container">
+        <div className="section-head">
+          <div>
+            <div className="eyebrow">// Clientes · 06</div>
+            <h2>Confianza desde 2013.</h2>
+          </div>
+        </div>
+        <ScrollReveal>
+          <div
+            style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16}}
+            className="testimonials-grid"
+          >
+            {REVIEWS.map((r) => (
+              <div key={r.name} className="testi-card lift">
+                <div style={{display: 'flex', gap: 2, color: 'var(--accent-deep)'}}>
+                  {[0, 1, 2, 3, 4].map((s) => (
+                    <Icon key={s} name="star_fill" size={14} />
+                  ))}
+                </div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 17,
+                    lineHeight: 1.4,
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 500,
+                    letterSpacing: '-0.01em',
+                    flex: 1,
+                  }}
+                >
+                  &ldquo;{r.quote}&rdquo;
+                </p>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    marginTop: 'auto',
+                    paddingTop: 16,
+                    borderTop: '1px solid var(--line)',
+                  }}
+                >
+                  <img
+                    src={r.avatar}
+                    alt=""
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid var(--bg)',
+                    }}
+                  />
+                  <div>
+                    <div style={{fontWeight: 600, fontSize: 14}}>{r.name}</div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 11,
+                        color: 'var(--ink-4)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        marginTop: 2,
+                      }}
+                    >
+                      {r.company}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* FAQ */}
+      <section
+        className="section container"
+        style={{display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 56}}
+        data-cols="2"
+      >
+        <div>
+          <div className="eyebrow">// FAQ · 07</div>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              fontSize: 'clamp(32px, 4.2vw, 56px)',
+              letterSpacing: '-0.025em',
+              lineHeight: 1,
+              margin: '12px 0 24px',
+            }}
+          >
+            Preguntas que ahorran tiempo.
+          </h2>
+          <Button variant="ghost" iconRight="arrow_right" onClick={() => navigate('/contacto')}>
+            Hablar con un asesor
+          </Button>
+        </div>
+        <div>
+          <FAQAccordion items={FAQ} />
+        </div>
+      </section>
+
+      {/* BIG CTA */}
+      <section className="container">
+        <div className="big-cta-photo">
+          <div className="big-cta-bg">
+            <img src={LIFESTYLE.unboxing} alt="" />
+          </div>
+          <div className="big-cta-overlay" />
+          <div style={{position: 'relative'}}>
+            <div className="eyebrow" style={{color: 'var(--accent)'}}>
+              // Empieza hoy
+            </div>
+            <h2 style={{marginTop: 16}}>
+              Tu próxima campaña<br />
+              empieza con un{' '}
+              <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent)'}}>
+                clic
+              </em>
+              .
+            </h2>
+            <div className="actions" style={{position: 'relative'}}>
+              <Button
+                variant="accent"
+                size="lg"
+                iconRight="arrow_right"
+                onClick={() => navigate(isLoggedIn ? '/catalogo' : '/registro')}
+              >
+                {isLoggedIn ? 'Ver catálogo' : 'Crear cuenta gratis'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                icon="chat"
+                onClick={() => navigate('/contacto')}
+                style={{
+                  color: 'var(--bg-elev)',
+                  borderColor: 'rgba(244,242,236,0.3)',
+                  background: 'rgba(255,255,255,0.05)',
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                Agendar demo
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
-
-/**
- * @param {{
- *   collection: FeaturedCollectionFragment;
- * }}
- */
-function FeaturedCollection({collection}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image
-            data={image}
-            sizes="100vw"
-            alt={image.altText || collection.title}
-          />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
-  );
-}
-
-/**
- * @param {{
- *   products: Promise<RecommendedProductsQuery | null>;
- * }}
- */
-function RecommendedProducts({products}) {
-  return (
-    <section
-      className="recommended-products"
-      aria-labelledby="recommended-products"
-    >
-      <h2 id="recommended-products">Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </section>
-  );
-}
-
-const FEATURED_COLLECTION_QUERY = `#graphql
-  fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    handle
-  }
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
-    }
-  }
-`;
-
-const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    featuredImage {
-      id
-      url
-      altText
-      width
-      height
-    }
-  }
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...RecommendedProduct
-      }
-    }
-  }
-`;
-
-/** @typedef {import('./+types/_index').Route} Route */
-/** @typedef {import('storefrontapi.generated').FeaturedCollectionFragment} FeaturedCollectionFragment */
-/** @typedef {import('storefrontapi.generated').RecommendedProductsQuery} RecommendedProductsQuery */
-/** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */

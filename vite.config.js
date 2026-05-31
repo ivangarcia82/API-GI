@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import {defineConfig} from 'vite';
 import {hydrogen} from '@shopify/hydrogen/vite';
 import {oxygen} from '@shopify/mini-oxygen/vite';
@@ -7,6 +8,11 @@ export default defineConfig({
   plugins: [hydrogen(), oxygen(), reactRouter()],
   resolve: {
     tsconfigPaths: true,
+    // Explicit alias so the `~` path resolves in SSR even though this is a
+    // JS project (jsconfig.json) rather than tsconfig.json.
+    alias: {
+      '~': fileURLToPath(new URL('./app', import.meta.url)),
+    },
   },
   build: {
     // Allow a strict Content-Security-Policy

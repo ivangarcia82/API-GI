@@ -9,11 +9,13 @@ import {
   ScrollRestoration,
   useRouteLoaderData,
 } from 'react-router';
-import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
-import appStyles from '~/styles/app.css?url';
+import giTokens from '~/styles/gi-tokens.css?url';
+import giScreens from '~/styles/gi-screens.css?url';
+import giSections from '~/styles/gi-sections.css?url';
 import {PageLayout} from './components/PageLayout';
+import {AppProvider} from '~/lib/AppContext';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -46,15 +48,15 @@ export const shouldRevalidate = ({formMethod, currentUrl, nextUrl}) => {
  */
 export function links() {
   return [
+    {rel: 'preconnect', href: 'https://cdn.shopify.com'},
+    {rel: 'preconnect', href: 'https://shop.app'},
+    {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+    {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous'},
     {
-      rel: 'preconnect',
-      href: 'https://cdn.shopify.com',
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap',
     },
-    {
-      rel: 'preconnect',
-      href: 'https://shop.app',
-    },
-    {rel: 'icon', type: 'image/svg+xml', href: favicon},
+    {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
   ];
 }
 
@@ -95,19 +97,20 @@ export async function loader(args) {
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context}) {
-  const {storefront} = context;
+  const {storefront, customerAccount} = context;
 
-  const [header] = await Promise.all([
+  const [header, isLoggedIn] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
+    customerAccount.isLoggedIn().catch(() => false),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
-  return {header};
+  return {header, isLoggedIn};
 }
 
 /**
@@ -134,7 +137,6 @@ function loadDeferredData({context}) {
     });
   return {
     cart: cart.get(),
-    isLoggedIn: customerAccount.isLoggedIn(),
     footer,
   };
 }
@@ -146,12 +148,14 @@ export function Layout({children}) {
   const nonce = useNonce();
 
   return (
-    <html lang="en">
+    <html lang="es">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <link rel="stylesheet" href={resetStyles}></link>
-        <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={giTokens}></link>
+        <link rel="stylesheet" href={giScreens}></link>
+        <link rel="stylesheet" href={giSections}></link>
         <Meta />
         <Links />
       </head>
@@ -178,9 +182,11 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
-      <PageLayout {...data}>
-        <Outlet />
-      </PageLayout>
+      <AppProvider isLoggedIn={data.isLoggedIn}>
+        <PageLayout {...data}>
+          <Outlet />
+        </PageLayout>
+      </AppProvider>
     </Analytics.Provider>
   );
 }

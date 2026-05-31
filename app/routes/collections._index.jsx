@@ -1,141 +1,113 @@
-import {useLoaderData, Link} from 'react-router';
-import {getPaginationVariables, Image} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {useLoaderData, useNavigate} from 'react-router';
+import {Icon} from '~/components/gi/Icon';
+import {PH} from '~/components/gi/ui';
 
-/**
- * @param {Route.LoaderArgs} args
- */
-export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
+export const meta = () => [{title: 'Colecciones · Generando Ideas'}];
 
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {Route.LoaderArgs}
- */
-async function loadCriticalData({context, request}) {
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 4,
-  });
-
-  const [{collections}] = await Promise.all([
-    context.storefront.query(COLLECTIONS_QUERY, {
-      variables: paginationVariables,
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
-
-  return {collections};
-}
-
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context}) {
-  return {};
+export async function loader({context}) {
+  const {collections} = await context.storefront.query(COLLECTIONS_QUERY);
+  const items = (collections?.nodes || []).map((c) => ({
+    id: c.id,
+    handle: c.handle,
+    title: c.title,
+    description: c.description,
+    image: c.image?.url || c.products?.nodes?.[0]?.featuredImage?.url || null,
+  }));
+  return {collections: items};
 }
 
 export default function Collections() {
-  /** @type {LoaderReturnData} */
   const {collections} = useLoaderData();
+  const navigate = useNavigate();
 
   return (
-    <div className="collections">
-      <h1>Collections</h1>
-      <PaginatedResourceSection
-        connection={collections}
-        resourcesClassName="collections-grid"
+    <div className="container" data-screen-label="05 Collections list">
+      <div style={{padding: '32px 0 56px'}}>
+        <div className="eyebrow">// Colecciones · /colecciones</div>
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            fontSize: 'clamp(48px, 7vw, 96px)',
+            letterSpacing: '-0.035em',
+            lineHeight: 0.95,
+            margin: '12px 0 16px',
+            maxWidth: 900,
+          }}
+        >
+          {collections.length} colecciones curadas<br />
+          para campañas{' '}
+          <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent-deep)'}}>
+            precisas
+          </em>
+          .
+        </h1>
+        <p style={{color: 'var(--ink-3)', fontSize: 17, maxWidth: 600}}>
+          Cada colección une calidad, oferta y propósito. Desde nuestras líneas premium
+          hasta alternativas 100% ecológicas, encuentra la familia que se ajusta a tu marca.
+        </p>
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 16,
+          paddingBottom: 80,
+        }}
+        className="collections-grid stagger"
       >
-        {({node: collection, index}) => (
-          <CollectionItem
-            key={collection.id}
-            collection={collection}
-            index={index}
-          />
-        )}
-      </PaginatedResourceSection>
+        {collections.map((c, i) => (
+          <div
+            key={c.id}
+            className="coll-card"
+            onClick={() => navigate(`/collections/${c.handle}`)}
+            style={{minHeight: 420}}
+          >
+            <div className="coll-card-img">
+              <PH src={c.image} alt={c.title} className="ph-square" zoom />
+              <div className="coll-card-tag">// {String(i + 1).padStart(2, '0')}</div>
+            </div>
+            <div className="coll-card-info">
+              <div>
+                <div className="coll-card-name">{c.title}</div>
+                <div className="coll-card-meta">
+                  {c.description?.slice(0, 48) || 'Colección curada'}
+                </div>
+              </div>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  display: 'grid',
+                  placeItems: 'center',
+                  background: 'var(--bg-soft)',
+                  color: 'var(--ink)',
+                }}
+              >
+                <Icon name="arrow_up_right" size={14} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-/**
- * @param {{
- *   collection: CollectionFragment;
- *   index: number;
- * }}
- */
-function CollectionItem({collection, index}) {
-  return (
-    <Link
-      className="collection-item"
-      key={collection.id}
-      to={`/collections/${collection.handle}`}
-      prefetch="intent"
-    >
-      {collection?.image && (
-        <Image
-          alt={collection.image.altText || collection.title}
-          aspectRatio="1/1"
-          data={collection.image}
-          loading={index < 3 ? 'eager' : undefined}
-          sizes="(min-width: 45em) 400px, 100vw"
-        />
-      )}
-      <h5>{collection.title}</h5>
-    </Link>
-  );
-}
-
 const COLLECTIONS_QUERY = `#graphql
-  fragment Collection on Collection {
-    id
-    title
-    handle
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-  }
-  query StoreCollections(
-    $country: CountryCode
-    $endCursor: String
-    $first: Int
-    $language: LanguageCode
-    $last: Int
-    $startCursor: String
-  ) @inContext(country: $country, language: $language) {
-    collections(
-      first: $first,
-      last: $last,
-      before: $startCursor,
-      after: $endCursor
-    ) {
+  query GiStoreCollections($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 50, sortKey: TITLE) {
       nodes {
-        ...Collection
-      }
-      pageInfo {
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
+        id
+        title
+        handle
+        description
+        image { url altText }
+        products(first: 1) { nodes { featuredImage { url altText } } }
       }
     }
   }
 `;
-
-/** @typedef {import('./+types/collections._index').Route} Route */
-/** @typedef {import('storefrontapi.generated').CollectionFragment} CollectionFragment */
-/** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */

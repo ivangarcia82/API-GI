@@ -1,139 +1,130 @@
-import {redirect, useLoaderData} from 'react-router';
+import {useLoaderData, useNavigate, redirect} from 'react-router';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {ProductItem} from '~/components/ProductItem';
+import {Icon} from '~/components/gi/Icon';
+import {PH} from '~/components/gi/ui';
+import {ProductCard} from '~/components/gi/ProductCard';
+import {GI_PRODUCT_CARD_FRAGMENT} from '~/lib/giFragments';
+import {normalizeProduct} from '~/lib/gi';
 
-/**
- * @type {Route.MetaFunction}
- */
-export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
-};
+export const meta = ({data}) => [
+  {title: `${data?.collection?.title ?? 'Colección'} · Generando Ideas`},
+];
 
-/**
- * @param {Route.LoaderArgs} args
- */
 export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
+  const {handle} = args.params;
+  const {context, request} = args;
+  if (!handle) throw redirect('/collections');
 
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {Route.LoaderArgs}
- */
-async function loadCriticalData({context, params, request}) {
-  const {handle} = params;
-  const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+  const paginationVariables = getPaginationVariables(request, {pageBy: 24});
+  const {collection} = await context.storefront.query(COLLECTION_QUERY, {
+    variables: {handle, ...paginationVariables},
   });
 
-  if (!handle) {
-    throw redirect('/collections');
-  }
-
-  const [{collection}] = await Promise.all([
-    storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
-      // Add other queries here, so that they are loaded in parallel
-    }),
-  ]);
-
   if (!collection) {
-    throw new Response(`Collection ${handle} not found`, {
-      status: 404,
-    });
+    throw new Response(`Collection ${handle} not found`, {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
-  redirectIfHandleIsLocalized(request, {handle, data: collection});
-
-  return {
-    collection,
-  };
-}
-
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context}) {
-  return {};
+  return {collection};
 }
 
 export default function Collection() {
-  /** @type {LoaderReturnData} */
   const {collection} = useLoaderData();
+  const navigate = useNavigate();
+  const products = (collection.products?.nodes || [])
+    .map(normalizeProduct)
+    .filter(Boolean);
+  const heroImage = collection.image?.url || products[0]?.image || null;
 
   return (
-    <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
-      <PaginatedResourceSection
-        connection={collection.products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
-        )}
-      </PaginatedResourceSection>
+    <div className="container" data-screen-label={`05b Collection: ${collection.title}`}>
+      <div style={{padding: '32px 0 12px'}}>
+        <button
+          onClick={() => navigate('/collections')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            color: 'var(--ink-3)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+          }}
+        >
+          <span style={{transform: 'rotate(180deg)', display: 'inline-flex'}}>
+            <Icon name="arrow_right" size={12} />
+          </span>
+          Volver a colecciones
+        </button>
+      </div>
+
+      <div className="coll-hero">
+        <div>
+          <div className="eyebrow">// Colección</div>
+          <h1>{collection.title}</h1>
+          <p style={{marginTop: 24}}>
+            {collection.description ||
+              'Una línea cuidadosamente seleccionada por nuestro equipo creativo para maximizar impacto y minimizar desperdicio.'}
+          </p>
+          <div className="coll-hero-meta">
+            <div>
+              <div className="n ticker">{products.length}+</div>
+              <div className="l">Productos</div>
+            </div>
+            <div>
+              <div className="n ticker">50</div>
+              <div className="l">MOQ promedio</div>
+            </div>
+            <div>
+              <div className="n ticker">8–12d</div>
+              <div className="l">Producción</div>
+            </div>
+          </div>
+        </div>
+        <div style={{borderRadius: 16, overflow: 'hidden', border: '1px solid var(--line)'}}>
+          <PH src={heroImage} alt={collection.title} aspect="ph-square" zoom />
+        </div>
+      </div>
+
+      <div style={{padding: '40px 0 80px'}}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 24,
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              fontSize: 32,
+              letterSpacing: '-0.02em',
+              margin: 0,
+            }}
+          >
+            Productos de la colección
+          </h2>
+          <span className="cat-results-meta">{products.length} productos</span>
+        </div>
+        <div className="product-grid stagger">
+          {products.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      </div>
+
       <Analytics.CollectionView
-        data={{
-          collection: {
-            id: collection.id,
-            handle: collection.handle,
-          },
-        }}
+        data={{collection: {id: collection.id, handle: collection.handle}}}
       />
     </div>
   );
 }
 
-const PRODUCT_ITEM_FRAGMENT = `#graphql
-  fragment MoneyProductItem on MoneyV2 {
-    amount
-    currencyCode
-  }
-  fragment ProductItem on Product {
-    id
-    handle
-    title
-    featuredImage {
-      id
-      altText
-      url
-      width
-      height
-    }
-    priceRange {
-      minVariantPrice {
-        ...MoneyProductItem
-      }
-      maxVariantPrice {
-        ...MoneyProductItem
-      }
-    }
-  }
-`;
-
-// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
-  ${PRODUCT_ITEM_FRAGMENT}
-  query Collection(
+  ${GI_PRODUCT_CARD_FRAGMENT}
+  query GiCollection(
     $handle: String!
     $country: CountryCode
     $language: LanguageCode
@@ -147,26 +138,16 @@ const COLLECTION_QUERY = `#graphql
       handle
       title
       description
+      image { url altText width height }
       products(
-        first: $first,
-        last: $last,
-        before: $startCursor,
+        first: $first
+        last: $last
+        before: $startCursor
         after: $endCursor
       ) {
-        nodes {
-          ...ProductItem
-        }
-        pageInfo {
-          hasPreviousPage
-          hasNextPage
-          endCursor
-          startCursor
-        }
+        nodes { ...GiProductCard }
+        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
       }
     }
   }
 `;
-
-/** @typedef {import('./+types/collections.$handle').Route} Route */
-/** @typedef {import('storefrontapi.generated').ProductItemFragment} ProductItemFragment */
-/** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */
