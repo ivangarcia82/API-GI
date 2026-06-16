@@ -36,6 +36,8 @@ export class AppSession {
         httpOnly: true,
         path: '/',
         sameSite: 'lax',
+        // Secure in every environment except local http dev.
+        secure: process.env.NODE_ENV !== 'development',
         secrets,
       },
     });
