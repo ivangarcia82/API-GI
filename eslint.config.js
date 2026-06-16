@@ -133,6 +133,12 @@ export default [
       'react/no-array-index-key': 'warn',
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
+      // The storefront design deliberately renders `//`-prefixed eyebrow/tag
+      // text (e.g. "// Catálogo · 01") as a code-comment visual motif. The
+      // jsx-no-comment-textnodes heuristic flags any child text starting with
+      // `//` as a possibly-misplaced comment, so here it is pure false
+      // positive. The `//` is intended literal content, not a stray comment.
+      'react/jsx-no-comment-textnodes': 'off',
     },
   },
   ...fixupConfigRules(
