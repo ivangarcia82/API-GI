@@ -11,6 +11,7 @@ import {
   useEffect,
   useCallback,
 } from 'react';
+import {useFetcher} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 
 const STORE = {
@@ -39,12 +40,13 @@ function read(key, fallback) {
 const AppCtx = createContext(null);
 const ToastCtx = createContext(() => {});
 
-export function AppProvider({children, isLoggedIn = false}) {
+export function AppProvider({children, isLoggedIn = false, favs: initialFavs = []}) {
   // hydrated=false during SSR + first client paint to avoid mismatch
   const [hydrated, setHydrated] = useState(false);
   const [role, setRole] = useState('buyer'); // 'buyer' | 'quoter'
   const [quote, setQuote] = useState([]);
-  const [favs, setFavs] = useState([]);
+  const [favs, setFavs] = useState(initialFavs);
+  const wishlistFetcher = useFetcher();
   const [tweaks, setTweaks] = useState(DEFAULT_TWEAKS);
   const [toasts, setToasts] = useState([]);
 
@@ -52,10 +54,10 @@ export function AppProvider({children, isLoggedIn = false}) {
   useEffect(() => {
     setRole(read(STORE.role, 'buyer'));
     setQuote(read(STORE.quote, []));
-    setFavs(read(STORE.favs, []));
+    if (!isLoggedIn) setFavs(read(STORE.favs, []));
     setTweaks({...DEFAULT_TWEAKS, ...read(STORE.tweaks, {})});
     setHydrated(true);
-  }, []);
+  }, [isLoggedIn]);
 
   // Persist
   useEffect(() => {
@@ -65,8 +67,24 @@ export function AppProvider({children, isLoggedIn = false}) {
     if (hydrated) window.localStorage.setItem(STORE.quote, JSON.stringify(quote));
   }, [quote, hydrated]);
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(STORE.favs, JSON.stringify(favs));
-  }, [favs, hydrated]);
+    if (hydrated && !isLoggedIn)
+      window.localStorage.setItem(STORE.favs, JSON.stringify(favs));
+  }, [favs, hydrated, isLoggedIn]);
+
+  // One-shot localStorage -> server migration after first authenticated load.
+  const [migratedFavs, setMigratedFavs] = useState(false);
+  useEffect(() => {
+    if (!hydrated || !isLoggedIn || migratedFavs) return;
+    setMigratedFavs(true);
+    const local = read(STORE.favs, []);
+    if (Array.isArray(local) && local.length > 0) {
+      const body = new FormData();
+      body.set('intent', 'merge');
+      body.set('productIds', JSON.stringify(local));
+      wishlistFetcher.submit(body, {method: 'POST', action: '/api/wishlist'});
+    }
+    window.localStorage.removeItem(STORE.favs);
+  }, [hydrated, isLoggedIn, migratedFavs, wishlistFetcher]);
   useEffect(() => {
     if (hydrated) window.localStorage.setItem(STORE.tweaks, JSON.stringify(tweaks));
   }, [tweaks, hydrated]);
@@ -103,9 +121,25 @@ export function AppProvider({children, isLoggedIn = false}) {
   const clearQuote = useCallback(() => setQuote([]), []);
 
   // ---- Favorites ----
-  const toggleFav = useCallback((id) => {
-    setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
-  }, []);
+  const toggleFav = useCallback(
+    (id) => {
+      setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
+      if (isLoggedIn) {
+        const body = new FormData();
+        body.set('intent', 'toggle');
+        body.set('productId', id);
+        wishlistFetcher.submit(body, {method: 'POST', action: '/api/wishlist'});
+      }
+    },
+    [isLoggedIn, wishlistFetcher],
+  );
+
+  // Reconcile optimistic favs with the authoritative server response.
+  useEffect(() => {
+    if (wishlistFetcher.data && Array.isArray(wishlistFetcher.data.favs)) {
+      setFavs((current) => reconcileFavs(wishlistFetcher.data.favs, current));
+    }
+  }, [wishlistFetcher.data]);
 
   // ---- Tweaks ----
   const setTweak = useCallback((key, value) => {
@@ -167,6 +201,18 @@ export function useApp() {
 
 export function useToast() {
   return useContext(ToastCtx);
+}
+
+/**
+ * Pick the authoritative favorites list after a wishlist mutation.
+ * The server response wins when it is an array; otherwise keep the
+ * optimistic local list.
+ * @param {unknown} serverFavs
+ * @param {string[]} optimisticFavs
+ * @returns {string[]}
+ */
+export function reconcileFavs(serverFavs, optimisticFavs) {
+  return Array.isArray(serverFavs) ? serverFavs : optimisticFavs;
 }
 
 /* ---- color helpers ---- */
