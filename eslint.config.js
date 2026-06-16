@@ -7,7 +7,6 @@ import globals from 'globals';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import _import from 'eslint-plugin-import';
 import tsParser from '@typescript-eslint/parser';
-import jest from 'eslint-plugin-jest';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import js from '@eslint/js';
@@ -27,11 +26,13 @@ export default [
       '**/node_modules/',
       '**/build/',
       '**/dist/',
-      '**/*.graphql.d.ts',
+      '**/*.d.ts',
       '**/*.graphql.ts',
-      '**/*.generated.d.ts',
       '**/.react-router/',
       '**/packages/hydrogen/dist/',
+      // Downloaded design reference (Next.js-style mockups, chat logs); not
+      // part of the Hydrogen app and not meant to be linted or shipped.
+      'design_download/',
     ],
   },
   ...fixupConfigRules(
@@ -222,19 +223,26 @@ export default [
       },
     },
   },
-  ...compat.extends('plugin:jest/recommended').map((config) => ({
-    ...config,
-    files: ['**/*.test.*'],
-  })),
   {
+    // This project tests with Vitest, not Jest. The Hydrogen skeleton shipped
+    // an eslint-plugin-jest config block here, but `jest/no-deprecated-functions`
+    // crashes ESLint when the jest package isn't installed. Tests import
+    // {describe,it,expect,...} from 'vitest' explicitly; these globals are
+    // declared only so any global-style spec still lints cleanly.
     files: ['**/*.test.*'],
-    plugins: {
-      jest,
-    },
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        expectTypeOf: 'readonly',
+        vi: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
       },
     },
   },
@@ -245,9 +253,12 @@ export default [
     },
   },
   {
-    // Ban the bare libSQL import everywhere: only '@libsql/client/web'
-    // resolves the workerd condition. The bare entry breaks the Oxygen bundle.
+    // Ban the bare libSQL import in APP code: only '@libsql/client/web'
+    // resolves the workerd condition; the bare entry breaks the Oxygen bundle.
+    // Test files are exempt — they run in Node (vitest) and use the bare
+    // build deliberately because the '/web' build can't open ':memory:'.
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['**/*.test.{js,jsx,ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -260,6 +271,14 @@ export default [
           ],
         },
       ],
+    },
+  },
+  {
+    // CLI/maintenance scripts (migrations, audits) legitimately write to
+    // stdout for progress and results.
+    files: ['scripts/**', '**/*.mjs'],
+    rules: {
+      'no-console': 'off',
     },
   },
   {

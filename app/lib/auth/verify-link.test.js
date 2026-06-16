@@ -3,7 +3,6 @@ import {sendVerificationEmail} from './verify-link.js';
 
 describe('auth/verify-link', () => {
   it('creates a verify token and sends an email with the verify URL', async () => {
-    const created = [];
     const fakeDb = {};
     const deps = {
       createToken: vi.fn(async () => ({token: 'tok123'})),
