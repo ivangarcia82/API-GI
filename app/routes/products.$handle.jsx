@@ -15,7 +15,7 @@ import {AddToCartButton} from '~/components/AddToCartButton';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex} from '~/lib/gi';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
-import {getTechniques, calcDecoration} from '~/lib/decoration/engine.js';
+import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
 
 export const meta = ({data}) => [
   {title: `${data?.product?.title ?? 'Producto'} · Generando Ideas`},
@@ -91,8 +91,12 @@ export default function Product() {
     : null;
   const decoError = Boolean(decoCalc && decoCalc.error);
 
+  // Single integrated price: unit + total, decoration already folded in.
+  const decoTotal = decoCalc && !decoCalc.error ? decoCalc.totalPrice : 0;
+  const effUnit = unit != null ? round2(effectiveUnitPrice(unit, decoTotal, qty)) : null;
+  const effTotal = unit != null ? round2(unit * qty + decoTotal) : null;
+
   const isFav = favs.includes(product.id);
-  const total = unit != null ? unit * qty : null;
   const isNew = (product.tags || []).includes('nuevo');
   const isOffer = (product.tags || []).includes('oferta');
   const mainImage = images[activeImg]?.url || selectedVariant?.image?.url;
@@ -195,7 +199,7 @@ export default function Product() {
             <div className="pdp-price-bar">
               <div>
                 <div className="pdp-price-from">Precio por pieza</div>
-                <div className="pdp-price">{formatPrice(unit, currency)}</div>
+                <div className="pdp-price">{formatPrice(effUnit, currency)}</div>
               </div>
               <div style={{textAlign: 'right'}}>
                 <div className="pdp-price-from">Total · {qty} pz</div>
@@ -208,7 +212,7 @@ export default function Product() {
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  {formatPrice(total, currency)}
+                  {formatPrice(effTotal, currency)}
                 </div>
               </div>
             </div>
@@ -234,7 +238,6 @@ export default function Product() {
               <h3>Decorado</h3>
               <DecorationSelector
                 product={decoProduct}
-                basePrice={unit}
                 qty={qty}
                 onChange={setDecoDetail}
               />

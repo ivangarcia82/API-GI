@@ -2,40 +2,18 @@ import {useEffect, useMemo, useState} from 'react';
 import {
   getMeasures,
   calcDecoration,
-  effectiveUnitPrice,
-  round2,
   resolveTechniqueKey,
-  resolveSurfaceKey,
-  PRICE_MATRIX,
 } from '~/lib/decoration/engine.js';
 
 const SIN_DECORADO = 'Sin decorado';
 
-function fmt(n) {
-  return Number(n).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-/** "desde $X/pz" teaser for a technique on the product's (possibly fallback)
- *  surface: the cheapest per-unit decoration at scale (min precioMinimo / 0.67). */
-function fromUnitPrice(technique, surface) {
-  const tk = resolveTechniqueKey(technique);
-  if (!tk) return null;
-  const {key} = resolveSurfaceKey(tk, surface);
-  if (!key) return null;
-  const minMin = Math.min(...PRICE_MATRIX[tk][key].map((r) => r.precioMinimo));
-  return round2(minMin / 0.67);
-}
-
 /**
- * PDP decoration selector. ONE matrix-powered control: technique + size are
- * picked as chips (no separate static "técnicas" block). Display-only numbers;
- * emits {technique, surface, size, qty}. Renders nothing when the product has
- * no techniques (graceful degradation).
+ * PDP decoration picker. ONE matrix-powered control: technique + size as chips.
+ * It renders NO prices — the PDP price bar shows the single integrated unit
+ * price + total. Emits {technique, surface, size, qty}; renders nothing when
+ * the product has no techniques (graceful degradation).
  */
-export default function DecorationSelector({product, basePrice, qty, onChange}) {
+export default function DecorationSelector({product, qty, onChange}) {
   const techniques = useMemo(() => product?.techniques || [], [product?.techniques]);
   // Only offer techniques that exist in the price matrix; non-standard ones
   // (no pricing entry) are intentionally omitted — they're audited separately.
@@ -54,13 +32,13 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
 
   const effectiveSize = technique === SIN_DECORADO ? 'N/A' : size;
 
+  // Evaluated only to detect an invalid combination (data-deco-error); the
+  // resulting price is shown by the PDP, not here.
   const calc = useMemo(() => {
     if (!technique) return null;
     if (technique === SIN_DECORADO) {
       return calcDecoration(SIN_DECORADO, surface, qty, 'N/A');
     }
-    // Evaluate even before a measure is picked so technique errors surface
-    // immediately; a real price still requires a chosen measure.
     const r = calcDecoration(technique, surface, qty, size);
     if (!r.error && !size) return null;
     return r;
@@ -81,12 +59,6 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
     setSize('');
   }
 
-  const showPrice = Boolean(calc && !calc.error);
-  const unitPrice = showPrice
-    ? round2(effectiveUnitPrice(basePrice, calc.totalPrice, qty))
-    : null;
-  const decoPerUnit = showPrice ? round2(calc.unitPrice) : null;
-
   return (
     <div
       className="deco-selector"
@@ -96,11 +68,7 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
     >
       <div className="field">
         <span className="field-label" id="deco-tech-label">Elige tipo de decorado</span>
-        <div
-          className="pdp-printtech"
-          role="group"
-          aria-labelledby="deco-tech-label"
-        >
+        <div className="pdp-printtech" role="group" aria-labelledby="deco-tech-label">
           <button
             type="button"
             className={technique === SIN_DECORADO ? 'active' : ''}
@@ -108,31 +76,23 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
           >
             <span>{SIN_DECORADO}</span>
           </button>
-          {available.map((t) => {
-            const from = fromUnitPrice(t, surface);
-            return (
-              <button
-                type="button"
-                key={t}
-                className={technique === t ? 'active' : ''}
-                onClick={() => pickTechnique(t)}
-              >
-                <span>{t}</span>
-                {from != null && <span className="pt-cost">desde ${fmt(from)}/pz</span>}
-              </button>
-            );
-          })}
+          {available.map((t) => (
+            <button
+              type="button"
+              key={t}
+              className={technique === t ? 'active' : ''}
+              onClick={() => pickTechnique(t)}
+            >
+              <span>{t}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {technique && technique !== SIN_DECORADO && (
         <div className="field">
           <span className="field-label" id="deco-size-label">Elige la medida</span>
-          <div
-            className="pdp-printtech"
-            role="group"
-            aria-labelledby="deco-size-label"
-          >
+          <div className="pdp-printtech" role="group" aria-labelledby="deco-size-label">
             {measures.map((m) => (
               <button
                 type="button"
@@ -151,41 +111,6 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
         <p className="error-msg" role="alert" data-testid="deco-error">
           {calc.error}
         </p>
-      )}
-
-      {showPrice && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
-            paddingTop: 'var(--s-3)',
-            borderTop: '1px solid var(--line)',
-          }}
-        >
-          <p
-            data-testid="deco-unit-price"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              fontSize: 22,
-              color: 'var(--ink)',
-            }}
-          >
-            $ {fmt(unitPrice)} MXN
-          </p>
-          {technique !== SIN_DECORADO && (
-            <p className="help-msg" data-testid="deco-included">
-              incluye decorado ${fmt(decoPerUnit)}/pz
-            </p>
-          )}
-          {technique !== SIN_DECORADO && !calc.isMinPriceUsed && (
-            <p className="help-msg" data-testid="deco-fixed-charge">
-              Cargo fijo de decorado ${fmt(calc.totalPrice)}; alcanza {calc.neededQtyForMin}{' '}
-              piezas para precio por unidad
-            </p>
-          )}
-        </div>
       )}
     </div>
   );
