@@ -1804,13 +1804,6 @@
 .qd-item-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .qd-item-name { font-weight: 600; font-size: 14px; line-height: 1.2; }
 .qd-item-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.qd-item-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--warn);
-}
 .qd-item-row {
   display: flex;
   align-items: center;

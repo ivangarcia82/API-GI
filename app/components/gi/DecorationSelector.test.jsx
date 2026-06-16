@@ -66,7 +66,7 @@ describe('DecorationSelector', () => {
     expect(onChange).toHaveBeenLastCalledWith({technique: 'Sin decorado', surface: 'TEXTIL', size: 'N/A', qty: 5});
   });
 
-  it('quotes (no error) with a "material estimado" note when the surface is unknown', () => {
+  it('quotes silently for an unknown surface — never discloses the fallback material/rate', () => {
     render(
       <DecorationSelector
         product={{techniques: ['SERIGRAFÍA'], surface: 'PAPEL'}}
@@ -79,8 +79,10 @@ describe('DecorationSelector', () => {
     fireEvent.click(screen.getByRole('button', {name: '4 x 4'}));
     const root = screen.getByTestId('decoration-selector');
     expect(root).toHaveAttribute('data-deco-error', 'false');
-    expect(screen.getByTestId('deco-fallback')).toHaveTextContent('RUBBER / VIDRIO');
-    // base 40.60 + (2686.56/300) = 49.55... ⇒ round2 49.56
+    // Customer never sees the fallback surface key or any "highest rate" note.
+    expect(screen.queryByTestId('deco-fallback')).not.toBeInTheDocument();
+    expect(root).not.toHaveTextContent(/RUBBER|VIDRIO|tarifa|estimad/i);
+    // base 40.60 + (2686.56/300) = 49.55... ⇒ round2 49.56 (priced via the fallback)
     expect(screen.getByTestId('deco-unit-price')).toHaveTextContent('49.56');
   });
 });

@@ -36,7 +36,7 @@ function fromUnitPrice(technique, surface) {
  * no techniques (graceful degradation).
  */
 export default function DecorationSelector({product, basePrice, qty, onChange}) {
-  const techniques = product?.techniques || [];
+  const techniques = useMemo(() => product?.techniques || [], [product?.techniques]);
   // Only offer techniques that exist in the price matrix; non-standard ones
   // (no pricing entry) are intentionally omitted — they're audited separately.
   const available = useMemo(
@@ -86,9 +86,6 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
     ? round2(effectiveUnitPrice(basePrice, calc.totalPrice, qty))
     : null;
   const decoPerUnit = showPrice ? round2(calc.unitPrice) : null;
-  const usedFallback = Boolean(
-    showPrice && calc.surfaceFallback && technique !== SIN_DECORADO,
-  );
 
   return (
     <div
@@ -98,7 +95,7 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
       style={{display: 'flex', flexDirection: 'column', gap: 'var(--s-4)'}}
     >
       <div className="field">
-        <label id="deco-tech-label">Elige tipo de decorado</label>
+        <span className="field-label" id="deco-tech-label">Elige tipo de decorado</span>
         <div
           className="pdp-printtech"
           role="group"
@@ -130,7 +127,7 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
 
       {technique && technique !== SIN_DECORADO && (
         <div className="field">
-          <label id="deco-size-label">Elige la medida</label>
+          <span className="field-label" id="deco-size-label">Elige la medida</span>
           <div
             className="pdp-printtech"
             role="group"
@@ -148,13 +145,6 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
             ))}
           </div>
         </div>
-      )}
-
-      {usedFallback && (
-        <p className="help-msg" data-testid="deco-fallback">
-          Material no estándar — cotizado con “{calc.surfaceUsed}” (tarifa más alta).
-          El asesor lo ajustará si aplica.
-        </p>
       )}
 
       {hasError && (

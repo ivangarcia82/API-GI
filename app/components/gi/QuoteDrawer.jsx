@@ -7,13 +7,6 @@ import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice} from '~/lib/gi';
-import {resolveSurfaceKey} from '~/lib/decoration/engine.js';
-
-/** True when an item's material had to fall back to a priciest-group estimate. */
-function usesFallbackMaterial(item) {
-  if (!item.technique || item.technique === 'Sin decorado') return false;
-  return resolveSurfaceKey(item.technique, item.surface || '').fallback;
-}
 
 export function QuoteDrawer() {
   const {
@@ -179,11 +172,6 @@ export function QuoteDrawer() {
                     </span>
                   ))}
                 </div>
-                {usesFallbackMaterial(item) && (
-                  <div className="qd-item-note">
-                    <Icon name="bolt" size={11} /> Material estimado · el asesor lo confirma
-                  </div>
-                )}
                 <div className="qd-item-row">
                   <div className="pdp-qty" style={{borderRadius: 999}}>
                     <button onClick={() => updateQuoteQty(item.id, Math.max(1, item.qty - 1))} aria-label="Disminuir cantidad">

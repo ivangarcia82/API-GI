@@ -255,7 +255,8 @@ img, svg {
   flex-direction: column;
   gap: 6px;
 }
-.field label {
+.field label,
+.field-label {
   font-size: 12px;
   font-family: var(--font-mono);
   letter-spacing: 0.04em;

@@ -68,7 +68,6 @@ export default function Product() {
 
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
-  const [hasFile, setHasFile] = useState(false);
   const [tab, setTab] = useState('desc');
   const [decoDetail, setDecoDetail] = useState(null);
 
@@ -311,43 +310,6 @@ export default function Product() {
                 </button>
               </div>
             </div>
-          </div>
-
-          {/* CUSTOMIZATION */}
-          <div className="pdp-custom">
-            <div className="pdp-custom-head">
-              <h3>Personalización</h3>
-              <span className="pdp-custom-tag">Incluida</span>
-            </div>
-            <p style={{margin: 0, fontSize: 14, color: 'var(--ink-3)'}}>
-              Sube tu logo (vector preferido) y selecciona técnica. Recibirás un dummy
-              digital para aprobar antes de producción.
-            </p>
-
-            <label
-              className={`pdp-upload ${hasFile ? 'has-file' : ''}`}
-              style={{display: 'block'}}
-            >
-              <input
-                type="file"
-                accept=".svg,.ai,.pdf,.png,.jpg"
-                style={{display: 'none'}}
-                onChange={(e) => setHasFile(e.target.files?.length > 0)}
-              />
-              <Icon name={hasFile ? 'check' : 'upload'} size={24} className="upload-icon" />
-              <div className="upload-text">
-                {hasFile ? 'Logotipo cargado · listo' : 'Arrastra o selecciona tu logotipo'}
-              </div>
-              <div className="upload-hint">
-                {hasFile
-                  ? 'Click para reemplazar'
-                  : 'Vector preferido · SVG, AI, PDF · Máx 10 MB'}
-              </div>
-            </label>
-            <p style={{margin: '12px 0 0', fontSize: 13, color: 'var(--ink-3)'}}>
-              La técnica y la medida se eligen arriba, en <strong>Decorado</strong>; el
-              precio mostrado ya incluye el costo de personalización.
-            </p>
           </div>
 
           {/* ACTIONS */}
