@@ -1,15 +1,22 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 
 const adminFetch = vi.fn();
+const isStubMode = vi.fn(() => true);
 vi.mock('./client.js', () => ({
   adminFetch: (...args) => adminFetch(...args),
-  isStubMode: () => true,
+  isStubMode: (...args) => isStubMode(...args),
 }));
 
-import {createCustomer, createDraftOrder} from './operations.js';
+import {
+  createCustomer,
+  createDraftOrder,
+  getCustomerAdvisor,
+} from './operations.js';
 
 beforeEach(() => {
   adminFetch.mockReset();
+  isStubMode.mockReset();
+  isStubMode.mockReturnValue(true);
 });
 
 describe('createCustomer', () => {
@@ -128,5 +135,93 @@ describe('createDraftOrder', () => {
     await expect(
       createDraftOrder({PRIVATE_ADMIN_API_TOKEN: 't'}, {lineItems: []}),
     ).rejects.toThrow(/bad email/);
+  });
+});
+
+const GID = 'gid://shopify/Customer/123';
+
+function metaobjectResponse(fields) {
+  return {
+    customer: {
+      metafield: {
+        reference: {
+          type: 'ejecutiva_de_venta',
+          fields,
+        },
+      },
+    },
+  };
+}
+
+describe('getCustomerAdvisor', () => {
+  it('flattens metaobject fields and extracts the correo email', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue(
+      metaobjectResponse([
+        {key: 'nombre', value: 'María López'},
+        {key: 'correo', value: 'maria@generandoideas.com'},
+        {key: 'telefono', value: '55 1234 5678'},
+      ]),
+    );
+
+    const advisor = await getCustomerAdvisor({}, GID);
+
+    expect(advisor.email).toBe('maria@generandoideas.com');
+    expect(advisor.fields).toEqual({
+      nombre: 'María López',
+      correo: 'maria@generandoideas.com',
+      telefono: '55 1234 5678',
+    });
+    // The Admin query was sent with the customer gid.
+    expect(adminFetch).toHaveBeenCalledWith({}, expect.any(String), {gid: GID});
+  });
+
+  it('returns a null-safe shape when the metafield is absent', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({customer: {metafield: null}});
+
+    const advisor = await getCustomerAdvisor({}, GID);
+
+    expect(advisor).toEqual({email: null, fields: {}});
+  });
+
+  it('returns a null-safe shape when the customer is null', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({customer: null});
+
+    const advisor = await getCustomerAdvisor({}, GID);
+
+    expect(advisor).toEqual({email: null, fields: {}});
+  });
+
+  it('returns email:null when the reference has no correo field', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue(
+      metaobjectResponse([{key: 'nombre', value: 'Sin correo'}]),
+    );
+
+    const advisor = await getCustomerAdvisor({}, GID);
+
+    expect(advisor.email).toBeNull();
+    expect(advisor.fields.nombre).toBe('Sin correo');
+  });
+
+  it('returns a deterministic advisor in stub mode without calling adminFetch', async () => {
+    isStubMode.mockReturnValue(true);
+
+    const advisor = await getCustomerAdvisor({}, GID);
+
+    expect(advisor.email).toBe('asesor-stub@example.com');
+    expect(advisor.fields.correo).toBe('asesor-stub@example.com');
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns a null-safe shape when customerGid is missing', async () => {
+    isStubMode.mockReturnValue(false);
+
+    const advisor = await getCustomerAdvisor({}, null);
+
+    expect(advisor).toEqual({email: null, fields: {}});
+    expect(adminFetch).not.toHaveBeenCalled();
   });
 });

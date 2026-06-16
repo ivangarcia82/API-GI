@@ -22,6 +22,7 @@ export function isStubMode(env) {
 function operationName(query) {
   if (/customerCreate/.test(query)) return 'customerCreate';
   if (/draftOrderCreate/.test(query)) return 'draftOrderCreate';
+  if (/customerAdvisor/.test(query)) return 'customerAdvisor';
   if (/\bcustomers\b/.test(query)) return 'customers';
   return 'unknown';
 }
@@ -54,6 +55,8 @@ function stubResponse(query) {
       };
     case 'customers':
       return {customers: {edges: []}};
+    case 'customerAdvisor':
+      return {customer: {metafield: null}};
     default:
       return {};
   }

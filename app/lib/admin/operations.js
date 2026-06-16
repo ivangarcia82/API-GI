@@ -4,7 +4,7 @@
 // mutation (purchasingEntity.customerId + originalUnitPriceWithCurrency); it is
 // consumed in Phase 4. env is always passed explicitly.
 
-import {adminFetch} from './client.js';
+import {adminFetch, isStubMode} from './client.js';
 
 const CUSTOMER_CREATE = `
   mutation customerCreate($input: CustomerInput!) {
@@ -95,4 +95,61 @@ export async function createDraftOrder(env, input) {
     );
   }
   return {gid: result.draftOrder.id, invoiceUrl: result.draftOrder.invoiceUrl};
+}
+
+const CUSTOMER_ADVISOR = `
+  query customerAdvisor($gid: ID!) {
+    customer(id: $gid) {
+      metafield(namespace: "custom", key: "ejecutiva_de_venta") {
+        reference {
+          ... on Metaobject {
+            type
+            fields { key value }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const STUB_ADVISOR = {
+  email: 'asesor-stub@example.com',
+  fields: {
+    nombre: 'Asesor Stub',
+    correo: 'asesor-stub@example.com',
+    telefono: '00 0000 0000',
+  },
+};
+
+/**
+ * Resolve the sales advisor (ejecutiva de venta) assigned to a Shopify customer.
+ * The advisor lives on the CUSTOMER in metafield custom.ejecutiva_de_venta, a
+ * Metaobject reference of type "ejecutiva_de_venta"; the email field key is "correo".
+ * Null-safe: returns {email:null, fields:{}} when absent. In stub mode returns a
+ * deterministic test advisor. Requires Admin scopes read_customers + read_metaobjects.
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} customerGid
+ * @returns {Promise<{email: string|null, fields: Record<string, string>}>}
+ */
+export async function getCustomerAdvisor(env, customerGid) {
+  if (isStubMode(env)) {
+    return {email: STUB_ADVISOR.email, fields: {...STUB_ADVISOR.fields}};
+  }
+  if (!customerGid) return {email: null, fields: {}};
+
+  const data = await adminFetch(env, CUSTOMER_ADVISOR, {gid: customerGid});
+  const reference =
+    data && data.customer && data.customer.metafield
+      ? data.customer.metafield.reference
+      : null;
+  const rawFields =
+    reference && Array.isArray(reference.fields) ? reference.fields : [];
+
+  const fields = {};
+  for (const f of rawFields) {
+    if (f && f.key != null) fields[f.key] = f.value;
+  }
+
+  const email = fields.correo ? String(fields.correo).trim() || null : null;
+  return {email, fields};
 }
