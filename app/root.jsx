@@ -17,6 +17,8 @@ import giSections from '~/styles/gi-sections.css?url';
 import {PageLayout} from './components/PageLayout';
 import {AppProvider} from '~/lib/AppContext';
 import {getSessionUser} from '~/lib/auth/session';
+import {getDb} from '~/lib/db/client';
+import {listWishlist} from '~/lib/wishlist/repo';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -111,10 +113,21 @@ async function loadCriticalData({context}) {
     // Add other queries here, so that they are loaded in parallel
   ]);
 
+  let favs = [];
+  if (sessionUser) {
+    try {
+      const db = getDb(context.env);
+      favs = await listWishlist(db, sessionUser.userId);
+    } catch {
+      favs = [];
+    }
+  }
+
   return {
     header,
     isLoggedIn: Boolean(sessionUser),
     role: sessionUser?.role ?? null,
+    favs,
   };
 }
 
@@ -187,7 +200,7 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
-      <AppProvider isLoggedIn={data.isLoggedIn} role={data.role}>
+      <AppProvider isLoggedIn={data.isLoggedIn} role={data.role} favs={data.favs}>
         <PageLayout {...data}>
           <Outlet />
         </PageLayout>
