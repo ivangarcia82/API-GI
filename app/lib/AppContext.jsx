@@ -1,6 +1,6 @@
 /* ============================================================
    Generando Ideas — Client app state
-   Role (buyer/quoter), quote list, favorites, toasts, tweaks.
+   Quote list, favorites, toasts, tweaks. Quote-only (no purchase flow).
    The Shopify cart + auth live server-side (Hydrogen); this layer
    adds the B2B quote flow and UI preferences on top.
    ============================================================ */
@@ -43,14 +43,11 @@ const ToastCtx = createContext(() => {});
 export function AppProvider({
   children,
   isLoggedIn = false,
-  role: roleProp = 'quoter',
   quote: quoteProp = [],
   favs: favsProp = [],
 }) {
   // hydrated=false during SSR + first client paint to avoid mismatch
   const [hydrated, setHydrated] = useState(false);
-  // role is READ-ONLY: it comes from the Turso user via the loader, never from the client.
-  const role = roleProp;
   const [quote, setQuote] = useState(quoteProp);
   const [favs, setFavs] = useState(favsProp);
   const wishlistFetcher = useFetcher();
@@ -243,8 +240,6 @@ export function AppProvider({
   const value = {
     hydrated,
     isLoggedIn,
-    role,
-    canBuy: role === 'buyer',
     quote,
     quoteCount,
     quotePending,

@@ -1,6 +1,5 @@
 /* Generando Ideas — product card (grid + list views) */
 import {useNavigate} from 'react-router';
-import {CartForm} from '@shopify/hydrogen';
 import {Icon} from './Icon';
 import {Button, PH} from './ui';
 import {useApp, useToast} from '~/lib/AppContext';
@@ -27,12 +26,12 @@ function Swatches({colors, size = 14}) {
 }
 
 /**
- * Add control: buyers submit to the Shopify cart, quoters add to the
- * client-side quote list, guests are routed to the product detail.
+ * Add control: logged-in users add to the client-side quote list; guests are
+ * routed to the product detail. (No purchase flow — quote-only.)
  */
 export function AddControl({product, label, variant, size = 'sm', className = ''}) {
   const navigate = useNavigate();
-  const {isLoggedIn, canBuy, addToQuote, openQuoteDrawer} = useApp();
+  const {isLoggedIn, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
 
   if (!isLoggedIn) {
@@ -52,37 +51,6 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
     );
   }
 
-  if (canBuy && product.firstVariantId) {
-    return (
-      <CartForm
-        route="/cart"
-        inputs={{lines: [{merchandiseId: product.firstVariantId, quantity: 1}]}}
-        action={CartForm.ACTIONS.LinesAdd}
-      >
-        {(fetcher) => (
-          <Button
-            type="submit"
-            variant={variant}
-            size={size}
-            icon="cart"
-            className={className}
-            disabled={fetcher.state !== 'idle'}
-            onClick={(e) => {
-              e.stopPropagation();
-              toast(`${product.title} agregado al carrito`, {
-                icon: 'cart',
-                accent: true,
-              });
-            }}
-          >
-            {label || 'Agregar'}
-          </Button>
-        )}
-      </CartForm>
-    );
-  }
-
-  // Quoter (or buyer without a variant) → quote list
   return (
     <Button
       variant={variant}
@@ -108,14 +76,14 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
         openQuoteDrawer();
       }}
     >
-      {canBuy ? 'Cotizar' : 'Cotizar'}
+      {label || 'Cotizar'}
     </Button>
   );
 }
 
 export function ProductCard({product, view = 'grid'}) {
   const navigate = useNavigate();
-  const {isLoggedIn, canBuy, favs, toggleFav} = useApp();
+  const {isLoggedIn, favs, toggleFav} = useApp();
   const toast = useToast();
   const isFav = favs.includes(product.id);
   const go = () => navigate(`/products/${product.handle}`);
@@ -146,7 +114,7 @@ export function ProductCard({product, view = 'grid'}) {
               <Icon name="eye_off" size={11} /> Inicia sesión
             </div>
           )}
-          <AddControl product={product} variant={canBuy ? 'accent' : 'primary'} />
+          <AddControl product={product} variant="primary" />
         </div>
       </div>
     );
@@ -176,9 +144,9 @@ export function ProductCard({product, view = 'grid'}) {
         <div className="pcard-quickactions">
           <AddControl
             product={product}
-            variant={canBuy ? 'accent' : 'primary'}
+            variant="primary"
             className="grow"
-            label={canBuy ? 'Añadir al carrito' : 'Añadir a cotización'}
+            label="Añadir a cotización"
           />
         </div>
       </div>

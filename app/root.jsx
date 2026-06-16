@@ -137,7 +137,6 @@ async function loadCriticalData({context}) {
   return {
     header,
     isLoggedIn: Boolean(sessionUser),
-    role: sessionUser?.role ?? null,
     favs,
     quote,
   };
@@ -214,7 +213,6 @@ export default function App() {
     >
       <AppProvider
         isLoggedIn={data.isLoggedIn}
-        role={data.role}
         quote={data.quote}
         favs={data.favs}
       >

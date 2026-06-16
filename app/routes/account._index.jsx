@@ -6,16 +6,12 @@ import {useApp} from '~/lib/AppContext';
 export default function AccountOverview() {
   const {user} = useOutletContext();
   const navigate = useNavigate();
-  const {role, quoteCount, favs, openQuoteDrawer} = useApp();
+  const {quoteCount, favs, openQuoteDrawer} = useApp();
 
   const stats = [
     {l: 'En cotización', v: quoteCount, d: 'piezas pendientes'},
     {l: 'Favoritos', v: favs.length, d: 'productos guardados'},
-    {
-      l: 'Tipo de cuenta',
-      v: role === 'buyer' ? 'Comprador' : 'Cotizador',
-      d: 'rol activo',
-    },
+    {l: 'Empresa', v: user?.company || '—', d: 'cuenta corporativa'},
   ];
 
   return (

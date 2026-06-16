@@ -64,19 +64,8 @@ export function GiFooter() {
             </ul>
           </div>
           <div>
-            <h4>Servicios</h4>
-            <ul>
-              <li><NavLink to="/servicios">Promocionales</NavLink></li>
-              <li><NavLink to="/servicios">Fulfillment</NavLink></li>
-              <li><NavLink to="/servicios">Proyectos especiales</NavLink></li>
-              <li><NavLink to="/servicios">Personalizado</NavLink></li>
-              <li><NavLink to="/servicios">Textil &amp; talabartería</NavLink></li>
-            </ul>
-          </div>
-          <div>
             <h4>Compañía</h4>
             <ul>
-              <li><NavLink to="/nosotros">Quiénes somos</NavLink></li>
               <li><NavLink to="/contacto">Contacto</NavLink></li>
               <li><NavLink to="/lookbook">Lookbook</NavLink></li>
               <li><NavLink to="/policies">Avisos legales</NavLink></li>

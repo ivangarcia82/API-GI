@@ -1,7 +1,7 @@
 /* Generando Ideas — page layout shell */
 import {GiHeader} from '~/components/gi/Header';
 import {GiFooter} from '~/components/gi/Footer';
-import {RoleBanner, TweaksPanel} from '~/components/gi/RoleBanner';
+import {TweaksPanel} from '~/components/gi/RoleBanner';
 import {QuoteDrawer} from '~/components/gi/QuoteDrawer';
 
 /**
@@ -14,7 +14,6 @@ export function PageLayout({cart, isLoggedIn = false, children}) {
   return (
     <>
       <GiHeader cart={cart} isLoggedIn={isLoggedIn} />
-      <RoleBanner />
       <main style={{minHeight: '60vh'}} className="fade-in">
         {children}
       </main>

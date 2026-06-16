@@ -1,6 +1,6 @@
 /* Generando Ideas — site header */
-import {Suspense, useState} from 'react';
-import {Await, NavLink, useNavigate} from 'react-router';
+import {useState} from 'react';
+import {NavLink, useNavigate} from 'react-router';
 import {Icon} from './Icon';
 import {Button} from './ui';
 import {useApp} from '~/lib/AppContext';
@@ -9,8 +9,6 @@ const NAV = [
   {to: '/catalogo', label: 'Catálogo'},
   {to: '/collections', label: 'Colecciones'},
   {to: '/lookbook', label: 'Lookbook'},
-  {to: '/servicios', label: 'Servicios'},
-  {to: '/nosotros', label: 'Nosotros'},
 ];
 
 function Logo() {
@@ -25,22 +23,9 @@ function Logo() {
   );
 }
 
-function CartBadge({cart}) {
-  return (
-    <Suspense fallback={null}>
-      <Await resolve={cart}>
-        {(resolved) => {
-          const count = resolved?.totalQuantity || 0;
-          return count > 0 ? <span className="appbar-badge">{count}</span> : null;
-        }}
-      </Await>
-    </Suspense>
-  );
-}
-
-export function GiHeader({cart, isLoggedIn}) {
+export function GiHeader({isLoggedIn}) {
   const navigate = useNavigate();
-  const {canBuy, quoteCount, openQuoteDrawer} = useApp();
+  const {quoteCount, openQuoteDrawer} = useApp();
   const [mobile, setMobile] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
 
@@ -68,17 +53,6 @@ export function GiHeader({cart, isLoggedIn}) {
             >
               <Icon name="search" size={18} />
             </button>
-
-            {canBuy && (
-              <button
-                className="appbar-iconbtn"
-                aria-label="Carrito"
-                onClick={() => navigate('/cart')}
-              >
-                <Icon name="cart" size={18} />
-                <CartBadge cart={cart} />
-              </button>
-            )}
 
             <button
               className="appbar-iconbtn"
@@ -149,7 +123,6 @@ export function GiHeader({cart, isLoggedIn}) {
                   >
                     {[
                       {label: 'Mi cuenta', to: '/account', icon: 'user'},
-                      {label: 'Mis órdenes', to: '/account/orders', icon: 'receipt'},
                       {label: 'Cotizaciones', to: '/account/cotizaciones', icon: 'quote'},
                       {label: 'Favoritos', to: '/account/favoritos', icon: 'heart_outline'},
                     ].map((m) => (
@@ -215,11 +188,6 @@ export function GiHeader({cart, isLoggedIn}) {
           >
             Mi cotización
           </button>
-          {canBuy && (
-            <NavLink to="/cart" onClick={() => setMobile(false)}>
-              Mi carrito
-            </NavLink>
-          )}
           {isLoggedIn && (
             <NavLink to="/account" onClick={() => setMobile(false)}>
               Mi cuenta

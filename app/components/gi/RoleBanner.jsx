@@ -1,26 +1,8 @@
-/* Generando Ideas — role banner + tweaks panel
-   The banner lets you switch the simulated B2B role (buyer/quoter)
-   live; the tweaks panel mirrors the prototype's accent/density toggles. */
+/* Generando Ideas — floating tweaks panel (accent color + density).
+   A lightweight UI-preference panel; persists to localStorage via AppContext. */
 import {useState} from 'react';
 import {Icon} from './Icon';
 import {useApp} from '~/lib/AppContext';
-
-export function RoleBanner() {
-  const {role, isLoggedIn} = useApp();
-  if (!isLoggedIn) return null;
-  return (
-    <div className="role-banner">
-      <div className="container">
-        <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
-          <span style={{opacity: 0.7}}>Sesión iniciada como</span>
-          <span className="role-tag">
-            {role === 'buyer' ? 'CLIENTE COMPRADOR' : 'CLIENTE COTIZADOR'}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const ACCENTS = ['#ff8300', '#d97757', '#1f8a5b', '#2a6fdb', '#7a4ee0'];
 
@@ -111,17 +93,6 @@ export function TweaksPanel() {
               options={[
                 {value: 'comfortable', label: 'Cómodo'},
                 {value: 'compact', label: 'Compacto'},
-              ]}
-            />
-          </TweakGroup>
-
-          <TweakGroup label="Banner de simulación">
-            <Segmented
-              value={tweaks.showRoleBanner ? 'on' : 'off'}
-              onChange={(v) => setTweak('showRoleBanner', v === 'on')}
-              options={[
-                {value: 'on', label: 'Visible'},
-                {value: 'off', label: 'Oculto'},
               ]}
             />
           </TweakGroup>

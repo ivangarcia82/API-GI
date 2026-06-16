@@ -177,7 +177,7 @@ export function ImageMarquee({products = [], direction = 'left', speed = 50}) {
 /* ---- product spotlight ---- */
 export function ProductSpotlight({product}) {
   const navigate = useNavigate();
-  const {isLoggedIn, canBuy} = useApp();
+  const {isLoggedIn} = useApp();
   const [imgRef, imgOffset] = useParallax(0.08);
   const [ref, inView] = useInView();
   if (!product) return null;
@@ -280,7 +280,7 @@ export function ProductSpotlight({product}) {
                 product={product}
                 size="lg"
                 variant="accent"
-                label={canBuy ? 'Añadir al carrito' : 'Cotizar ahora'}
+                label="Cotizar ahora"
               />
               <Button
                 variant="ghost"

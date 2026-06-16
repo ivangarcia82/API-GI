@@ -11,7 +11,6 @@ import {
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
-import {AddToCartButton} from '~/components/AddToCartButton';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex} from '~/lib/gi';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
@@ -46,7 +45,7 @@ async function loadCriticalData({context, params, request}) {
 export default function Product() {
   const {product} = useLoaderData();
   const navigate = useNavigate();
-  const {isLoggedIn, canBuy, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
+  const {isLoggedIn, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
 
   const selectedVariant = useOptimisticVariant(
@@ -329,26 +328,8 @@ export default function Product() {
               </Button>
             ) : (
               <>
-                {canBuy && selectedVariant?.availableForSale && (
-                  <AddToCartButton
-                    lines={[{merchandiseId: selectedVariant.id, quantity: qty}]}
-                    onClick={() =>
-                      toast(`${qty} pz de ${product.title} en tu carrito`, {
-                        icon: 'cart',
-                        accent: true,
-                      })
-                    }
-                  >
-                    <span
-                      className="btn btn-accent btn-lg"
-                      style={{display: 'inline-flex'}}
-                    >
-                      <Icon name="cart" size={18} /> Añadir al carrito
-                    </span>
-                  </AddToCartButton>
-                )}
                 <Button
-                  variant={canBuy ? 'ghost' : 'accent'}
+                  variant="accent"
                   size="lg"
                   icon="quote"
                   onClick={handleQuote}
