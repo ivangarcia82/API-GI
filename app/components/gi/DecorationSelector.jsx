@@ -33,15 +33,17 @@ export default function DecorationSelector({product, qty, onChange}) {
   const effectiveSize = technique === SIN_DECORADO ? 'N/A' : size;
 
   // Evaluated only to detect an invalid combination (data-deco-error); the
-  // resulting price is shown by the PDP, not here.
+  // resulting price is shown by the PDP, not here. Wait for a measure before
+  // evaluating — sizes come from the matrix list (with surface fallback), so a
+  // picked size is always valid and the "Medida no encontrada" warning never
+  // fires just because no size has been chosen yet.
   const calc = useMemo(() => {
     if (!technique) return null;
     if (technique === SIN_DECORADO) {
       return calcDecoration(SIN_DECORADO, surface, qty, 'N/A');
     }
-    const r = calcDecoration(technique, surface, qty, size);
-    if (!r.error && !size) return null;
-    return r;
+    if (!size) return null;
+    return calcDecoration(technique, surface, qty, size);
   }, [technique, surface, qty, size]);
 
   const hasError = Boolean(calc && calc.error);

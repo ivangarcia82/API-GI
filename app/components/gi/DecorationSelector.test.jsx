@@ -31,6 +31,14 @@ describe('DecorationSelector', () => {
     expect(root).not.toHaveTextContent(/\$|MXN|incluye|cargo fijo|desde/i);
   });
 
+  it('shows no error after picking only a technique (before a measure)', () => {
+    render(<DecorationSelector product={product} qty={300} onChange={() => {}} />);
+    fireEvent.click(screen.getByRole('button', {name: /SERIGRAFÍA/}));
+    expect(screen.getByTestId('decoration-selector')).toHaveAttribute('data-deco-error', 'false');
+    expect(screen.queryByTestId('deco-error')).not.toBeInTheDocument();
+    expect(screen.queryByText(/medida no encontrada/i)).not.toBeInTheDocument();
+  });
+
   it('populates measures after picking a technique and emits inputs', () => {
     const onChange = vi.fn();
     render(<DecorationSelector product={product} qty={300} onChange={onChange} />);
