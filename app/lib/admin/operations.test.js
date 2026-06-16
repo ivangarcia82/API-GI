@@ -61,7 +61,7 @@ describe('createCustomer', () => {
     expect(out).toEqual({gid: 'gid://shopify/Customer/999'});
     expect(adminFetch).toHaveBeenCalledTimes(2);
     const [, , lookupVars] = adminFetch.mock.calls[1];
-    expect(lookupVars.q).toBe('email:dup@b.com');
+    expect(lookupVars.q).toBe("email:'dup@b.com'");
   });
 
   it('throws on a non-TAKEN userError', async () => {

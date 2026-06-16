@@ -58,7 +58,10 @@ export async function createCustomer(env, {email, firstName, lastName}) {
   if (result.userErrors && result.userErrors.length) {
     if (isTakenError(result.userErrors)) {
       const lookup = await adminFetch(env, CUSTOMERS_BY_EMAIL, {
-        q: `email:${email}`,
+        // Quote the email: Shopify's search tokenizes on "@" and ".", so an
+        // unquoted address (email:foo@bar.com) often fails to match exactly and
+        // returns no results even when the customer exists.
+        q: `email:'${email}'`,
       });
       const node = lookup.customers.edges[0] && lookup.customers.edges[0].node;
       if (node && node.id) return {gid: node.id};
