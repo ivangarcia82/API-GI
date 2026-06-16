@@ -5,6 +5,8 @@ import {
   effectiveUnitPrice,
   round2,
   resolveTechniqueKey,
+  resolveSurfaceKey,
+  PRICE_MATRIX,
 } from '~/lib/decoration/engine.js';
 
 const SIN_DECORADO = 'Sin decorado';
@@ -16,9 +18,22 @@ function fmt(n) {
   });
 }
 
+/** "desde $X/pz" teaser for a technique on the product's (possibly fallback)
+ *  surface: the cheapest per-unit decoration at scale (min precioMinimo / 0.67). */
+function fromUnitPrice(technique, surface) {
+  const tk = resolveTechniqueKey(technique);
+  if (!tk) return null;
+  const {key} = resolveSurfaceKey(tk, surface);
+  if (!key) return null;
+  const minMin = Math.min(...PRICE_MATRIX[tk][key].map((r) => r.precioMinimo));
+  return round2(minMin / 0.67);
+}
+
 /**
- * PDP decoration selector. Display-only numbers; emits {technique, surface, size, qty}.
- * Renders nothing when the product has no techniques (graceful degradation).
+ * PDP decoration selector. ONE matrix-powered control: technique + size are
+ * picked as chips (no separate static "técnicas" block). Display-only numbers;
+ * emits {technique, surface, size, qty}. Renders nothing when the product has
+ * no techniques (graceful degradation).
  */
 export default function DecorationSelector({product, basePrice, qty, onChange}) {
   const techniques = product?.techniques || [];
@@ -44,9 +59,8 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
     if (technique === SIN_DECORADO) {
       return calcDecoration(SIN_DECORADO, surface, qty, 'N/A');
     }
-    // Evaluate even before a measure is picked so technique/surface errors
-    // (checked ahead of the measure lookup in calcDecoration) surface
-    // immediately. A successful price still requires a real measure.
+    // Evaluate even before a measure is picked so technique errors surface
+    // immediately; a real price still requires a chosen measure.
     const r = calcDecoration(technique, surface, qty, size);
     if (!r.error && !size) return null;
     return r;
@@ -62,13 +76,9 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
 
   if (techniques.length === 0) return null;
 
-  function handleTechnique(e) {
-    setTechnique(e.target.value);
+  function pickTechnique(t) {
+    setTechnique(t);
     setSize('');
-  }
-
-  function handleSize(e) {
-    setSize(e.target.value);
   }
 
   const showPrice = Boolean(calc && !calc.error);
@@ -76,6 +86,9 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
     ? round2(effectiveUnitPrice(basePrice, calc.totalPrice, qty))
     : null;
   const decoPerUnit = showPrice ? round2(calc.unitPrice) : null;
+  const usedFallback = Boolean(
+    showPrice && calc.surfaceFallback && technique !== SIN_DECORADO,
+  );
 
   return (
     <div
@@ -85,44 +98,64 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
       style={{display: 'flex', flexDirection: 'column', gap: 'var(--s-4)'}}
     >
       <div className="field">
-        <label htmlFor="gi-decorado-select">Elige tipo de decorado</label>
-        <select
-          id="gi-decorado-select"
-          className="input"
-          value={technique}
-          onChange={handleTechnique}
+        <label id="deco-tech-label">Elige tipo de decorado</label>
+        <div
+          className="pdp-printtech"
+          role="group"
+          aria-labelledby="deco-tech-label"
         >
-          <option value="" disabled>
-            Seleccione técnica de impresión
-          </option>
-          <option value={SIN_DECORADO}>{SIN_DECORADO}</option>
-          {available.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
+          <button
+            type="button"
+            className={technique === SIN_DECORADO ? 'active' : ''}
+            onClick={() => pickTechnique(SIN_DECORADO)}
+          >
+            <span>{SIN_DECORADO}</span>
+          </button>
+          {available.map((t) => {
+            const from = fromUnitPrice(t, surface);
+            return (
+              <button
+                type="button"
+                key={t}
+                className={technique === t ? 'active' : ''}
+                onClick={() => pickTechnique(t)}
+              >
+                <span>{t}</span>
+                {from != null && <span className="pt-cost">desde ${fmt(from)}/pz</span>}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="field">
-        <label htmlFor="gi-medida-select">Elige la medida</label>
-        <select
-          id="gi-medida-select"
-          className="input"
-          value={effectiveSize === 'N/A' ? '' : size}
-          onChange={handleSize}
-          disabled={technique === '' || technique === SIN_DECORADO}
-        >
-          <option value="" disabled>
-            {technique === SIN_DECORADO ? 'N/A' : 'Seleccione medida'}
-          </option>
-          {measures.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
-      </div>
+      {technique && technique !== SIN_DECORADO && (
+        <div className="field">
+          <label id="deco-size-label">Elige la medida</label>
+          <div
+            className="pdp-printtech"
+            role="group"
+            aria-labelledby="deco-size-label"
+          >
+            {measures.map((m) => (
+              <button
+                type="button"
+                key={m}
+                className={size === m ? 'active' : ''}
+                onClick={() => setSize(m)}
+              >
+                <span>{m}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {usedFallback && (
+        <p className="help-msg" data-testid="deco-fallback">
+          Material no estándar — cotizado con “{calc.surfaceUsed}” (tarifa más alta).
+          El asesor lo ajustará si aplica.
+        </p>
+      )}
 
       {hasError && (
         <p className="error-msg" role="alert" data-testid="deco-error">

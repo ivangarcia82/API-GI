@@ -45,10 +45,19 @@ describe('calcDecoration — parity with scripthhglobal.liquid', () => {
     expect(r.totalPrice).toBe(0);
   });
 
-  it('unknown surface ⇒ structured error (uppercased in message)', () => {
+  it('unknown surface ⇒ falls back to the most expensive group (no error)', () => {
     const r = calcDecoration('SERIGRAFÍA', 'papel', 10, '4 x 4');
-    expect(r.error).toBe('Superficie no encontrada: PAPEL');
-    expect(r.totalPrice).toBe(0);
+    expect(r.error).toBeNull();
+    expect(r.surfaceFallback).toBe(true);
+    expect(r.surfaceUsed).toBe('RUBBER / VIDRIO');
+    // qty 10 < min(500) ⇒ flat precioMaximo of RUBBER / VIDRIO
+    expect(r.totalPrice).toBe(2686.56);
+  });
+
+  it('exact surface match reports no fallback', () => {
+    const r = calcDecoration('SERIGRAFÍA', 'TEXTIL', 300, '4 x 4');
+    expect(r.surfaceFallback).toBe(false);
+    expect(r.surfaceUsed).toBe('TEXTIL');
   });
 
   it('unknown measure ⇒ structured error', () => {

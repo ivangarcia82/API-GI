@@ -78,8 +78,12 @@ describe('getMeasures', () => {
     expect(getMeasures('SERIGRAFÍA', 'metal')).toEqual(['4 x 4', '10 X 10', '15 x 15']);
   });
 
-  it('returns [] for unknown technique or surface', () => {
+  it('returns [] for an unknown technique', () => {
     expect(getMeasures('NOPE', 'textil')).toEqual([]);
-    expect(getMeasures('SERIGRAFÍA', 'papel')).toEqual([]);
+  });
+
+  it('falls back to the most expensive group for an unknown surface', () => {
+    // 'papel' matches no SERIGRAFÍA group ⇒ fall back to RUBBER / VIDRIO.
+    expect(getMeasures('SERIGRAFÍA', 'papel')).toEqual(['4 x 4', '10 x 10', '18 x 18']);
   });
 });

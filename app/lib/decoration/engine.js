@@ -89,6 +89,45 @@ function matchSurfaceKey(technique, surface) {
   );
 }
 
+/** The most expensive surface group for a technique, used as the fallback when
+ *  a product's material doesn't match any group. "Most expensive" = the group
+ *  with the highest ceiling (max precioMaximo, which is the flat charge applied
+ *  below the minimum quantity — the common case when quoting "from 1 piece");
+ *  ties broken by the highest precioMinimo. Returns undefined for an unknown
+ *  technique. Picking the priciest group guarantees we never under-quote. */
+export function mostExpensiveSurfaceKey(technique) {
+  const tk = resolveTechniqueKey(technique);
+  const groups = tk ? PRICE_MATRIX[tk] : null;
+  if (!groups) return undefined;
+  let best;
+  let bestMax = -Infinity;
+  let bestMin = -Infinity;
+  for (const key of Object.keys(groups)) {
+    const rows = groups[key];
+    const maxCeil = Math.max(...rows.map((r) => r.precioMaximo));
+    const maxFloor = Math.max(...rows.map((r) => r.precioMinimo));
+    if (maxCeil > bestMax || (maxCeil === bestMax && maxFloor > bestMin)) {
+      best = key;
+      bestMax = maxCeil;
+      bestMin = maxFloor;
+    }
+  }
+  return best;
+}
+
+/** Resolve a product surface to a PRICE_MATRIX group key for a technique.
+ *  Exact membership wins; otherwise fall back to the most expensive group so a
+ *  non-standard / missing material still produces a (conservative) quote.
+ *  @returns {{key: string|undefined, fallback: boolean}} */
+export function resolveSurfaceKey(technique, surface) {
+  const tk = resolveTechniqueKey(technique);
+  if (!tk) return {key: undefined, fallback: false};
+  const exact = matchSurfaceKey(tk, surface);
+  if (exact) return {key: exact, fallback: false};
+  const fb = mostExpensiveSurfaceKey(tk);
+  return {key: fb, fallback: Boolean(fb)};
+}
+
 /** Parse the custom.tecnicas_de_impresion metafield value.
  *  Accepts a JSON-array string (list.single_line_text_field) OR a dash-delimited string. */
 export function getTechniques(metafieldValue) {
@@ -125,11 +164,12 @@ export function resolveTechniqueKey(technique) {
   return Object.keys(PRICE_MATRIX).find((k) => k.toUpperCase() === u) || null;
 }
 
-/** List of available measures (medida) for a technique + product surface. */
+/** List of available measures (medida) for a technique + product surface.
+ *  Falls back to the most expensive surface group when the material is unknown. */
 export function getMeasures(technique, surface) {
   const tk = resolveTechniqueKey(technique);
   if (!tk) return [];
-  const key = matchSurfaceKey(tk, surface);
+  const {key} = resolveSurfaceKey(tk, surface);
   return key ? PRICE_MATRIX[tk][key].map((op) => op.medida) : [];
 }
 
@@ -149,7 +189,9 @@ export function calcDecoration(technique, surface, qty, size) {
   if (!tk) {
     return {error: `Tipo de decorado no encontrado: ${technique}`, totalPrice: 0, unitPrice: 0, neededQtyForMin: 0, isMinPriceUsed: false};
   }
-  const key = matchSurfaceKey(tk, surface);
+  // Material that isn't in the matrix falls back to the most expensive group
+  // (never under-quote); surfaceFallback flags it so the UI/quote can note it.
+  const {key, fallback} = resolveSurfaceKey(tk, surface);
   if (!key) {
     return {error: `Superficie no encontrada: ${String(surface).toUpperCase()}`, totalPrice: 0, unitPrice: 0, neededQtyForMin: 0, isMinPriceUsed: false};
   }
@@ -167,6 +209,8 @@ export function calcDecoration(technique, surface, qty, size) {
     unitPrice: qty > 0 ? totalPrice / qty : 0,
     neededQtyForMin: min,
     isMinPriceUsed: qty >= min,
+    surfaceUsed: key,
+    surfaceFallback: fallback,
   };
 }
 

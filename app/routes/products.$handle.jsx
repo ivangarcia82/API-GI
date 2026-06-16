@@ -13,7 +13,7 @@ import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {useApp, useToast} from '~/lib/AppContext';
-import {formatPrice, colorHex, TECHNIQUES} from '~/lib/gi';
+import {formatPrice, colorHex} from '~/lib/gi';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {getTechniques, calcDecoration} from '~/lib/decoration/engine.js';
 
@@ -46,7 +46,7 @@ async function loadCriticalData({context, params, request}) {
 export default function Product() {
   const {product} = useLoaderData();
   const navigate = useNavigate();
-  const {isLoggedIn, canBuy, favs, toggleFav, addToQuote} = useApp();
+  const {isLoggedIn, canBuy, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
 
   const selectedVariant = useOptimisticVariant(
@@ -69,7 +69,6 @@ export default function Product() {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const [hasFile, setHasFile] = useState(false);
-  const [technique, setTechnique] = useState(TECHNIQUES[0].id);
   const [tab, setTab] = useState('desc');
   const [decoDetail, setDecoDetail] = useState(null);
 
@@ -118,6 +117,7 @@ export default function Product() {
         qty: decoDetail?.qty ?? qty,
       });
       toast(`${product.title} en tu lista de cotización`, {icon: 'quote', accent: true});
+      openQuoteDrawer();
     } catch (err) {
       toast(err.message || 'No se pudo agregar a la cotización');
     }
@@ -344,33 +344,10 @@ export default function Product() {
                   : 'Vector preferido · SVG, AI, PDF · Máx 10 MB'}
               </div>
             </label>
-
-            <div style={{marginTop: 20}}>
-              <h3
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 11,
-                  letterSpacing: '0.06em',
-                  color: 'var(--ink-4)',
-                  textTransform: 'uppercase',
-                  margin: '0 0 12px',
-                }}
-              >
-                Técnica de impresión
-              </h3>
-              <div className="pdp-printtech">
-                {TECHNIQUES.map((t) => (
-                  <button
-                    key={t.id}
-                    className={technique === t.id ? 'active' : ''}
-                    onClick={() => setTechnique(t.id)}
-                  >
-                    <span>{t.name}</span>
-                    <span className="pt-cost">{t.cost}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p style={{margin: '12px 0 0', fontSize: 13, color: 'var(--ink-3)'}}>
+              La técnica y la medida se eligen arriba, en <strong>Decorado</strong>; el
+              precio mostrado ya incluye el costo de personalización.
+            </p>
           </div>
 
           {/* ACTIONS */}
@@ -510,7 +487,7 @@ export default function Product() {
               <tbody>
                 <tr><td>SKU</td><td className="mono">{selectedVariant?.sku || product.handle}</td></tr>
                 <tr><td>Proveedor</td><td>{product.vendor || 'Generando Ideas'}</td></tr>
-                <tr><td>Técnicas</td><td>{TECHNIQUES.map((t) => t.name).join(' · ')}</td></tr>
+                <tr><td>Técnicas</td><td>{decoProduct.techniques.length ? decoProduct.techniques.join(' · ') : 'Consultar con asesor'}</td></tr>
                 <tr><td>Tiempo de producción</td><td>8–15 días hábiles</td></tr>
                 <tr><td>Origen</td><td>México · proveeduría seleccionada</td></tr>
               </tbody>

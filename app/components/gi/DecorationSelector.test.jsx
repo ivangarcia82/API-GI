@@ -16,30 +16,34 @@ describe('DecorationSelector', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('lists Sin decorado plus the product techniques', () => {
+  it('lists Sin decorado plus the product techniques as buttons', () => {
     render(<DecorationSelector product={product} basePrice={40.6} qty={1} onChange={() => {}} />);
-    const techSelect = screen.getByLabelText(/tipo de decorado/i);
-    const values = Array.from(techSelect.querySelectorAll('option')).map((o) => o.value);
-    expect(values).toContain('Sin decorado');
-    expect(values).toContain('SERIGRAFÍA');
-    expect(values).toContain('BORDADO');
+    expect(screen.getByRole('button', {name: /sin decorado/i})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: /SERIGRAFÍA/})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: /BORDADO/})).toBeInTheDocument();
+  });
+
+  it('shows a "desde $X/pz" hint on a technique chip', () => {
+    render(<DecorationSelector product={product} basePrice={40.6} qty={1} onChange={() => {}} />);
+    // SERIGRAFÍA/TEXTIL min precioMinimo 3.33 ⇒ 3.33/0.67 = 4.97
+    expect(screen.getByRole('button', {name: /SERIGRAFÍA/})).toHaveTextContent('desde $4.97/pz');
   });
 
   it('populates measures after picking a technique and emits inputs', () => {
     const onChange = vi.fn();
     render(<DecorationSelector product={product} basePrice={40.6} qty={300} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText(/tipo de decorado/i), {target: {value: 'SERIGRAFÍA'}});
-    const measure = screen.getByLabelText(/medida/i);
-    const opts = Array.from(measure.querySelectorAll('option')).map((o) => o.value);
-    expect(opts).toEqual(expect.arrayContaining(['4 x 4', '10 x 10', '18 x 18']));
-    fireEvent.change(measure, {target: {value: '4 x 4'}});
+    fireEvent.click(screen.getByRole('button', {name: /SERIGRAFÍA/}));
+    expect(screen.getByRole('button', {name: '4 x 4'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: '10 x 10'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: '18 x 18'})).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', {name: '4 x 4'}));
     expect(onChange).toHaveBeenLastCalledWith({technique: 'SERIGRAFÍA', surface: 'TEXTIL', size: '4 x 4', qty: 300});
   });
 
   it('shows a single integrated unit price above the minimum', () => {
     render(<DecorationSelector product={product} basePrice={40.6} qty={300} onChange={() => {}} />);
-    fireEvent.change(screen.getByLabelText(/tipo de decorado/i), {target: {value: 'SERIGRAFÍA'}});
-    fireEvent.change(screen.getByLabelText(/medida/i), {target: {value: '4 x 4'}});
+    fireEvent.click(screen.getByRole('button', {name: /SERIGRAFÍA/}));
+    fireEvent.click(screen.getByRole('button', {name: '4 x 4'}));
     // base 40.60 + (1491.0447.../300) = 45.5701... ⇒ round2 45.57
     expect(screen.getByTestId('deco-unit-price')).toHaveTextContent('45.57');
     expect(screen.getByTestId('deco-included')).toHaveTextContent(/incluye decorado/i);
@@ -47,22 +51,22 @@ describe('DecorationSelector', () => {
 
   it('shows the fixed-charge message below minimum', () => {
     render(<DecorationSelector product={product} basePrice={40.6} qty={1} onChange={() => {}} />);
-    fireEvent.change(screen.getByLabelText(/tipo de decorado/i), {target: {value: 'SERIGRAFÍA'}});
-    fireEvent.change(screen.getByLabelText(/medida/i), {target: {value: '4 x 4'}});
+    fireEvent.click(screen.getByRole('button', {name: /SERIGRAFÍA/}));
+    fireEvent.click(screen.getByRole('button', {name: '4 x 4'}));
     expect(screen.getByTestId('deco-fixed-charge')).toHaveTextContent(/cargo fijo de decorado/i);
     expect(screen.getByTestId('deco-fixed-charge')).toHaveTextContent('300');
   });
 
-  it('Sin decorado yields base price and disables measures', () => {
+  it('Sin decorado yields base price and shows no measure picker', () => {
     const onChange = vi.fn();
     render(<DecorationSelector product={product} basePrice={40.6} qty={5} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText(/tipo de decorado/i), {target: {value: 'Sin decorado'}});
-    expect(screen.getByLabelText(/medida/i)).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', {name: /sin decorado/i}));
+    expect(screen.queryByText(/elige la medida/i)).not.toBeInTheDocument();
     expect(screen.getByTestId('deco-unit-price')).toHaveTextContent('40.60');
     expect(onChange).toHaveBeenLastCalledWith({technique: 'Sin decorado', surface: 'TEXTIL', size: 'N/A', qty: 5});
   });
 
-  it('signals error state when surface does not match (data-deco-error)', () => {
+  it('quotes (no error) with a "material estimado" note when the surface is unknown', () => {
     render(
       <DecorationSelector
         product={{techniques: ['SERIGRAFÍA'], surface: 'PAPEL'}}
@@ -71,9 +75,12 @@ describe('DecorationSelector', () => {
         onChange={() => {}}
       />,
     );
-    fireEvent.change(screen.getByLabelText(/tipo de decorado/i), {target: {value: 'SERIGRAFÍA'}});
+    fireEvent.click(screen.getByRole('button', {name: /SERIGRAFÍA/}));
+    fireEvent.click(screen.getByRole('button', {name: '4 x 4'}));
     const root = screen.getByTestId('decoration-selector');
-    expect(root).toHaveAttribute('data-deco-error', 'true');
-    expect(screen.getByRole('alert')).toHaveTextContent(/superficie no encontrada/i);
+    expect(root).toHaveAttribute('data-deco-error', 'false');
+    expect(screen.getByTestId('deco-fallback')).toHaveTextContent('RUBBER / VIDRIO');
+    // base 40.60 + (2686.56/300) = 49.55... ⇒ round2 49.56
+    expect(screen.getByTestId('deco-unit-price')).toHaveTextContent('49.56');
   });
 });
