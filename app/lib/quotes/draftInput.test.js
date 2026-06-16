@@ -57,21 +57,37 @@ describe('buildDraftOrderInput', () => {
     expect(input.note).toBe('Para evento de junio');
     expect(input.lineItems).toHaveLength(2);
 
+    // Variant line items (so the draft order shows the product image); the
+    // decoration-inclusive price rides on priceOverride.
     const l0 = input.lineItems[0];
-    expect(l0.title).toBe('Taza clásica — SERIGRAFÍA 4 x 4');
+    expect(l0.variantId).toBe('gid://shopify/ProductVariant/111');
     expect(l0.quantity).toBe(300);
-    expect(l0.originalUnitPriceWithCurrency).toEqual({amount: '29.97', currencyCode: 'MXN'});
-    expect(l0.variantId).toBeUndefined(); // custom line, no variant
-    expect(l0.customAttributes).toEqual([
-      {key: 'Decorado', value: 'SERIGRAFÍA - 4 x 4'},
-      {key: 'VariantRef', value: 'gid://shopify/ProductVariant/111'},
-    ]);
+    expect(l0.priceOverride).toEqual({amount: '29.97', currencyCode: 'MXN'});
+    expect(l0.title).toBeUndefined(); // ignored when variantId is set
+    expect(l0.originalUnitPriceWithCurrency).toBeUndefined();
+    expect(l0.customAttributes).toEqual([{key: 'Decorado', value: 'SERIGRAFÍA - 4 x 4'}]);
 
     const l1 = input.lineItems[1];
-    expect(l1.title).toBe('Pluma metálica'); // no decoration suffix when "Sin decorado"
-    expect(l1.originalUnitPriceWithCurrency).toEqual({amount: '12.50', currencyCode: 'MXN'});
-    expect(l1.customAttributes).toEqual([
-      {key: 'VariantRef', value: 'gid://shopify/ProductVariant/222'},
+    expect(l1.variantId).toBe('gid://shopify/ProductVariant/222');
+    expect(l1.priceOverride).toEqual({amount: '12.50', currencyCode: 'MXN'});
+    expect(l1.customAttributes).toEqual([]); // "Sin decorado" → no decoration attribute
+  });
+
+  it('falls back to a custom line (no variant) when there is no ProductVariant gid', () => {
+    const input = buildDraftOrderInput({
+      quote: QUOTE,
+      items: [{...ITEMS[0], variantId: 'gid://shopify/Product/1'}],
+      customerGid: 'gid://shopify/Customer/1',
+      email: 'x@y.z',
+    });
+    const l = input.lineItems[0];
+    expect(l.variantId).toBeUndefined();
+    expect(l.title).toBe('Taza clásica — SERIGRAFÍA 4 x 4');
+    expect(l.originalUnitPriceWithCurrency).toEqual({amount: '29.97', currencyCode: 'MXN'});
+    expect(l.priceOverride).toBeUndefined();
+    expect(l.customAttributes).toEqual([
+      {key: 'Decorado', value: 'SERIGRAFÍA - 4 x 4'},
+      {key: 'VariantRef', value: 'gid://shopify/Product/1'},
     ]);
   });
 
@@ -101,6 +117,6 @@ describe('buildDraftOrderInput', () => {
       customerGid: 'gid://shopify/Customer/1',
       email: 'x@y.z',
     });
-    expect(input.lineItems[0].originalUnitPriceWithCurrency.amount).toBe('5.00');
+    expect(input.lineItems[0].priceOverride.amount).toBe('5.00');
   });
 });

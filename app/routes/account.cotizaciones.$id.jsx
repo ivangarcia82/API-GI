@@ -83,7 +83,25 @@ export default function CotizacionDetail() {
           <tbody>
             {items.map((i) => (
               <tr key={i.id}>
-                <td>{i.title}</td>
+                <td>
+                  <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
+                    {i.image && (
+                      <img
+                        src={i.image}
+                        alt=""
+                        width={40}
+                        height={40}
+                        style={{
+                          borderRadius: 8,
+                          objectFit: 'cover',
+                          flexShrink: 0,
+                          border: '1px solid var(--line)',
+                        }}
+                      />
+                    )}
+                    <span>{i.title}</span>
+                  </div>
+                </td>
                 <td>
                   {i.technique && i.technique !== 'Sin decorado'
                     ? `${i.technique} ${i.size || ''}`.trim()
