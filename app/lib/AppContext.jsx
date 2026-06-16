@@ -78,8 +78,10 @@ export function AppProvider({
         if (!data || data.ok === false) {
           throw new Error((data && data.error) || 'No se pudo actualizar la cotización');
         }
-        setQuote((prev) => mergeQuoteState(prev, data.quote));
-        return data.quote;
+        // Phase 4 routes return the authoritative item list at the top level
+        // ({ok, quoteId, items}); wrap it into the {items} shape the reducer expects.
+        setQuote((prev) => mergeQuoteState(prev, {items: data.items}));
+        return data.items;
       } finally {
         setQuotePending(false);
       }
