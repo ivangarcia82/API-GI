@@ -60,6 +60,8 @@ export default function Product() {
 
   const unit = selectedVariant?.price ? parseFloat(selectedVariant.price.amount) : null;
   const currency = selectedVariant?.price?.currencyCode || 'MXN';
+  // Tracked inventory for the selected variant (null when inventory isn't tracked).
+  const stock = selectedVariant?.quantityAvailable;
 
   const images = product.images?.nodes?.length
     ? product.images.nodes
@@ -172,8 +174,23 @@ export default function Product() {
           <div className="pdp-meta">
             {isNew && <span className="tag tag-accent">Nuevo</span>}
             {isOffer && <span className="tag tag-ink">Oferta</span>}
-            {selectedVariant?.availableForSale && (
+            {selectedVariant?.availableForSale ? (
               <span className="tag tag-ok tag-dot">En stock</span>
+            ) : (
+              <span className="tag tag-ink tag-dot">Agotado</span>
+            )}
+            {typeof stock === 'number' && stock > 0 && (
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 11,
+                  color: 'var(--ink-4)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {stock} disponibles
+              </span>
             )}
             <span className="pdp-sku">{selectedVariant?.sku || product.handle}</span>
           </div>
@@ -475,6 +492,7 @@ export default function Product() {
 const PRODUCT_VARIANT_FRAGMENT = `#graphql
   fragment ProductVariant on ProductVariant {
     availableForSale
+    quantityAvailable
     compareAtPrice { amount currencyCode }
     id
     image { __typename id url altText width height }
