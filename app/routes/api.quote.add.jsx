@@ -11,7 +11,8 @@ const PRODUCT_PRICE_QUERY = `#graphql
         id
         title
         price { amount }
-        product { handle title }
+        image { url }
+        product { handle title featuredImage { url } }
       }
     }
   }
@@ -35,6 +36,9 @@ export async function action({request, context}) {
   const {node} = await storefront.query(PRODUCT_PRICE_QUERY, {variables: {id: variantId}});
   if (!node) return Response.json({error: 'Variante no encontrada.'}, {status: 404});
   const baseUnitPrice = Number(node.price?.amount) || 0;
+  // Prefer the selected variant's image; fall back to the product's featured
+  // image so the quote/cart always shows something for variant products.
+  const image = node.image?.url ?? node.product?.featuredImage?.url ?? null;
 
   const priced = recomputeItemPricing({baseUnitPrice, technique, surface, size, qty});
   if (priced.error) return Response.json({error: priced.error}, {status: 422});
@@ -47,6 +51,7 @@ export async function action({request, context}) {
     productHandle: node.product?.handle ?? null,
     title: node.product?.title ?? node.title ?? null,
     qty,
+    image,
     baseUnitPrice: priced.baseUnitPrice,
     technique: technique || null,
     surface: surface || null,

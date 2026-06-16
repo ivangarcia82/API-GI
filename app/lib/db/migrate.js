@@ -55,6 +55,7 @@ const STATEMENTS = [
     size                 TEXT,
     decoration_total     REAL NOT NULL DEFAULT 0,
     effective_unit_price REAL NOT NULL,
+    image                TEXT,
     created_at           TEXT NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS idx_quotes_user ON quotes(user_id)`,
@@ -83,5 +84,18 @@ const STATEMENTS = [
 export async function migrate(db) {
   for (const sql of STATEMENTS) {
     await db.execute(sql);
+  }
+  // Idempotent column additions for databases created before the column
+  // existed (CREATE TABLE IF NOT EXISTS won't alter an existing table).
+  await addColumnIfMissing(db, 'quote_items', 'image', 'TEXT');
+}
+
+async function addColumnIfMissing(db, table, column, type) {
+  try {
+    await db.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  } catch (err) {
+    const msg = String(err && (err.message || err));
+    // Ignore "duplicate column name" — the column already exists.
+    if (!/duplicate column name/i.test(msg)) throw err;
   }
 }

@@ -121,13 +121,6 @@ export function QuoteDrawer() {
         <p style={{fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink-3)'}}>
           Folio · {result.folio}
         </p>
-        {result.invoiceUrl && (
-          <p>
-            <a href={result.invoiceUrl} target="_blank" rel="noreferrer">
-              Ver / pagar cotización
-            </a>
-          </p>
-        )}
         <div style={{display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap'}}>
           <Button variant="primary" iconRight="arrow_right" onClick={() => goAndClose('/account/cotizaciones')}>
             Ver mis cotizaciones

@@ -38,6 +38,7 @@ function mapItemRow(r) {
     size: r.size ?? null,
     decorationTotal: Number(r.decoration_total),
     effectiveUnitPrice: Number(r.effective_unit_price),
+    image: r.image ?? null,
   };
 }
 
@@ -82,8 +83,8 @@ export async function upsertQuoteItem(db, quoteId, item) {
   const ts = nowIso();
   await db.execute({
     sql: `INSERT INTO quote_items
-            (id,quote_id,variant_id,product_handle,title,qty,base_unit_price,technique,surface,size,decoration_total,effective_unit_price,created_at)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+            (id,quote_id,variant_id,product_handle,title,qty,base_unit_price,technique,surface,size,decoration_total,effective_unit_price,image,created_at)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
           ON CONFLICT(id) DO UPDATE SET
             variant_id=excluded.variant_id,
             product_handle=excluded.product_handle,
@@ -94,7 +95,8 @@ export async function upsertQuoteItem(db, quoteId, item) {
             surface=excluded.surface,
             size=excluded.size,
             decoration_total=excluded.decoration_total,
-            effective_unit_price=excluded.effective_unit_price`,
+            effective_unit_price=excluded.effective_unit_price,
+            image=excluded.image`,
     args: [
       item.id,
       quoteId,
@@ -108,6 +110,7 @@ export async function upsertQuoteItem(db, quoteId, item) {
       item.size ?? null,
       item.decorationTotal ?? 0,
       item.effectiveUnitPrice,
+      item.image ?? null,
       ts,
     ],
   });

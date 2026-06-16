@@ -69,12 +69,6 @@ export default function CotizacionDetail() {
         </div>
       )}
 
-      {quote.shopifyInvoiceUrl && (
-        <a className="btn btn-accent" href={quote.shopifyInvoiceUrl} target="_blank" rel="noreferrer" style={{alignSelf: 'start'}}>
-          Ver / pagar cotización
-        </a>
-      )}
-
       <div className="quote-card quote-items">
         <table>
           <thead>
