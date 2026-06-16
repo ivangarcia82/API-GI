@@ -38,22 +38,38 @@ export async function action({request, context}) {
 
   const user = await findById(db, sessionUser.userId);
 
-  // Lazy gid reconcile: never build purchasingEntity with a null/STUB customerId
-  // when a real Admin token is available.
+  // Lazy gid reconcile + draft order creation. Surface Admin API failures as a
+  // clean error to the client (the drawer shows it as a toast) while logging the
+  // real cause server-side — otherwise the submit fails silently in the UI.
   let customerGid = user.shopifyCustomerGid;
-  const needsReconcile = !customerGid || String(customerGid).includes('STUB-');
-  if (needsReconcile && !isStubMode(env)) {
-    const created = await createCustomer(env, {
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    });
-    customerGid = created.gid;
-    await setShopifyGid(db, user.id, customerGid);
-  }
+  let gid;
+  let invoiceUrl;
+  try {
+    const needsReconcile = !customerGid || String(customerGid).includes('STUB-');
+    if (needsReconcile && !isStubMode(env)) {
+      const created = await createCustomer(env, {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+      customerGid = created.gid;
+      await setShopifyGid(db, user.id, customerGid);
+    }
 
-  const input = buildDraftOrderInput({quote, items, customerGid, email: user.email});
-  const {gid, invoiceUrl} = await createDraftOrder(env, input);
+    const input = buildDraftOrderInput({quote, items, customerGid, email: user.email});
+    const result = await createDraftOrder(env, input);
+    gid = result.gid;
+    invoiceUrl = result.invoiceUrl;
+  } catch (err) {
+    console.error('[quote.submit] draft order creation failed:', err);
+    return Response.json(
+      {
+        error:
+          'No se pudo generar la cotización en Shopify. Verifica los permisos del Admin API (write_customers / write_draft_orders) e intenta de nuevo.',
+      },
+      {status: 502},
+    );
+  }
 
   // Collapse the status write + any bookkeeping into one libSQL round-trip.
   await db.batch(
