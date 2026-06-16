@@ -137,3 +137,21 @@ export async function bumpSessionVersion(db, id) {
   });
   return Number(res.rows[0]?.session_version);
 }
+
+export async function markEmailVerified(db, id) {
+  await db.execute({
+    sql: `UPDATE users SET email_verified_at = ?, updated_at = ? WHERE id = ?`,
+    args: [new Date().toISOString(), new Date().toISOString(), id],
+  });
+}
+
+// Sets a new password hash AND invalidates other sessions (session_version++).
+export async function updatePassword(db, env, id, newPassword) {
+  const rec = await hashPassword(newPassword, env);
+  await db.execute({
+    sql: `UPDATE users SET password_hash = ?, password_salt = ?, password_iterations = ?, updated_at = ?
+          WHERE id = ?`,
+    args: [rec.hash, rec.salt, rec.iterations, new Date().toISOString(), id],
+  });
+  return bumpSessionVersion(db, id);
+}
