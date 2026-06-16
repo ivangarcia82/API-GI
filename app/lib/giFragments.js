@@ -24,7 +24,7 @@ export const GI_PRODUCT_CARD_FRAGMENT = `#graphql
     }
     metafields(identifiers: [
       {namespace: "custom", key: "tecnicas_de_impresion"},
-      {namespace: "custom", key: "superficie"}
+      {namespace: "custom", key: "material"}
     ]) { key namespace value }
   }
 `;

@@ -84,7 +84,7 @@ export default function Product() {
     )?.value ?? null;
   const decoProduct = {
     techniques: getTechniques(readMetafield('tecnicas_de_impresion')),
-    surface: String(readMetafield('superficie') ?? ''),
+    surface: String(readMetafield('material') ?? ''),
   };
   const decoCalc = decoDetail
     ? calcDecoration(
@@ -617,7 +617,7 @@ const PRODUCT_FRAGMENT = `#graphql
     }
     metafields(identifiers: [
       {namespace: "custom", key: "tecnicas_de_impresion"},
-      {namespace: "custom", key: "superficie"}
+      {namespace: "custom", key: "material"}
     ]) { key namespace value }
     seo { description title }
   }

@@ -23,7 +23,7 @@ describe('normalizeProduct decoration fields', () => {
     const p = normalizeProduct(
       baseNode([
         {namespace: 'custom', key: 'tecnicas_de_impresion', value: 'SERIGRAFÍA-BORDADO'},
-        {namespace: 'custom', key: 'superficie', value: 'TEXTIL'},
+        {namespace: 'custom', key: 'material', value: 'TEXTIL'},
       ]),
     );
     expect(p.techniques).toEqual(['SERIGRAFÍA', 'BORDADO']);
@@ -34,7 +34,7 @@ describe('normalizeProduct decoration fields', () => {
     const p = normalizeProduct(
       baseNode([
         {namespace: 'custom', key: 'tecnicas_de_impresion', value: '["SERIGRAFÍA", "SUBLIMACION"]'},
-        {namespace: 'custom', key: 'superficie', value: 'textil'},
+        {namespace: 'custom', key: 'material', value: 'textil'},
       ]),
     );
     expect(p.techniques).toEqual(['SERIGRAFÍA', 'SUBLIMACION']);
@@ -45,7 +45,7 @@ describe('normalizeProduct decoration fields', () => {
     const p = normalizeProduct(
       baseNode([
         {namespace: 'custom', key: 'tecnicas_de_impresion', value: 'SERIGRAFÍA-BORDADO'},
-        {namespace: 'custom', key: 'superficie', value: 'TEXTIL'},
+        {namespace: 'custom', key: 'material', value: 'TEXTIL'},
       ]),
     );
     for (const t of p.techniques) {

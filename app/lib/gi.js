@@ -149,7 +149,7 @@ export function normalizeProduct(node) {
     isOffer: tags.includes('oferta'),
     moq: parseMoq(node.description) || 50,
     techniques: getTechniques(readMetafield(node, 'tecnicas_de_impresion')),
-    surface: String(readMetafield(node, 'superficie') ?? ''),
+    surface: String(readMetafield(node, 'material') ?? ''),
   };
 }
 

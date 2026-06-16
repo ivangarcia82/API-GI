@@ -4,6 +4,7 @@ import {
   calcDecoration,
   effectiveUnitPrice,
   round2,
+  resolveTechniqueKey,
 } from '~/lib/decoration/engine.js';
 
 const SIN_DECORADO = 'Sin decorado';
@@ -21,6 +22,12 @@ function fmt(n) {
  */
 export default function DecorationSelector({product, basePrice, qty, onChange}) {
   const techniques = product?.techniques || [];
+  // Only offer techniques that exist in the price matrix; non-standard ones
+  // (no pricing entry) are intentionally omitted — they're audited separately.
+  const available = useMemo(
+    () => techniques.filter((t) => resolveTechniqueKey(t)),
+    [techniques],
+  );
   const surface = product?.surface || '';
   const [technique, setTechnique] = useState('');
   const [size, setSize] = useState('');
@@ -89,7 +96,7 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
             Seleccione técnica de impresión
           </option>
           <option value={SIN_DECORADO}>{SIN_DECORADO}</option>
-          {techniques.map((t) => (
+          {available.map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
