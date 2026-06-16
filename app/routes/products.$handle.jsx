@@ -40,20 +40,19 @@ async function loadCriticalData({context, params, request}) {
   if (!product?.id) throw new Response(null, {status: 404});
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
-  // Inventory is fetched in a SEPARATE, best-effort query: the Storefront token
-  // may lack the `unauthenticated_read_product_inventory` scope, and a denied
-  // field would otherwise break the entire product page. Degrades to null.
+  // Inventory needs the `unauthenticated_read_product_inventory` scope on the
+  // Storefront token. It's a SEPARATE, best-effort query AND gated behind the
+  // SHOW_INVENTORY env flag so a store without the scope doesn't log a
+  // denied-field error on every product view. To enable: grant the scope, then
+  // set SHOW_INVENTORY=1. Degrades to null (no badge) otherwise.
   let stock = null;
   const variantId = product.selectedOrFirstAvailableVariant?.id;
-  if (variantId) {
+  if (variantId && context.env.SHOW_INVENTORY) {
     try {
       const inv = await storefront.query(VARIANT_INVENTORY_QUERY, {variables: {id: variantId}});
       stock = inv?.node?.quantityAvailable ?? null;
     } catch (err) {
-      console.warn(
-        '[product] inventory hidden — enable the unauthenticated_read_product_inventory scope on the Storefront API:',
-        err?.message,
-      );
+      console.warn('[product] inventory query failed (check the inventory scope):', err?.message);
     }
   }
 
