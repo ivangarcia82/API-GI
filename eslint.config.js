@@ -244,4 +244,37 @@ export default [
       'react-hooks/rules-of-hooks': 'off',
     },
   },
+  {
+    // Ban the bare libSQL import everywhere: only '@libsql/client/web'
+    // resolves the workerd condition. The bare entry breaks the Oxygen bundle.
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@libsql/client',
+              message: "Use '@libsql/client/web' (workerd-safe) instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Security values must use crypto.getRandomValues / crypto.randomUUID.
+    // Math.random is forbidden in server-only helper modules.
+    files: ['app/lib/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'Math',
+          property: 'random',
+          message: 'Math.random is banned in app/lib; use crypto.getRandomValues / crypto.randomUUID.',
+        },
+      ],
+    },
+  },
 ];

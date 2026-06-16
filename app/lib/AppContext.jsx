@@ -21,7 +21,7 @@ const STORE = {
 };
 
 const DEFAULT_TWEAKS = {
-  accent: '#f5b800',
+  accent: '#ff8300',
   density: 'comfortable',
   showRoleBanner: true,
 };
@@ -114,7 +114,7 @@ export function AppProvider({children, isLoggedIn = false}) {
 
   // ---- Toasts ----
   const pushToast = useCallback((message, opts = {}) => {
-    const id = Math.random().toString(36).slice(2);
+    const id = crypto.randomUUID();
     setToasts((t) => [...t, {id, message, ...opts}]);
     setTimeout(
       () => setToasts((t) => t.filter((x) => x.id !== id)),

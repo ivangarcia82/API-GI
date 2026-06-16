@@ -9,10 +9,12 @@
     "dev": "shopify hydrogen dev --codegen",
     "preview": "shopify hydrogen preview --build",
     "lint": "eslint --no-error-on-unmatched-pattern .",
-    "codegen": "shopify hydrogen codegen && react-router typegen"
+    "codegen": "shopify hydrogen codegen && react-router typegen",
+    "test": "vitest run"
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
+    "@libsql/client": "^0.17.4",
     "@shopify/hydrogen": "2026.4.2",
     "graphql": "^16.10.0",
     "graphql-tag": "^2.12.6",
@@ -27,7 +29,6 @@
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@graphql-codegen/cli": "5.0.2",
-    "@libsql/client": "^0.17.4",
     "@react-router/dev": "7.14.0",
     "@react-router/fs-routes": "7.14.0",
     "@shopify/cli": "3.93.2",
