@@ -12,6 +12,7 @@ import {
   useCallback,
 } from 'react';
 import {useFetcher} from 'react-router';
+import {mergeQuoteState, quotePieceCount} from '~/lib/quote-state';
 import {Icon} from '~/components/gi/Icon';
 
 const STORE = {
@@ -55,6 +56,36 @@ export function AppProvider({
   const wishlistFetcher = useFetcher();
   const [tweaks, setTweaks] = useState(DEFAULT_TWEAKS);
   const [toasts, setToasts] = useState([]);
+
+  // Tracks an in-flight quote mutation so consumers can surface a
+  // spinner/disabled state while a /api/quote/* POST is settling.
+  const [quotePending, setQuotePending] = useState(false);
+
+  // POST to an /api/quote/* route as form-encoded fields and reconcile the
+  // returned authoritative draft into client state. Server recomputes prices.
+  const postQuote = useCallback(
+    async (action, fields) => {
+      const body = new URLSearchParams();
+      Object.entries(fields).forEach(([k, v]) => body.set(k, v == null ? '' : String(v)));
+      setQuotePending(true);
+      try {
+        const res = await fetch(`/api/quote/${action}`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body,
+        });
+        const data = await res.json().catch(() => null);
+        if (!data || data.ok === false) {
+          throw new Error((data && data.error) || 'No se pudo actualizar la cotización');
+        }
+        setQuote((prev) => mergeQuoteState(prev, data.quote));
+        return data.quote;
+      } finally {
+        setQuotePending(false);
+      }
+    },
+    [],
+  );
 
   // Hydrate UI-only prefs from localStorage on mount.
   // quote/favs come from loader props when authenticated; localStorage is the
@@ -107,26 +138,63 @@ export function AppProvider({
     root.dataset.banner = tweaks.showRoleBanner ? 'on' : 'off';
   }, [tweaks]);
 
-  // ---- Quote list ----
-  const addToQuote = useCallback((item) => {
-    setQuote((q) => {
-      const key = (i) => i.variantId === item.variantId;
-      const found = q.find(key);
-      if (found) {
-        return q.map((i) => (key(i) ? {...i, qty: i.qty + item.qty} : i));
+  // ---- Quote list (server-backed when authenticated) ----
+  const addToQuote = useCallback(
+    (item) => {
+      if (!isLoggedIn) {
+        setQuote((q) => {
+          const key = (i) => i.variantId === item.variantId;
+          const found = q.find(key);
+          if (found) return q.map((i) => (key(i) ? {...i, qty: i.qty + item.qty} : i));
+          return [...q, {...item, addedAt: Date.now()}];
+        });
+        return Promise.resolve();
       }
-      return [...q, {...item, addedAt: Date.now()}];
-    });
-  }, []);
-  const updateQuoteQty = useCallback((variantId, qty) => {
-    setQuote((q) =>
-      q.map((i) => (i.variantId === variantId ? {...i, qty} : i)),
+      return postQuote('add', {
+        variantId: item.variantId,
+        technique: item.technique ?? 'Sin decorado',
+        surface: item.surface ?? '',
+        size: item.size ?? '',
+        qty: item.qty,
+      });
+    },
+    [isLoggedIn, postQuote],
+  );
+  const updateQuoteQty = useCallback(
+    (itemId, qty) => {
+      const nextQty = Math.max(1, qty);
+      if (!isLoggedIn) {
+        setQuote((q) => q.map((i) => (i.id === itemId ? {...i, qty: nextQty} : i)));
+        return Promise.resolve();
+      }
+      // optimistic: patch qty locally, server reconciles effectiveUnitPrice
+      setQuote((q) => q.map((i) => (i.id === itemId ? {...i, qty: nextQty} : i)));
+      return postQuote('update', {itemId, qty: nextQty});
+    },
+    [isLoggedIn, postQuote],
+  );
+  const removeFromQuote = useCallback(
+    (itemId) => {
+      if (!isLoggedIn) {
+        setQuote((q) => q.filter((i) => i.id !== itemId));
+        return Promise.resolve();
+      }
+      setQuote((q) => q.filter((i) => i.id !== itemId)); // optimistic
+      return postQuote('remove', {itemId});
+    },
+    [isLoggedIn, postQuote],
+  );
+  const clearQuote = useCallback(() => {
+    if (!isLoggedIn) {
+      setQuote([]);
+      return Promise.resolve();
+    }
+    const ids = quote.map((i) => i.id);
+    setQuote([]); // optimistic
+    return Promise.all(ids.map((itemId) => postQuote('remove', {itemId}))).then(
+      () => undefined,
     );
-  }, []);
-  const removeFromQuote = useCallback((variantId) => {
-    setQuote((q) => q.filter((i) => i.variantId !== variantId));
-  }, []);
-  const clearQuote = useCallback(() => setQuote([]), []);
+  }, [isLoggedIn, quote, postQuote]);
 
   // ---- Favorites ----
   const toggleFav = useCallback(
@@ -164,7 +232,7 @@ export function AppProvider({
     );
   }, []);
 
-  const quoteCount = quote.reduce((n, i) => n + i.qty, 0);
+  const quoteCount = quotePieceCount(quote);
 
   const value = {
     hydrated,
@@ -173,6 +241,7 @@ export function AppProvider({
     canBuy: role === 'buyer',
     quote,
     quoteCount,
+    quotePending,
     addToQuote,
     updateQuoteQty,
     removeFromQuote,
