@@ -19,6 +19,7 @@ import {AppProvider} from '~/lib/AppContext';
 import {getSessionUser} from '~/lib/auth/session';
 import {getDb} from '~/lib/db/client';
 import {listWishlist} from '~/lib/wishlist/repo';
+import {getOrCreateDraftQuote, getQuoteWithItems} from '~/lib/quotes/repo';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -114,12 +115,22 @@ async function loadCriticalData({context}) {
   ]);
 
   let favs = [];
+  let quote = [];
   if (sessionUser) {
     try {
       const db = getDb(context.env);
-      favs = await listWishlist(db, sessionUser.userId);
+      // Server-authoritative draft: get-or-create the user's draft quote, then
+      // hydrate its line items (keyed by server item.id) for AppProvider.
+      const [favIds, draft] = await Promise.all([
+        listWishlist(db, sessionUser.userId),
+        getOrCreateDraftQuote(db, sessionUser.userId),
+      ]);
+      favs = favIds ?? [];
+      const {items} = await getQuoteWithItems(db, draft.id);
+      quote = items ?? [];
     } catch {
       favs = [];
+      quote = [];
     }
   }
 
@@ -128,6 +139,7 @@ async function loadCriticalData({context}) {
     isLoggedIn: Boolean(sessionUser),
     role: sessionUser?.role ?? null,
     favs,
+    quote,
   };
 }
 
@@ -200,7 +212,12 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
-      <AppProvider isLoggedIn={data.isLoggedIn} role={data.role} favs={data.favs}>
+      <AppProvider
+        isLoggedIn={data.isLoggedIn}
+        role={data.role}
+        quote={data.quote}
+        favs={data.favs}
+      >
         <PageLayout {...data}>
           <Outlet />
         </PageLayout>
