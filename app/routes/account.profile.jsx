@@ -1,4 +1,3 @@
-import {CUSTOMER_UPDATE_MUTATION} from '~/graphql/customer-account/CustomerUpdateMutation';
 import {
   data,
   Form,
@@ -6,20 +5,23 @@ import {
   useNavigation,
   useOutletContext,
 } from 'react-router';
+import {assertSameOrigin} from '~/lib/http/csrf';
+import {requireUser} from '~/lib/auth/guard';
+import {getDb} from '~/lib/db/client';
+import {updateProfile, findById} from '~/lib/auth/users';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: 'Profile'}];
+  return [{title: 'Mi perfil · Generando Ideas'}];
 };
 
 /**
  * @param {Route.LoaderArgs}
  */
 export async function loader({context}) {
-  await context.customerAccount.handleAuthStatus();
-
+  await requireUser(context);
   return {};
 }
 
@@ -27,107 +29,97 @@ export async function loader({context}) {
  * @param {Route.ActionArgs}
  */
 export async function action({request, context}) {
-  const {customerAccount} = context;
+  assertSameOrigin(request);
 
   if (request.method !== 'PUT') {
     return data({error: 'Method not allowed'}, {status: 405});
   }
 
+  const {userId} = await requireUser(context);
+  const db = getDb(context.env);
   const form = await request.formData();
 
+  const firstName = String(form.get('firstName') ?? '') || null;
+  const lastName = String(form.get('lastName') ?? '') || null;
+  const company = String(form.get('company') ?? '') || null;
+  const rfc = String(form.get('rfc') ?? '') || null;
+
   try {
-    const customer = {};
-    const validInputKeys = ['firstName', 'lastName'];
-    for (const [key, value] of form.entries()) {
-      if (!validInputKeys.includes(key)) {
-        continue;
-      }
-      if (typeof value === 'string' && value.length) {
-        customer[key] = value;
-      }
-    }
-
-    // update customer and possibly password
-    const {data, errors} = await customerAccount.mutate(
-      CUSTOMER_UPDATE_MUTATION,
-      {
-        variables: {
-          customer,
-          language: customerAccount.i18n.language,
-        },
-      },
-    );
-
-    if (errors?.length) {
-      throw new Error(errors[0].message);
-    }
-
-    if (!data?.customerUpdate?.customer) {
-      throw new Error('Customer profile update failed.');
-    }
-
-    return {
-      error: null,
-      customer: data?.customerUpdate?.customer,
-    };
+    await updateProfile(db, userId, {firstName, lastName, company, rfc});
+    const user = await findById(db, userId);
+    return {error: null, user};
   } catch (error) {
-    return data(
-      {error: error.message, customer: null},
-      {
-        status: 400,
-      },
-    );
+    return data({error: error.message, user: null}, {status: 400});
   }
 }
 
 export default function AccountProfile() {
-  const account = useOutletContext();
+  const {user: contextUser} = useOutletContext();
   const {state} = useNavigation();
   /** @type {ActionReturnData} */
-  const action = useActionData();
-  const customer = action?.customer ?? account?.customer;
+  const actionData = useActionData();
+  const user = actionData?.user ?? contextUser;
 
   return (
     <div className="account-profile">
-      <h2>My profile</h2>
+      <h2>Mi perfil</h2>
       <br />
       <Form method="PUT">
-        <legend>Personal information</legend>
+        <legend>Información personal</legend>
         <fieldset>
-          <label htmlFor="firstName">First name</label>
+          <label htmlFor="firstName">Nombre</label>
           <input
             id="firstName"
             name="firstName"
             type="text"
             autoComplete="given-name"
-            placeholder="First name"
-            aria-label="First name"
-            defaultValue={customer.firstName ?? ''}
+            placeholder="Nombre"
+            aria-label="Nombre"
+            defaultValue={user?.firstName ?? ''}
             minLength={2}
           />
-          <label htmlFor="lastName">Last name</label>
+          <label htmlFor="lastName">Apellido</label>
           <input
             id="lastName"
             name="lastName"
             type="text"
             autoComplete="family-name"
-            placeholder="Last name"
-            aria-label="Last name"
-            defaultValue={customer.lastName ?? ''}
+            placeholder="Apellido"
+            aria-label="Apellido"
+            defaultValue={user?.lastName ?? ''}
             minLength={2}
           />
+          <label htmlFor="company">Empresa</label>
+          <input
+            id="company"
+            name="company"
+            type="text"
+            autoComplete="organization"
+            placeholder="Empresa"
+            aria-label="Empresa"
+            defaultValue={user?.company ?? ''}
+          />
+          <label htmlFor="rfc">RFC</label>
+          <input
+            id="rfc"
+            name="rfc"
+            type="text"
+            placeholder="RFC"
+            aria-label="RFC"
+            defaultValue={user?.rfc ?? ''}
+          />
         </fieldset>
-        {action?.error ? (
+        {actionData?.error ? (
           <p>
             <mark>
-              <small>{action.error}</small>
+              <small>{actionData.error}</small>
             </mark>
           </p>
         ) : (
           <br />
         )}
         <button type="submit" disabled={state !== 'idle'}>
-          {state !== 'idle' ? 'Updating' : 'Update'}
+          {state !== 'idle' ? 'Guardando' : 'Guardar'}
         </button>
       </Form>
     </div>
@@ -137,12 +129,10 @@ export default function AccountProfile() {
 /**
  * @typedef {{
  *   error: string | null;
- *   customer: CustomerFragment | null;
+ *   user: object | null;
  * }} ActionResponse
  */
 
-/** @typedef {import('customer-accountapi.generated').CustomerFragment} CustomerFragment */
-/** @typedef {import('@shopify/hydrogen/customer-account-api-types').CustomerUpdateInput} CustomerUpdateInput */
 /** @typedef {import('./+types/account.profile').Route} Route */
 /** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */
 /** @typedef {ReturnType<typeof useActionData<typeof action>>} ActionReturnData */

@@ -1,12 +1,8 @@
-import {
-  data as remixData,
-  Form,
-  NavLink,
-  Outlet,
-  useLoaderData,
-} from 'react-router';
-import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
+import {data as remixData, Form, NavLink, Outlet, redirect, useLoaderData} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
+import {requireUser} from '~/lib/auth/guard';
+import {getDb} from '~/lib/db/client';
+import {findById} from '~/lib/auth/users';
 
 export function shouldRevalidate() {
   return true;
@@ -16,19 +12,16 @@ export function shouldRevalidate() {
  * @param {Route.LoaderArgs}
  */
 export async function loader({context}) {
-  const {customerAccount} = context;
-  const {data, errors} = await customerAccount.query(CUSTOMER_DETAILS_QUERY, {
-    variables: {
-      language: customerAccount.i18n.language,
-    },
-  });
-
-  if (errors?.length || !data?.customer) {
-    throw new Error('Customer not found');
+  const {userId} = await requireUser(context);
+  const db = getDb(context.env);
+  const user = await findById(db, userId);
+  if (!user) {
+    // Snapshot is stale (user deleted); force re-auth.
+    throw redirect('/login');
   }
 
   return remixData(
-    {customer: data.customer},
+    {user},
     {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -37,19 +30,19 @@ export async function loader({context}) {
   );
 }
 
+// Addresses and Orders are deferred per spec §5.4 — their nav links are removed.
 const NAV = [
   {to: '/account', label: 'Resumen', icon: 'user', end: true},
-  {to: '/account/orders', label: 'Mis órdenes', icon: 'receipt'},
   {to: '/cotizacion', label: 'Cotizaciones', icon: 'quote'},
   {to: '/account/favoritos', label: 'Favoritos', icon: 'heart_outline'},
   {to: '/account/profile', label: 'Mi perfil', icon: 'settings'},
-  {to: '/account/addresses', label: 'Direcciones', icon: 'truck'},
 ];
 
 export default function AccountLayout() {
   /** @type {LoaderReturnData} */
-  const {customer} = useLoaderData();
-  const initials = `${customer?.firstName?.[0] ?? ''}${customer?.lastName?.[0] ?? ''}` || 'GI';
+  const {user} = useLoaderData();
+  const initials =
+    `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}` || 'GI';
 
   return (
     <div className="container acct-page" data-screen-label="09 Account">
@@ -58,11 +51,11 @@ export default function AccountLayout() {
           <div className="acct-avatar">{initials}</div>
           <div className="acct-user-info">
             <div className="nm">
-              {customer?.firstName
-                ? `${customer.firstName} ${customer.lastName ?? ''}`
+              {user?.firstName
+                ? `${user.firstName} ${user.lastName ?? ''}`
                 : 'Mi cuenta'}
             </div>
-            <div className="em">{customer?.emailAddress?.emailAddress || ''}</div>
+            <div className="em">{user?.email || ''}</div>
           </div>
         </div>
         <nav className="acct-nav">
@@ -89,7 +82,7 @@ export default function AccountLayout() {
               )}
             </NavLink>
           ))}
-          <Form method="POST" action="/account/logout">
+          <Form method="POST" action="/auth/logout">
             <button
               type="submit"
               style={{
@@ -113,7 +106,7 @@ export default function AccountLayout() {
       </aside>
 
       <div className="acct-content">
-        <Outlet context={{customer}} />
+        <Outlet context={{user}} />
       </div>
     </div>
   );

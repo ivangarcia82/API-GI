@@ -4,21 +4,23 @@ import {Button} from '~/components/gi/ui';
 import {useApp} from '~/lib/AppContext';
 
 export default function AccountOverview() {
-  const {customer} = useOutletContext();
+  const {user} = useOutletContext();
   const navigate = useNavigate();
   const {role, quoteCount, favs} = useApp();
-  const orders = customer?.orders?.nodes || [];
 
   const stats = [
-    {l: 'Órdenes', v: orders.length, d: 'historial total'},
     {l: 'En cotización', v: quoteCount, d: 'piezas pendientes'},
     {l: 'Favoritos', v: favs.length, d: 'productos guardados'},
-    {l: 'Tipo de cuenta', v: role === 'buyer' ? 'Comprador' : 'Cotizador', d: 'rol activo'},
+    {
+      l: 'Tipo de cuenta',
+      v: role === 'buyer' ? 'Comprador' : 'Cotizador',
+      d: 'rol activo',
+    },
   ];
 
   return (
     <>
-      <h1>Hola{customer?.firstName ? `, ${customer.firstName}` : ''}.</h1>
+      <h1>Hola{user?.firstName ? `, ${user.firstName}` : ''}.</h1>
       <p style={{color: 'var(--ink-3)', margin: '-8px 0 0'}}>
         Este es el resumen de tu cuenta corporativa en Generando Ideas.
       </p>
@@ -39,9 +41,6 @@ export default function AccountOverview() {
         </Button>
         <Button variant="ghost" icon="quote" onClick={() => navigate('/cotizacion')}>
           Mi cotización
-        </Button>
-        <Button variant="ghost" icon="receipt" onClick={() => navigate('/account/orders')}>
-          Ver órdenes
         </Button>
       </div>
 
