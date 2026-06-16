@@ -15,7 +15,6 @@ import {useFetcher} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 
 const STORE = {
-  role: 'gi_role',
   quote: 'gi_quote',
   favs: 'gi_favs',
   tweaks: 'gi_tweaks',
@@ -40,32 +39,41 @@ function read(key, fallback) {
 const AppCtx = createContext(null);
 const ToastCtx = createContext(() => {});
 
-export function AppProvider({children, isLoggedIn = false, favs: initialFavs = []}) {
+export function AppProvider({
+  children,
+  isLoggedIn = false,
+  role: roleProp = 'quoter',
+  quote: quoteProp = [],
+  favs: favsProp = [],
+}) {
   // hydrated=false during SSR + first client paint to avoid mismatch
   const [hydrated, setHydrated] = useState(false);
-  const [role, setRole] = useState('buyer'); // 'buyer' | 'quoter'
-  const [quote, setQuote] = useState([]);
-  const [favs, setFavs] = useState(initialFavs);
+  // role is READ-ONLY: it comes from the Turso user via the loader, never from the client.
+  const role = roleProp;
+  const [quote, setQuote] = useState(quoteProp);
+  const [favs, setFavs] = useState(favsProp);
   const wishlistFetcher = useFetcher();
   const [tweaks, setTweaks] = useState(DEFAULT_TWEAKS);
   const [toasts, setToasts] = useState([]);
 
-  // Hydrate from localStorage on mount
+  // Hydrate UI-only prefs from localStorage on mount.
+  // quote/favs come from loader props when authenticated; localStorage is the
+  // anonymous-only fallback (server is authoritative once logged in).
   useEffect(() => {
-    setRole(read(STORE.role, 'buyer'));
-    setQuote(read(STORE.quote, []));
-    if (!isLoggedIn) setFavs(read(STORE.favs, []));
+    if (!isLoggedIn) {
+      setQuote(read(STORE.quote, []));
+      setFavs(read(STORE.favs, []));
+    }
     setTweaks({...DEFAULT_TWEAKS, ...read(STORE.tweaks, {})});
     setHydrated(true);
-  }, [isLoggedIn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Persist
+  // Persist UI prefs. quote/favs only mirror to localStorage when anonymous.
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(STORE.role, JSON.stringify(role));
-  }, [role, hydrated]);
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(STORE.quote, JSON.stringify(quote));
-  }, [quote, hydrated]);
+    if (hydrated && !isLoggedIn)
+      window.localStorage.setItem(STORE.quote, JSON.stringify(quote));
+  }, [quote, hydrated, isLoggedIn]);
   useEffect(() => {
     if (hydrated && !isLoggedIn)
       window.localStorage.setItem(STORE.favs, JSON.stringify(favs));
@@ -162,7 +170,6 @@ export function AppProvider({children, isLoggedIn = false, favs: initialFavs = [
     hydrated,
     isLoggedIn,
     role,
-    setRole,
     canBuy: role === 'buyer',
     quote,
     quoteCount,
