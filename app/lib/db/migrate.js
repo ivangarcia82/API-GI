@@ -66,6 +66,18 @@ const STATEMENTS = [
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_id, product_id)
   )`,
+
+  `CREATE TABLE IF NOT EXISTS email_tokens (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    type        TEXT NOT NULL CHECK (type IN ('verify','reset')),
+    token_hash  TEXT NOT NULL,
+    expires_at  TEXT NOT NULL,
+    used_at     TEXT,
+    created_at  TEXT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_email_tokens_hash ON email_tokens(token_hash)`,
+  `CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id, type)`,
 ];
 
 export async function migrate(db) {
