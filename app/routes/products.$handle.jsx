@@ -13,7 +13,7 @@ import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {useApp, useToast} from '~/lib/AppContext';
-import {formatPrice, parseMoq, volumeTiers, colorHex, TECHNIQUES} from '~/lib/gi';
+import {formatPrice, colorHex, TECHNIQUES} from '~/lib/gi';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {getTechniques, calcDecoration} from '~/lib/decoration/engine.js';
 
@@ -59,18 +59,15 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const moq = parseMoq(product.description) || 50;
   const unit = selectedVariant?.price ? parseFloat(selectedVariant.price.amount) : null;
   const currency = selectedVariant?.price?.currencyCode || 'MXN';
-  const tiers = unit ? volumeTiers(unit, moq) : [];
 
   const images = product.images?.nodes?.length
     ? product.images.nodes
     : [selectedVariant?.image].filter(Boolean);
 
-  const [qty, setQty] = useState(moq);
+  const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
-  const [tier, setTier] = useState(0);
   const [hasFile, setHasFile] = useState(false);
   const [technique, setTechnique] = useState(TECHNIQUES[0].id);
   const [tab, setTab] = useState('desc');
@@ -97,8 +94,7 @@ export default function Product() {
   const decoError = Boolean(decoCalc && decoCalc.error);
 
   const isFav = favs.includes(product.id);
-  const tierPrice = tiers[tier]?.price ?? unit;
-  const total = tierPrice != null ? tierPrice * qty : null;
+  const total = unit != null ? unit * qty : null;
   const isNew = (product.tags || []).includes('nuevo');
   const isOffer = (product.tags || []).includes('oferta');
   const mainImage = images[activeImg]?.url || selectedVariant?.image?.url;
@@ -191,10 +187,8 @@ export default function Product() {
           {isLoggedIn ? (
             <div className="pdp-price-bar">
               <div>
-                <div className="pdp-price-from">
-                  Desde · {tiers[tier]?.qty ?? moq}+ pz
-                </div>
-                <div className="pdp-price">{formatPrice(tierPrice, currency)}</div>
+                <div className="pdp-price-from">Precio por pieza</div>
+                <div className="pdp-price">{formatPrice(unit, currency)}</div>
               </div>
               <div style={{textAlign: 'right'}}>
                 <div className="pdp-price-from">Total · {qty} pz</div>
@@ -237,28 +231,6 @@ export default function Product() {
                 qty={qty}
                 onChange={setDecoDetail}
               />
-            </div>
-          )}
-
-          {/* VOLUME TIERS */}
-          {isLoggedIn && tiers.length > 0 && (
-            <div className="pdp-section">
-              <h3>Precio por volumen</h3>
-              <div className="pdp-tiers">
-                {tiers.map((t, i) => (
-                  <button
-                    key={i}
-                    className={`pdp-tier ${tier === i ? 'active' : ''}`}
-                    onClick={() => {
-                      setTier(i);
-                      setQty(t.qty);
-                    }}
-                  >
-                    <span className="qty">{t.qty}+ pz</span>
-                    <span className="pr">{formatPrice(t.price, currency)}</span>
-                  </button>
-                ))}
-              </div>
             </div>
           )}
 
@@ -314,25 +286,22 @@ export default function Product() {
 
           {/* QUANTITY */}
           <div className="pdp-section">
-            <h3>Cantidad · mínimo {moq} pz</h3>
+            <h3>Cantidad</h3>
             <div style={{display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap'}}>
               <div className="pdp-qty">
-                <button onClick={() => setQty(Math.max(moq, qty - 25))}>
+                <button onClick={() => setQty(Math.max(1, qty - 1))}>
                   <Icon name="minus" size={14} />
                 </button>
                 <input
                   type="number"
                   value={qty}
-                  onChange={(e) => setQty(Math.max(moq, +e.target.value || moq))}
-                  min={moq}
+                  onChange={(e) => setQty(Math.max(1, +e.target.value || 1))}
+                  min={1}
                 />
-                <button onClick={() => setQty(qty + 25)}>
+                <button onClick={() => setQty(qty + 1)}>
                   <Icon name="plus" size={14} />
                 </button>
               </div>
-              <span style={{fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-4)'}}>
-                Saltos sugeridos de 25 piezas
-              </span>
             </div>
           </div>
 
@@ -466,7 +435,7 @@ export default function Product() {
           >
             {[
               {icon: 'truck', label: 'Producción', value: '8–15 días'},
-              {icon: 'package', label: 'MOQ', value: `${moq} piezas`},
+              {icon: 'package', label: 'Personalización', value: 'Incluida'},
               {icon: 'shield', label: 'Garantía', value: 'Reposición s/c'},
             ].map((m) => (
               <div key={m.label} style={{display: 'flex', gap: 10}}>
@@ -533,7 +502,6 @@ export default function Product() {
               <tbody>
                 <tr><td>SKU</td><td className="mono">{selectedVariant?.sku || product.handle}</td></tr>
                 <tr><td>Proveedor</td><td>{product.vendor || 'Generando Ideas'}</td></tr>
-                <tr><td>MOQ</td><td>{moq} piezas</td></tr>
                 <tr><td>Técnicas</td><td>{TECHNIQUES.map((t) => t.name).join(' · ')}</td></tr>
                 <tr><td>Tiempo de producción</td><td>8–15 días hábiles</td></tr>
                 <tr><td>Origen</td><td>México · proveeduría seleccionada</td></tr>
