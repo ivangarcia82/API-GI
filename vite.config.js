@@ -32,6 +32,7 @@ export default defineConfig({
        * @see https://vitejs.dev/config/dep-optimization-options
        */
       include: [
+        'promise-limit',
         'react-router > set-cookie-parser',
         'react-router > cookie',
         'react-router',
@@ -39,6 +40,9 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['.tryhydrogen.dev'],
+    allowedHosts: [
+      '.tryhydrogen.dev',
+      'vendor-loan-joins-ultram.trycloudflare.com',
+    ],
   },
 });

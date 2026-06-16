@@ -587,7 +587,7 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 20% 20%, rgba(245,184,0,0.18), transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(255,131,0,0.18), transparent 50%),
     linear-gradient(180deg, rgba(20,17,10,0.85), rgba(20,17,10,0.95));
   pointer-events: none;
 }
@@ -772,7 +772,7 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 30% 30%, rgba(245,184,0,0.22), transparent 55%),
+    radial-gradient(circle at 30% 30%, rgba(255,131,0,0.22), transparent 55%),
     linear-gradient(180deg, rgba(20,17,10,0.65), rgba(20,17,10,0.85));
 }
 .big-cta-photo h2 {
@@ -831,7 +831,7 @@
   position: absolute;
   inset: -50% -10% auto auto;
   width: 600px; height: 600px;
-  background: radial-gradient(circle at center, rgba(245,184,0,0.22), transparent 60%);
+  background: radial-gradient(circle at center, rgba(255,131,0,0.22), transparent 60%);
   pointer-events: none;
 }
 .auth-side h2 {

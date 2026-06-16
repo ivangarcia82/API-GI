@@ -405,6 +405,11 @@ export type GiProductCardFragment = Pick<
       }
     >;
   };
+  metafields: Array<
+    StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.Metafield, 'key' | 'namespace' | 'value'>
+    >
+  >;
 };
 
 export type GiProductsQueryVariables = StorefrontAPI.Exact<{
@@ -454,6 +459,11 @@ export type GiProductsQuery = {
             }
           >;
         };
+        metafields: Array<
+          StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Metafield, 'key' | 'namespace' | 'value'>
+          >
+        >;
       }
     >;
     pageInfo: Pick<StorefrontAPI.PageInfo, 'hasNextPage' | 'endCursor'>;
@@ -515,6 +525,11 @@ export type GiCollectionProductsQuery = {
                 }
               >;
             };
+            metafields: Array<
+              StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Metafield, 'key' | 'namespace' | 'value'>
+              >
+            >;
           }
         >;
         pageInfo: Pick<StorefrontAPI.PageInfo, 'hasNextPage' | 'endCursor'>;
@@ -543,6 +558,91 @@ export type GiCollectionCardQuery = {
           >;
         }>;
       };
+    }
+  >;
+};
+
+export type FavoritosNodesQueryVariables = StorefrontAPI.Exact<{
+  ids:
+    | Array<StorefrontAPI.Scalars['ID']['input']>
+    | StorefrontAPI.Scalars['ID']['input'];
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type FavoritosNodesQuery = {
+  nodes: Array<
+    StorefrontAPI.Maybe<
+      | {
+          __typename:
+            | 'AppliedGiftCard'
+            | 'Article'
+            | 'Blog'
+            | 'Cart'
+            | 'CartLine'
+            | 'Collection'
+            | 'Comment'
+            | 'Company'
+            | 'CompanyContact'
+            | 'CompanyLocation'
+            | 'ComponentizableCartLine'
+            | 'ExternalVideo'
+            | 'GenericFile'
+            | 'Location'
+            | 'MailingAddress'
+            | 'Market'
+            | 'MediaImage'
+            | 'MediaPresentation'
+            | 'Menu'
+            | 'MenuItem';
+        }
+      | {
+          __typename:
+            | 'Metafield'
+            | 'Metaobject'
+            | 'Model3d'
+            | 'Order'
+            | 'Page'
+            | 'ProductOption'
+            | 'ProductOptionValue'
+            | 'ProductVariant'
+            | 'Shop'
+            | 'ShopPayInstallmentsFinancingPlan'
+            | 'ShopPayInstallmentsFinancingPlanTerm'
+            | 'ShopPayInstallmentsProductVariantPricing'
+            | 'ShopPolicy'
+            | 'TaxonomyCategory'
+            | 'UrlRedirect'
+            | 'Video';
+        }
+      | ({__typename: 'Product'} & Pick<
+          StorefrontAPI.Product,
+          'id' | 'handle' | 'title'
+        > & {
+            featuredImage?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
+            >;
+            priceRange: {
+              minVariantPrice: Pick<
+                StorefrontAPI.MoneyV2,
+                'amount' | 'currencyCode'
+              >;
+            };
+            variants: {nodes: Array<Pick<StorefrontAPI.ProductVariant, 'id'>>};
+          })
+    >
+  >;
+};
+
+export type QuoteVariantQueryVariables = StorefrontAPI.Exact<{
+  id: StorefrontAPI.Scalars['ID']['input'];
+}>;
+
+export type QuoteVariantQuery = {
+  node?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.ProductVariant, 'id' | 'title'> & {
+      price: Pick<StorefrontAPI.MoneyV2, 'amount'>;
+      product: Pick<StorefrontAPI.Product, 'handle' | 'title'>;
     }
   >;
 };
@@ -727,6 +827,11 @@ export type GiCollectionQuery = {
                 }
               >;
             };
+            metafields: Array<
+              StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Metafield, 'key' | 'namespace' | 'value'>
+              >
+            >;
           }
         >;
         pageInfo: Pick<
@@ -1032,6 +1137,11 @@ export type ProductFragment = Pick<
       >;
     }
   >;
+  metafields: Array<
+    StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.Metafield, 'key' | 'namespace' | 'value'>
+    >
+  >;
   seo: Pick<StorefrontAPI.Seo, 'description' | 'title'>;
 };
 
@@ -1154,6 +1264,11 @@ export type ProductQuery = {
             Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
           >;
         }
+      >;
+      metafields: Array<
+        StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Metafield, 'key' | 'namespace' | 'value'>
+        >
       >;
       seo: Pick<StorefrontAPI.Seo, 'description' | 'title'>;
     }
@@ -1387,17 +1502,25 @@ interface GeneratedQueryTypes {
     return: FooterQuery;
     variables: FooterQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    vendor\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    options { name optionValues { name } }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n  }\n\n  query GiProducts(\n    $first: Int\n    $after: String\n    $query: String\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    products(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {\n      nodes { ...GiProductCard }\n      pageInfo { hasNextPage endCursor }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    vendor\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    options { name optionValues { name } }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiProducts(\n    $first: Int\n    $after: String\n    $query: String\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    products(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {\n      nodes { ...GiProductCard }\n      pageInfo { hasNextPage endCursor }\n    }\n  }\n': {
     return: GiProductsQuery;
     variables: GiProductsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    vendor\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    options { name optionValues { name } }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n  }\n\n  query GiCollectionProducts(\n    $handle: String!\n    $first: Int\n    $after: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText }\n      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {\n        nodes { ...GiProductCard }\n        pageInfo { hasNextPage endCursor }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    vendor\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    options { name optionValues { name } }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCollectionProducts(\n    $handle: String!\n    $first: Int\n    $after: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText }\n      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {\n        nodes { ...GiProductCard }\n        pageInfo { hasNextPage endCursor }\n      }\n    }\n  }\n': {
     return: GiCollectionProductsQuery;
     variables: GiCollectionProductsQueryVariables;
   };
   '#graphql\n  query GiCollectionCard($handle: String!, $country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText }\n      products(first: 1) {\n        nodes { featuredImage { url altText } }\n      }\n    }\n  }\n': {
     return: GiCollectionCardQuery;
     variables: GiCollectionCardQueryVariables;
+  };
+  '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        variants(first: 1) { nodes { id } }\n      }\n    }\n  }\n': {
+    return: FavoritosNodesQuery;
+    variables: FavoritosNodesQueryVariables;
+  };
+  '#graphql\n  query QuoteVariant($id: ID!) {\n    node(id: $id) {\n      ... on ProductVariant {\n        id\n        title\n        price { amount }\n        product { handle title }\n      }\n    }\n  }\n': {
+    return: QuoteVariantQuery;
+    variables: QuoteVariantQueryVariables;
   };
   '#graphql\n  query Article(\n    $articleHandle: String!\n    $blogHandle: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    blog(handle: $blogHandle) {\n      handle\n      articleByHandle(handle: $articleHandle) {\n        handle\n        title\n        contentHtml\n        publishedAt\n        author: authorV2 {\n          name\n        }\n        image {\n          id\n          altText\n          url\n          width\n          height\n        }\n        seo {\n          description\n          title\n        }\n      }\n    }\n  }\n': {
     return: ArticleQuery;
@@ -1411,7 +1534,7 @@ interface GeneratedQueryTypes {
     return: BlogsQuery;
     variables: BlogsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    vendor\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    options { name optionValues { name } }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n  }\n\n  query GiCollection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText width height }\n      products(\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    vendor\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    options { name optionValues { name } }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCollection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText width height }\n      products(\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
     return: GiCollectionQuery;
     variables: GiCollectionQueryVariables;
   };
@@ -1435,7 +1558,7 @@ interface GeneratedQueryTypes {
     return: PoliciesQuery;
     variables: PoliciesQueryVariables;
   };
-  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    tags\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    featuredImage { url altText }\n    images(first: 6) { nodes { url altText width height } }\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant { ...ProductVariant }\n        swatch { color image { previewImage { url } } }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo { description title }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice { amount currencyCode }\n    id\n    image { __typename id url altText width height }\n    price { amount currencyCode }\n    product { title handle }\n    selectedOptions { name value }\n    sku\n    title\n    unitPrice { amount currencyCode }\n  }\n\n\n': {
+  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    tags\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    featuredImage { url altText }\n    images(first: 6) { nodes { url altText width height } }\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant { ...ProductVariant }\n        swatch { color image { previewImage { url } } }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n    seo { description title }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice { amount currencyCode }\n    id\n    image { __typename id url altText width height }\n    price { amount currencyCode }\n    product { title handle }\n    selectedOptions { name value }\n    sku\n    title\n    unitPrice { amount currencyCode }\n  }\n\n\n': {
     return: ProductQuery;
     variables: ProductQueryVariables;
   };

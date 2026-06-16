@@ -4,9 +4,13 @@ import {Icon} from './Icon';
 
 function Logo() {
   return (
-    <div className="appbar-logo" style={{width: 32, height: 32, fontSize: 14}}>
-      GI
-    </div>
+    <img
+      className="footer-logo"
+      src="/brand/gi-logo-horizontal.svg"
+      alt="Generando Ideas"
+      width={180}
+      height={38}
+    />
   );
 }
 
@@ -16,12 +20,12 @@ export function GiFooter() {
       <div className="container">
         <div className="footer-grid">
           <div>
-            <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20}}>
+            <div style={{marginBottom: 20}}>
               <Logo />
-              <span style={{fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18}}>
-                Generando·Ideas
-              </span>
             </div>
+            <p className="brand-slogan" style={{marginBottom: 20}}>
+              Your one<br />stop<br />solution<span className="accent">.</span>
+            </p>
             <p style={{color: 'var(--ink-3)', maxWidth: 320, fontSize: 14, lineHeight: 1.55}}>
               Empresa 100% mexicana líder en la industria promocional desde 2013.
               Producción, fulfillment y proyectos especiales.

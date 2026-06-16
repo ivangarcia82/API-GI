@@ -13,14 +13,15 @@ const NAV = [
   {to: '/nosotros', label: 'Nosotros'},
 ];
 
-function Logo({size = 32}) {
+function Logo() {
   return (
-    <div
-      className="appbar-logo"
-      style={{width: size, height: size, fontSize: size * 0.45}}
-    >
-      GI
-    </div>
+    <img
+      className="brand-logo"
+      src="/brand/gi-logo-horizontal.svg"
+      alt="Generando Ideas"
+      width={160}
+      height={34}
+    />
   );
 }
 
@@ -47,11 +48,8 @@ export function GiHeader({cart, isLoggedIn}) {
     <>
       <header className="appbar" data-screen-label="App Header">
         <div className="appbar-inner">
-          <NavLink to="/" className="appbar-brand" prefetch="intent">
+          <NavLink to="/" className="appbar-brand" prefetch="intent" aria-label="Generando Ideas — inicio">
             <Logo />
-            <span>
-              Generando<span style={{color: 'var(--accent-deep)'}}>·</span>Ideas
-            </span>
           </NavLink>
 
           <nav className="appbar-nav">

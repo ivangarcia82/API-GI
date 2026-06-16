@@ -4,24 +4,25 @@
    ============================================================ */
 
 :root {
-  /* Color — neutrals (warm-leaning whites) */
-  --bg: #fbfaf7;
+  /* Color — neutrals (cool grey, per brand Pantone Cool Gray 10C #636569) */
+  --bg: #f6f7f8;
   --bg-elev: #ffffff;
-  --bg-soft: #f4f2ec;
-  --bg-deep: #ebe7dc;
-  --line: #e6e2d6;
-  --line-strong: #d6d1c2;
-  --ink: #14110a;
-  --ink-2: #2a2519;
-  --ink-3: #524a36;
-  --ink-4: #8a8167;
-  --ink-5: #b8b099;
+  --bg-soft: #eef0f2;
+  --bg-deep: #e3e6e9;
+  --line: #e2e5e8;
+  --line-strong: #cdd1d6;
+  --ink: #2e3033;
+  --ink-2: #4a4d51;
+  --ink-3: #636569;
+  --ink-4: #8d8f93;
+  --ink-5: #b6b8bc;
 
-  /* Brand accent — Generando Ideas amber/gold */
-  --accent: #f5b800;
-  --accent-deep: #d99c00;
-  --accent-soft: #fff3c6;
-  --accent-ink: #14110a;
+  /* Brand accent — Generando Ideas naranja (Pantone 151C #ff8300).
+     Reservado para isotipo, destacados y formas específicas (regla 70-30). */
+  --accent: #ff8300;
+  --accent-deep: #d96e00;
+  --accent-soft: #ffefe0;
+  --accent-ink: #2e3033;
 
   /* Status */
   --ok: #1f7a4a;
@@ -33,10 +34,11 @@
   --info: #1e4d8a;
   --info-soft: #d8e6f7;
 
-  /* Type */
-  --font-display: "Bricolage Grotesque", "Manrope", sans-serif;
-  --font-body: "Manrope", "Bricolage Grotesque", sans-serif;
+  /* Type — Gantari (principal), Open Sans (secundaria), Bebas Neue (eslogan) */
+  --font-display: "Gantari", "Open Sans", sans-serif;
+  --font-body: "Open Sans", "Gantari", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-slogan: "Bebas Neue", "Gantari", sans-serif;
 
   /* Radii */
   --r-sm: 6px;
@@ -61,7 +63,7 @@
   --shadow-1: 0 1px 2px rgba(20, 17, 10, 0.04), 0 0 0 1px rgba(20, 17, 10, 0.04);
   --shadow-2: 0 4px 16px -4px rgba(20, 17, 10, 0.08), 0 0 0 1px rgba(20, 17, 10, 0.05);
   --shadow-3: 0 16px 40px -12px rgba(20, 17, 10, 0.18), 0 0 0 1px rgba(20, 17, 10, 0.06);
-  --shadow-accent: 0 8px 24px -8px rgba(245, 184, 0, 0.5);
+  --shadow-accent: 0 8px 24px -8px rgba(255, 131, 0, 0.45);
 
   /* Layout */
   --maxw: 1320px;
@@ -408,7 +410,7 @@ img, svg {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(251, 250, 247, 0.85);
+  background: rgba(246, 247, 248, 0.85);
   backdrop-filter: saturate(160%) blur(12px);
   -webkit-backdrop-filter: saturate(160%) blur(12px);
   border-bottom: 1px solid var(--line);
@@ -442,6 +444,25 @@ img, svg {
   font-weight: 800;
   font-size: 14px;
 }
+/* Logotipo horizontal de marca (versión operativa primaria) */
+.brand-logo {
+  display: block;
+  height: 34px;
+  width: auto;
+}
+.footer-logo { height: 38px; width: auto; display: block; }
+/* Eslogan — Bebas Neue, tres líneas */
+.brand-slogan {
+  font-family: var(--font-slogan);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-size: 34px;
+  margin: 0;
+}
+.brand-slogan .accent { color: var(--accent); }
 .appbar-nav {
   display: flex;
   align-items: center;

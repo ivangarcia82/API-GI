@@ -263,8 +263,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 50%, rgba(245,184,0,0.16), transparent 40%),
-    radial-gradient(circle at 85% 50%, rgba(245,184,0,0.10), transparent 45%);
+    radial-gradient(circle at 15% 50%, rgba(255,131,0,0.16), transparent 40%),
+    radial-gradient(circle at 85% 50%, rgba(255,131,0,0.10), transparent 45%);
   pointer-events: none;
 }
 .stats-band-inner {
@@ -494,7 +494,7 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 25% 40%, rgba(245,184,0,0.18), transparent 50%),
+    radial-gradient(circle at 25% 40%, rgba(255,131,0,0.18), transparent 50%),
     linear-gradient(110deg, rgba(20,17,10,0.85) 0%, rgba(20,17,10,0.55) 50%, rgba(20,17,10,0.7) 100%);
 }
 .lookbook-hero-inner {
