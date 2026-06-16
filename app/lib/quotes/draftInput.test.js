@@ -75,6 +75,25 @@ describe('buildDraftOrderInput', () => {
     ]);
   });
 
+  it('omits purchasingEntity and links by email when there is no real customer gid', () => {
+    const withNull = buildDraftOrderInput({
+      quote: QUOTE,
+      items: ITEMS,
+      customerGid: null,
+      email: 'u1@example.com',
+    });
+    expect(withNull.purchasingEntity).toBeUndefined();
+    expect(withNull.email).toBe('u1@example.com');
+
+    const withStub = buildDraftOrderInput({
+      quote: QUOTE,
+      items: ITEMS,
+      customerGid: 'gid://shopify/Customer/STUB-abc',
+      email: 'u1@example.com',
+    });
+    expect(withStub.purchasingEntity).toBeUndefined();
+  });
+
   it('formats amount with exactly 2 decimals', () => {
     const input = buildDraftOrderInput({
       quote: QUOTE,

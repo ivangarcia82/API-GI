@@ -25,8 +25,7 @@ function lineAttributes(item) {
 }
 
 export function buildDraftOrderInput({quote, items, customerGid, email}) {
-  return {
-    purchasingEntity: {customerId: customerGid},
+  const input = {
     email,
     presentmentCurrencyCode: CURRENCY,
     note: quote.notes ?? null,
@@ -40,4 +39,10 @@ export function buildDraftOrderInput({quote, items, customerGid, email}) {
       customAttributes: lineAttributes(item),
     })),
   };
+  // Link the customer explicitly when we resolved a real gid; otherwise Shopify
+  // associates the draft order with the customer by email (existing or new).
+  if (customerGid && !String(customerGid).includes('STUB-')) {
+    input.purchasingEntity = {customerId: customerGid};
+  }
+  return input;
 }

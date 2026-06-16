@@ -38,15 +38,13 @@ export async function action({request, context}) {
 
   const user = await findById(db, sessionUser.userId);
 
-  // Lazy gid reconcile + draft order creation. Surface Admin API failures as a
-  // clean error to the client (the drawer shows it as a toast) while logging the
-  // real cause server-side — otherwise the submit fails silently in the UI.
+  // Best-effort customer reconcile. If it fails (e.g. email taken but not
+  // surfaced by search), DON'T abort — the draft order links by email and we
+  // capture the real customer gid from the draft response below.
   let customerGid = user.shopifyCustomerGid;
-  let gid;
-  let invoiceUrl;
-  try {
-    const needsReconcile = !customerGid || String(customerGid).includes('STUB-');
-    if (needsReconcile && !isStubMode(env)) {
+  const needsReconcile = !customerGid || String(customerGid).includes('STUB-');
+  if (needsReconcile && !isStubMode(env)) {
+    try {
       const created = await createCustomer(env, {
         email: user.email,
         firstName: user.firstName,
@@ -54,17 +52,30 @@ export async function action({request, context}) {
       });
       customerGid = created.gid;
       await setShopifyGid(db, user.id, customerGid);
+    } catch (err) {
+      console.error('[quote.submit] customer reconcile failed; linking draft by email:', err);
+      customerGid = null;
     }
+  }
 
+  // Create the draft order. A real failure here (auth/scope/validation) aborts
+  // and surfaces a clean error (the real cause in non-production).
+  let gid;
+  let invoiceUrl;
+  try {
     const input = buildDraftOrderInput({quote, items, customerGid, email: user.email});
     const result = await createDraftOrder(env, input);
     gid = result.gid;
     invoiceUrl = result.invoiceUrl;
+    // Capture the customer Shopify linked (by email) when we had no real gid,
+    // so the advisor lookup works on the quote detail.
+    if (result.customerGid && (!customerGid || String(customerGid).includes('STUB-'))) {
+      customerGid = result.customerGid;
+      await setShopifyGid(db, user.id, customerGid);
+    }
   } catch (err) {
     console.error('[quote.submit] draft order creation failed:', err);
     const detail = err instanceof Error ? err.message : String(err);
-    // Surface the real Admin error in non-production so token/scope issues are
-    // obvious; keep it generic in production.
     const message =
       env.ENVIRONMENT === 'production'
         ? 'No se pudo generar la cotización en Shopify. Intenta de nuevo o contacta a soporte.'

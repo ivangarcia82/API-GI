@@ -26,7 +26,7 @@ const CUSTOMERS_BY_EMAIL = `
 const DRAFT_ORDER_CREATE = `
   mutation draftOrderCreate($input: DraftOrderInput!) {
     draftOrderCreate(input: $input) {
-      draftOrder { id invoiceUrl }
+      draftOrder { id invoiceUrl customer { id } }
       userErrors { field message }
     }
   }
@@ -58,10 +58,11 @@ export async function createCustomer(env, {email, firstName, lastName}) {
   if (result.userErrors && result.userErrors.length) {
     if (isTakenError(result.userErrors)) {
       const lookup = await adminFetch(env, CUSTOMERS_BY_EMAIL, {
-        // Quote the email: Shopify's search tokenizes on "@" and ".", so an
-        // unquoted address (email:foo@bar.com) often fails to match exactly and
-        // returns no results even when the customer exists.
-        q: `email:'${email}'`,
+        // Double-quote the email: Shopify's search tokenizes on "@" and ".", so
+        // an unquoted address (email:foo@bar.com) often fails to match. Double
+        // quotes are the documented way to match an exact value (single quotes
+        // are treated literally).
+        q: `email:"${email}"`,
       });
       const node = lookup.customers.edges[0] && lookup.customers.edges[0].node;
       if (node && node.id) return {gid: node.id};
@@ -97,7 +98,13 @@ export async function createDraftOrder(env, input) {
         .join('; ')}`,
     );
   }
-  return {gid: result.draftOrder.id, invoiceUrl: result.draftOrder.invoiceUrl};
+  return {
+    gid: result.draftOrder.id,
+    invoiceUrl: result.draftOrder.invoiceUrl,
+    // The customer Shopify linked to the draft (by purchasingEntity or by
+    // email). Lets the caller persist a real gid for the advisor lookup.
+    customerGid: result.draftOrder.customer ? result.draftOrder.customer.id : null,
+  };
 }
 
 const CUSTOMER_ADVISOR = `

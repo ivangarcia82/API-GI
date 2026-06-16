@@ -61,7 +61,7 @@ describe('createCustomer', () => {
     expect(out).toEqual({gid: 'gid://shopify/Customer/999'});
     expect(adminFetch).toHaveBeenCalledTimes(2);
     const [, , lookupVars] = adminFetch.mock.calls[1];
-    expect(lookupVars.q).toBe("email:'dup@b.com'");
+    expect(lookupVars.q).toBe('email:"dup@b.com"');
   });
 
   it('throws on a non-TAKEN userError', async () => {
@@ -118,11 +118,27 @@ describe('createDraftOrder', () => {
     expect(out).toEqual({
       gid: 'gid://shopify/DraftOrder/77',
       invoiceUrl: 'https://shop/invoice/77',
+      customerGid: null,
     });
     const [, query, vars] = adminFetch.mock.calls[0];
     expect(query).toContain('draftOrderCreate');
     expect(query).toContain('invoiceUrl');
     expect(vars.input).toBe(input);
+  });
+
+  it('returns the customer gid Shopify linked to the draft (for advisor lookup)', async () => {
+    adminFetch.mockResolvedValueOnce({
+      draftOrderCreate: {
+        draftOrder: {
+          id: 'gid://shopify/DraftOrder/88',
+          invoiceUrl: 'https://shop/invoice/88',
+          customer: {id: 'gid://shopify/Customer/555'},
+        },
+        userErrors: [],
+      },
+    });
+    const out = await createDraftOrder({PRIVATE_ADMIN_API_TOKEN: 't'}, {lineItems: []});
+    expect(out.customerGid).toBe('gid://shopify/Customer/555');
   });
 
   it('throws on draft order userErrors', async () => {
