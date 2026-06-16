@@ -89,11 +89,21 @@ export async function adminFetch(env, query, variables = {}) {
     },
     body: JSON.stringify({query, variables}),
   });
-  const json = await res.json();
-  if (json.errors && json.errors.length) {
-    throw new Error(
-      `Admin API error: ${json.errors.map((e) => e.message).join('; ')}`,
-    );
+  const json = await res.json().catch(() => null);
+  // Shopify returns `errors` as an ARRAY for GraphQL/operation errors, but as a
+  // STRING for transport-level failures (e.g. a 401 with an invalid/wrong-type
+  // access token: {"errors":"[API] Invalid API key or access token …"}). Handle
+  // both, plus any non-2xx status, so the real cause surfaces instead of a
+  // cryptic "errors.map is not a function".
+  const errs = json && json.errors;
+  if (!res.ok || errs) {
+    const message =
+      typeof errs === 'string'
+        ? errs
+        : Array.isArray(errs)
+          ? errs.map((e) => e.message).join('; ')
+          : `HTTP ${res.status}${res.statusText ? ` ${res.statusText}` : ''}`;
+    throw new Error(`Admin API error: ${message}`);
   }
   return json.data;
 }

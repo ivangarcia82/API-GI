@@ -62,13 +62,14 @@ export async function action({request, context}) {
     invoiceUrl = result.invoiceUrl;
   } catch (err) {
     console.error('[quote.submit] draft order creation failed:', err);
-    return Response.json(
-      {
-        error:
-          'No se pudo generar la cotización en Shopify. Verifica los permisos del Admin API (write_customers / write_draft_orders) e intenta de nuevo.',
-      },
-      {status: 502},
-    );
+    const detail = err instanceof Error ? err.message : String(err);
+    // Surface the real Admin error in non-production so token/scope issues are
+    // obvious; keep it generic in production.
+    const message =
+      env.ENVIRONMENT === 'production'
+        ? 'No se pudo generar la cotización en Shopify. Intenta de nuevo o contacta a soporte.'
+        : `No se pudo generar la cotización: ${detail}`;
+    return Response.json({error: message}, {status: 502});
   }
 
   // Collapse the status write + any bookkeeping into one libSQL round-trip.

@@ -134,4 +134,21 @@ describe('adminFetch real mode', () => {
       ),
     ).rejects.toThrow(/boom/);
   });
+
+  it('throws a clean message when errors is a string (401 auth / wrong token)', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        JSON.stringify({errors: '[API] Invalid API key or access token'}),
+        {status: 401},
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(
+      adminFetch(
+        {PRIVATE_ADMIN_API_TOKEN: 'shpca_wrong', PUBLIC_STORE_DOMAIN: 'd.myshopify.com'},
+        'query { shop { id } }',
+        {},
+      ),
+    ).rejects.toThrow(/Invalid API key or access token/);
+  });
 });
