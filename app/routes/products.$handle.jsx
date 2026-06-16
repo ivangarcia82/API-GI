@@ -578,6 +578,10 @@ const PRODUCT_FRAGMENT = `#graphql
     adjacentVariants (selectedOptions: $selectedOptions) {
       ...ProductVariant
     }
+    metafields(identifiers: [
+      {namespace: "custom", key: "tecnicas_de_impresion"},
+      {namespace: "custom", key: "superficie"}
+    ]) { key namespace value }
     seo { description title }
   }
   ${PRODUCT_VARIANT_FRAGMENT}

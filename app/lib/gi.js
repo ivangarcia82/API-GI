@@ -2,6 +2,15 @@
    Generando Ideas — shared helpers + catalog config
    ============================================================ */
 
+import {getTechniques} from './decoration/engine.js';
+
+/** Read a `custom.<key>` metafield value from a Storefront metafields array. */
+function readMetafield(node, key) {
+  const list = node?.metafields || [];
+  const mf = list.find((m) => m && m.namespace === 'custom' && m.key === key);
+  return mf?.value ?? null;
+}
+
 /** Format a money amount in MXN (or given currency). */
 export function formatPrice(amount, currency = 'MXN') {
   const n = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -139,6 +148,8 @@ export function normalizeProduct(node) {
     isNew: tags.includes('nuevo'),
     isOffer: tags.includes('oferta'),
     moq: parseMoq(node.description) || 50,
+    techniques: getTechniques(readMetafield(node, 'tecnicas_de_impresion')),
+    surface: String(readMetafield(node, 'superficie') ?? ''),
   };
 }
 
