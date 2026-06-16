@@ -37,70 +37,78 @@ const STATUS_LABEL = {
 export default function CotizacionDetail() {
   const {quote, items, advisor} = useLoaderData();
   const total = items.reduce((s, i) => s + i.effectiveUnitPrice * i.qty, 0);
+  const totalPieces = items.reduce((n, i) => n + i.qty, 0);
   return (
-    <div className="container" style={{padding: '32px 0 80px'}} data-screen-label="Cotizacion detail">
-      <Link to="/account/cotizaciones">← Mis cotizaciones</Link>
-      <h1 style={{fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(24px,3vw,40px)', margin: '12px 0 8px'}}>
-        Folio {quote.id}
-      </h1>
-      <p style={{color: 'var(--ink-3)'}}>Estado · {STATUS_LABEL[quote.status] || quote.status}</p>
+    <>
+      <Link to="/account/cotizaciones" className="acct-back">
+        ← Mis cotizaciones
+      </Link>
+
+      <div className="quote-detail-head">
+        <div>
+          <div className="quote-row-label">Folio</div>
+          <h1 style={{fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 'clamp(18px,2.4vw,26px)', margin: '4px 0 0', wordBreak: 'break-all'}}>
+            {quote.id}
+          </h1>
+        </div>
+        <span className={`quote-status quote-status--${quote.status}`}>
+          {STATUS_LABEL[quote.status] || quote.status}
+        </span>
+      </div>
+
       {advisor.email && (
-        <div
-          style={{
-            marginTop: 16,
-            padding: 16,
-            background: 'var(--bg-elev)',
-            border: '1px solid var(--line)',
-            borderRadius: 'var(--r-lg)',
-          }}
-        >
-          <div style={{fontWeight: 700, marginBottom: 4}}>Tu asesor</div>
-          {advisor.fields.nombre && <div>{advisor.fields.nombre}</div>}
+        <div className="quote-card quote-advisor">
+          <div className="quote-card-label">Tu asesor</div>
+          {advisor.fields.nombre && <div className="quote-advisor-name">{advisor.fields.nombre}</div>}
           <div>
             <a href={`mailto:${advisor.email}`}>{advisor.email}</a>
           </div>
           {advisor.fields.telefono && (
-            <div style={{color: 'var(--ink-3)'}}>{advisor.fields.telefono}</div>
+            <div style={{color: 'var(--ink-3)', fontSize: 14}}>{advisor.fields.telefono}</div>
           )}
         </div>
       )}
+
       {quote.shopifyInvoiceUrl && (
-        <p>
-          <a href={quote.shopifyInvoiceUrl} target="_blank" rel="noreferrer">
-            Ver / pagar cotización
-          </a>
-        </p>
+        <a className="btn btn-accent" href={quote.shopifyInvoiceUrl} target="_blank" rel="noreferrer" style={{alignSelf: 'start'}}>
+          Ver / pagar cotización
+        </a>
       )}
-      <table style={{width: '100%', borderCollapse: 'collapse', marginTop: 16}}>
-        <thead>
-          <tr style={{textAlign: 'left', borderBottom: '1px solid var(--line)'}}>
-            <th style={{padding: '8px 0'}}>Producto</th>
-            <th style={{padding: '8px 0'}}>Decorado</th>
-            <th style={{padding: '8px 0'}}>Cant.</th>
-            <th style={{padding: '8px 0'}}>Unitario</th>
-            <th style={{padding: '8px 0'}}>Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((i) => (
-            <tr key={i.id} style={{borderBottom: '1px solid var(--line)'}}>
-              <td style={{padding: '10px 0'}}>{i.title}</td>
-              <td style={{padding: '10px 0'}}>
-                {i.technique && i.technique !== 'Sin decorado' ? `${i.technique} ${i.size || ''}` : '—'}
-              </td>
-              <td style={{padding: '10px 0'}}>{i.qty}</td>
-              <td style={{padding: '10px 0'}}>{formatPrice(i.effectiveUnitPrice)}</td>
-              <td style={{padding: '10px 0'}}>{formatPrice(i.effectiveUnitPrice * i.qty)}</td>
+
+      <div className="quote-card quote-items">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Decorado</th>
+              <th className="num">Cant.</th>
+              <th className="num">Unitario</th>
+              <th className="num">Subtotal</th>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={4} style={{padding: '12px 0', textAlign: 'right', fontWeight: 700}}>Total</td>
-            <td style={{padding: '12px 0', fontWeight: 700}}>{formatPrice(total)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {items.map((i) => (
+              <tr key={i.id}>
+                <td>{i.title}</td>
+                <td>
+                  {i.technique && i.technique !== 'Sin decorado'
+                    ? `${i.technique} ${i.size || ''}`.trim()
+                    : '—'}
+                </td>
+                <td className="num">{i.qty}</td>
+                <td className="num">{formatPrice(i.effectiveUnitPrice)}</td>
+                <td className="num">{formatPrice(i.effectiveUnitPrice * i.qty)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={2}>Total · {totalPieces} pz</td>
+              <td className="num" colSpan={3}>{formatPrice(total)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </>
   );
 }

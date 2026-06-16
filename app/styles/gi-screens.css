@@ -1605,6 +1605,115 @@
 }
 .acct-stat .d { font-family: var(--font-mono); font-size: 11px; color: var(--ok); margin-top: 4px; }
 
+/* Profile form */
+.acct-form {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.acct-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.acct-form-full { grid-column: 1 / -1; }
+@media (max-width: 540px) { .acct-form-grid { grid-template-columns: 1fr; } }
+.acct-form-actions { display: flex; justify-content: flex-end; }
+
+/* Quotes (account list + detail) */
+.quote-list { display: flex; flex-direction: column; gap: 10px; }
+.quote-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.quote-row:hover { border-color: var(--line-strong); }
+.quote-row-main { flex: 1; min-width: 0; }
+.quote-row-label,
+.quote-card-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-4);
+}
+.quote-row-folio {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-2);
+  word-break: break-all;
+  margin-top: 2px;
+}
+.quote-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: var(--bg-soft);
+  color: var(--ink-3);
+}
+.quote-status--submitted { background: var(--accent-soft); color: var(--warn); }
+.quote-status--converted { background: var(--ok-soft); color: var(--ok); }
+.quote-status--cancelled { background: var(--bg-soft); color: var(--ink-4); }
+
+.acct-back {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  align-self: start;
+}
+.quote-detail-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.quote-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px;
+}
+.quote-advisor-name { font-weight: 600; margin-top: 4px; }
+.quote-items { padding: 4px 20px 12px; overflow-x: auto; }
+.quote-items table { width: 100%; border-collapse: collapse; min-width: 460px; }
+.quote-items th,
+.quote-items td { padding: 14px 8px; }
+.quote-items th:first-child,
+.quote-items td:first-child { padding-left: 0; }
+.quote-items th:last-child,
+.quote-items td:last-child { padding-right: 0; }
+.quote-items th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-4);
+  border-bottom: 1px solid var(--line);
+}
+.quote-items td { border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: top; }
+.quote-items .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.quote-items tfoot td {
+  border-bottom: 0;
+  font-weight: 700;
+  font-size: 16px;
+  padding-top: 16px;
+}
+
 .acct-table {
   background: var(--bg-elev);
   border: 1px solid var(--line);

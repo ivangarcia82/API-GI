@@ -59,70 +59,91 @@ export default function AccountProfile() {
   /** @type {ActionReturnData} */
   const actionData = useActionData();
   const user = actionData?.user ?? contextUser;
+  const saved = Boolean(actionData && !actionData.error && actionData.user);
 
   return (
-    <div className="account-profile">
-      <h2>Mi perfil</h2>
-      <br />
-      <Form method="PUT">
-        <legend>Información personal</legend>
-        <fieldset>
-          <label htmlFor="firstName">Nombre</label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            autoComplete="given-name"
-            placeholder="Nombre"
-            aria-label="Nombre"
-            defaultValue={user?.firstName ?? ''}
-            minLength={2}
-          />
-          <label htmlFor="lastName">Apellido</label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            autoComplete="family-name"
-            placeholder="Apellido"
-            aria-label="Apellido"
-            defaultValue={user?.lastName ?? ''}
-            minLength={2}
-          />
-          <label htmlFor="company">Empresa</label>
-          <input
-            id="company"
-            name="company"
-            type="text"
-            autoComplete="organization"
-            placeholder="Empresa"
-            aria-label="Empresa"
-            defaultValue={user?.company ?? ''}
-          />
-          <label htmlFor="rfc">RFC</label>
-          <input
-            id="rfc"
-            name="rfc"
-            type="text"
-            placeholder="RFC"
-            aria-label="RFC"
-            defaultValue={user?.rfc ?? ''}
-          />
-        </fieldset>
-        {actionData?.error ? (
-          <p>
-            <mark>
-              <small>{actionData.error}</small>
-            </mark>
+    <>
+      <h1>Mi perfil</h1>
+      <p style={{color: 'var(--ink-3)', margin: '-8px 0 0'}}>
+        Actualiza tus datos de contacto y facturación.
+      </p>
+
+      <Form method="PUT" className="acct-form">
+        <div className="acct-form-grid">
+          <div className="field">
+            <label htmlFor="firstName">Nombre</label>
+            <input
+              className="input"
+              id="firstName"
+              name="firstName"
+              type="text"
+              autoComplete="given-name"
+              placeholder="Nombre"
+              defaultValue={user?.firstName ?? ''}
+              minLength={2}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="lastName">Apellido</label>
+            <input
+              className="input"
+              id="lastName"
+              name="lastName"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Apellido"
+              defaultValue={user?.lastName ?? ''}
+              minLength={2}
+            />
+          </div>
+          <div className="field acct-form-full">
+            <label htmlFor="company">Empresa</label>
+            <input
+              className="input"
+              id="company"
+              name="company"
+              type="text"
+              autoComplete="organization"
+              placeholder="Nombre de tu empresa"
+              defaultValue={user?.company ?? ''}
+            />
+          </div>
+          <div className="field acct-form-full">
+            <label htmlFor="rfc">RFC</label>
+            <input
+              className="input"
+              id="rfc"
+              name="rfc"
+              type="text"
+              placeholder="XAXX010101000"
+              defaultValue={user?.rfc ?? ''}
+            />
+          </div>
+          <div className="field acct-form-full">
+            <label htmlFor="email">Correo de acceso</label>
+            <input className="input" id="email" type="email" defaultValue={user?.email ?? ''} disabled />
+            <span className="help-msg">El correo de acceso no se cambia desde aquí.</span>
+          </div>
+        </div>
+
+        {actionData?.error && (
+          <p className="error-msg" role="alert">
+            {actionData.error}
           </p>
-        ) : (
-          <br />
         )}
-        <button type="submit" disabled={state !== 'idle'}>
-          {state !== 'idle' ? 'Guardando' : 'Guardar'}
-        </button>
+        {saved && (
+          <p className="help-msg" style={{color: 'var(--ok)'}} role="status">
+            Cambios guardados.
+          </p>
+        )}
+
+        <div className="acct-form-actions">
+          <button type="submit" className="btn btn-accent" disabled={state !== 'idle'}>
+            {state !== 'idle' ? 'Guardando…' : 'Guardar cambios'}
+          </button>
+        </div>
       </Form>
-    </div>
+    </>
   );
 }
 
