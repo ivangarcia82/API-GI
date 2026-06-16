@@ -1,11 +1,57 @@
-import {useNavigate} from 'react-router';
+import {useLoaderData, useNavigate} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
-import {useApp} from '~/lib/AppContext';
+import {ProductCard} from '~/components/gi/ProductCard';
+import {getDb} from '~/lib/db/client';
+import {requireUser} from '~/lib/auth/guard';
+import {listWishlist} from '~/lib/wishlist/repo';
+import {normalizeProduct} from '~/lib/gi';
+
+const FAVORITOS_QUERY = `#graphql
+  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)
+  @inContext(country: $country, language: $language) {
+    nodes(ids: $ids) {
+      __typename
+      ... on Product {
+        id
+        handle
+        title
+        featuredImage { url altText width height }
+        priceRange { minVariantPrice { amount currencyCode } }
+        variants(first: 1) { nodes { id } }
+      }
+    }
+  }
+`;
+
+/**
+ * Keep only the non-null Product nodes returned by `nodes(ids:)`.
+ * @param {Array<{__typename?: string} | null> | null | undefined} nodes
+ * @returns {Array<object>}
+ */
+export function keepProducts(nodes) {
+  if (!Array.isArray(nodes)) return [];
+  return nodes.filter((n) => n && n.__typename === 'Product');
+}
+
+/**
+ * @param {import('react-router').LoaderFunctionArgs & {context: any}} args
+ */
+export async function loader({context}) {
+  const {userId} = await requireUser(context);
+  const db = getDb(context.env);
+  const ids = await listWishlist(db, userId);
+  if (ids.length === 0) return {products: []};
+  const {nodes} = await context.storefront.query(FAVORITOS_QUERY, {
+    variables: {ids},
+  });
+  const products = keepProducts(nodes).map((node) => normalizeProduct(node));
+  return {products};
+}
 
 export default function AccountFavoritos() {
   const navigate = useNavigate();
-  const {favs} = useApp();
+  const {products} = useLoaderData();
 
   return (
     <>
@@ -14,34 +60,24 @@ export default function AccountFavoritos() {
         Productos que guardaste para revisar o cotizar más tarde.
       </p>
 
-      {favs.length === 0 ? (
+      {products.length === 0 ? (
         <div className="empty">
           <Icon name="heart_outline" size={32} className="muted-2" />
           <h3>Aún no tienes favoritos</h3>
           <p>Marca el corazón en cualquier producto para guardarlo aquí.</p>
-          <Button variant="accent" iconRight="arrow_right" onClick={() => navigate('/catalogo')}>
+          <Button
+            variant="accent"
+            iconRight="arrow_right"
+            onClick={() => navigate('/catalogo')}
+          >
             Explorar catálogo
           </Button>
         </div>
       ) : (
-        <div
-          style={{
-            padding: 20,
-            background: 'var(--bg-elev)',
-            border: '1px solid var(--line)',
-            borderRadius: 'var(--r-lg)',
-          }}
-        >
-          <p style={{margin: 0, fontSize: 15}}>
-            Tienes <strong>{favs.length}</strong>{' '}
-            {favs.length === 1 ? 'producto guardado' : 'productos guardados'}. Búscalos en el
-            catálogo para añadirlos a tu carrito o cotización.
-          </p>
-          <div style={{marginTop: 16}}>
-            <Button variant="ghost" iconRight="arrow_right" onClick={() => navigate('/catalogo')}>
-              Ir al catálogo
-            </Button>
-          </div>
+        <div className="product-grid">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
       )}
     </>
