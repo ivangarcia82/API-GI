@@ -6,7 +6,7 @@ import {useApp} from '~/lib/AppContext';
 export default function AccountOverview() {
   const {user} = useOutletContext();
   const navigate = useNavigate();
-  const {role, quoteCount, favs} = useApp();
+  const {role, quoteCount, favs, openQuoteDrawer} = useApp();
 
   const stats = [
     {l: 'En cotización', v: quoteCount, d: 'piezas pendientes'},
@@ -39,7 +39,7 @@ export default function AccountOverview() {
         <Button variant="primary" iconRight="arrow_right" onClick={() => navigate('/catalogo')}>
           Explorar catálogo
         </Button>
-        <Button variant="ghost" icon="quote" onClick={() => navigate('/cotizacion')}>
+        <Button variant="ghost" icon="quote" onClick={openQuoteDrawer}>
           Mi cotización
         </Button>
       </div>

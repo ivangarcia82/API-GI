@@ -70,7 +70,7 @@ async function loadCriticalData({context}) {
 export default function Homepage() {
   const data = useLoaderData();
   const navigate = useNavigate();
-  const {isLoggedIn} = useApp();
+  const {isLoggedIn, openQuoteDrawer} = useApp();
   const {categoryCards, featuredCollections, products} = data;
 
   const heroImages = products.map((p) => p.image).filter(Boolean).slice(0, 8);
@@ -127,7 +127,7 @@ export default function Homepage() {
                   variant="ghost"
                   size="lg"
                   icon="quote"
-                  onClick={() => navigate(isLoggedIn ? '/cotizacion' : '/registro')}
+                  onClick={() => (isLoggedIn ? openQuoteDrawer() : navigate('/registro'))}
                 >
                   {isLoggedIn ? 'Solicitar cotización' : 'Crear cuenta gratis'}
                 </Button>

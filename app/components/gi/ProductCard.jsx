@@ -32,7 +32,7 @@ function Swatches({colors, size = 14}) {
  */
 export function AddControl({product, label, variant, size = 'sm', className = ''}) {
   const navigate = useNavigate();
-  const {isLoggedIn, canBuy, addToQuote} = useApp();
+  const {isLoggedIn, canBuy, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
 
   if (!isLoggedIn) {
@@ -105,6 +105,7 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
           icon: 'quote',
           accent: true,
         });
+        openQuoteDrawer();
       }}
     >
       {canBuy ? 'Cotizar' : 'Cotizar'}

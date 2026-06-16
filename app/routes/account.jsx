@@ -33,7 +33,7 @@ export async function loader({context}) {
 // Addresses and Orders are deferred per spec §5.4 — their nav links are removed.
 const NAV = [
   {to: '/account', label: 'Resumen', icon: 'user', end: true},
-  {to: '/cotizacion', label: 'Cotizaciones', icon: 'quote'},
+  {to: '/account/cotizaciones', label: 'Cotizaciones', icon: 'quote'},
   {to: '/account/favoritos', label: 'Favoritos', icon: 'heart_outline'},
   {to: '/account/profile', label: 'Mi perfil', icon: 'settings'},
 ];

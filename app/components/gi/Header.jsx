@@ -40,7 +40,7 @@ function CartBadge({cart}) {
 
 export function GiHeader({cart, isLoggedIn}) {
   const navigate = useNavigate();
-  const {canBuy, quoteCount} = useApp();
+  const {canBuy, quoteCount, openQuoteDrawer} = useApp();
   const [mobile, setMobile] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
 
@@ -83,7 +83,7 @@ export function GiHeader({cart, isLoggedIn}) {
             <button
               className="appbar-iconbtn"
               aria-label="Cotización"
-              onClick={() => navigate('/cotizacion')}
+              onClick={openQuoteDrawer}
             >
               <Icon name="quote" size={18} />
               {quoteCount > 0 && <span className="appbar-badge">{quoteCount}</span>}
@@ -150,7 +150,7 @@ export function GiHeader({cart, isLoggedIn}) {
                     {[
                       {label: 'Mi cuenta', to: '/account', icon: 'user'},
                       {label: 'Mis órdenes', to: '/account/orders', icon: 'receipt'},
-                      {label: 'Cotizaciones', to: '/cotizacion', icon: 'quote'},
+                      {label: 'Cotizaciones', to: '/account/cotizaciones', icon: 'quote'},
                       {label: 'Favoritos', to: '/account/favoritos', icon: 'heart_outline'},
                     ].map((m) => (
                       <button
@@ -205,9 +205,16 @@ export function GiHeader({cart, isLoggedIn}) {
               {n.label}
             </NavLink>
           ))}
-          <NavLink to="/cotizacion" onClick={() => setMobile(false)}>
+          <button
+            type="button"
+            className="mobile-menu-link"
+            onClick={() => {
+              setMobile(false);
+              openQuoteDrawer();
+            }}
+          >
             Mi cotización
-          </NavLink>
+          </button>
           {canBuy && (
             <NavLink to="/cart" onClick={() => setMobile(false)}>
               Mi carrito

@@ -529,13 +529,24 @@ img, svg {
   overflow-y: auto;
   animation: fadeIn 200ms var(--ease-out);
 }
-.mobile-menu a {
+.mobile-menu a,
+.mobile-menu-link {
   display: block;
   padding: 16px 0;
   font-size: 22px;
   font-family: var(--font-display);
   font-weight: 600;
   border-bottom: 1px solid var(--line);
+}
+.mobile-menu-link {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  color: inherit;
+  cursor: pointer;
 }
 
 /* ============================================================

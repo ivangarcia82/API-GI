@@ -56,6 +56,10 @@ export function AppProvider({
   const wishlistFetcher = useFetcher();
   const [tweaks, setTweaks] = useState(DEFAULT_TWEAKS);
   const [toasts, setToasts] = useState([]);
+  // Quote drawer (cart-style) open/close — the single quote surface.
+  const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false);
+  const openQuoteDrawer = useCallback(() => setQuoteDrawerOpen(true), []);
+  const closeQuoteDrawer = useCallback(() => setQuoteDrawerOpen(false), []);
 
   // Tracks an in-flight quote mutation so consumers can surface a
   // spinner/disabled state while a /api/quote/* POST is settling.
@@ -248,6 +252,9 @@ export function AppProvider({
     updateQuoteQty,
     removeFromQuote,
     clearQuote,
+    quoteDrawerOpen,
+    openQuoteDrawer,
+    closeQuoteDrawer,
     favs,
     toggleFav,
     tweaks,
