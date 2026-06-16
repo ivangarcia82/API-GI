@@ -39,11 +39,29 @@ async function loadCriticalData({context, params, request}) {
 
   if (!product?.id) throw new Response(null, {status: 404});
   redirectIfHandleIsLocalized(request, {handle, data: product});
-  return {product};
+
+  // Inventory is fetched in a SEPARATE, best-effort query: the Storefront token
+  // may lack the `unauthenticated_read_product_inventory` scope, and a denied
+  // field would otherwise break the entire product page. Degrades to null.
+  let stock = null;
+  const variantId = product.selectedOrFirstAvailableVariant?.id;
+  if (variantId) {
+    try {
+      const inv = await storefront.query(VARIANT_INVENTORY_QUERY, {variables: {id: variantId}});
+      stock = inv?.node?.quantityAvailable ?? null;
+    } catch (err) {
+      console.warn(
+        '[product] inventory hidden — enable the unauthenticated_read_product_inventory scope on the Storefront API:',
+        err?.message,
+      );
+    }
+  }
+
+  return {product, stock};
 }
 
 export default function Product() {
-  const {product} = useLoaderData();
+  const {product, stock} = useLoaderData();
   const navigate = useNavigate();
   const {isLoggedIn, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
@@ -60,8 +78,6 @@ export default function Product() {
 
   const unit = selectedVariant?.price ? parseFloat(selectedVariant.price.amount) : null;
   const currency = selectedVariant?.price?.currencyCode || 'MXN';
-  // Tracked inventory for the selected variant (null when inventory isn't tracked).
-  const stock = selectedVariant?.quantityAvailable;
 
   const images = product.images?.nodes?.length
     ? product.images.nodes
@@ -492,7 +508,6 @@ export default function Product() {
 const PRODUCT_VARIANT_FRAGMENT = `#graphql
   fragment ProductVariant on ProductVariant {
     availableForSale
-    quantityAvailable
     compareAtPrice { amount currencyCode }
     id
     image { __typename id url altText width height }
@@ -553,4 +568,15 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
+`;
+
+// Separate, best-effort query so a missing inventory scope can't break the PDP.
+const VARIANT_INVENTORY_QUERY = `#graphql
+  query VariantInventory($id: ID!) {
+    node(id: $id) {
+      ... on ProductVariant {
+        quantityAvailable
+      }
+    }
+  }
 `;
