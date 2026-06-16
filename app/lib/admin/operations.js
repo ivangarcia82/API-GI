@@ -163,3 +163,32 @@ export async function getCustomerAdvisor(env, customerGid) {
   const email = fields.correo ? String(fields.correo).trim() || null : null;
   return {email, fields};
 }
+
+const VARIANT_INVENTORY = `
+  query variantInventory($id: ID!) {
+    node(id: $id) {
+      ... on ProductVariant { inventoryQuantity }
+    }
+  }
+`;
+
+/**
+ * Best-effort total available inventory for a variant, via the Admin API
+ * (the Hydrogen-managed Storefront token can't get the inventory scope).
+ * Returns null in stub mode, when there's no variant, or on any error (e.g.
+ * the Admin app is missing the `read_inventory` scope) — never throws.
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} variantId
+ * @returns {Promise<number|null>}
+ */
+export async function getVariantInventory(env, variantId) {
+  if (isStubMode(env) || !variantId) return null;
+  try {
+    const data = await adminFetch(env, VARIANT_INVENTORY, {id: variantId});
+    const q = data && data.node ? data.node.inventoryQuantity : null;
+    return typeof q === 'number' ? q : null;
+  } catch (err) {
+    console.warn('[admin] inventory read failed (needs read_inventory scope):', err && err.message);
+    return null;
+  }
+}

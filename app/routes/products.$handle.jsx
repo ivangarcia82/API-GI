@@ -15,6 +15,7 @@ import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex} from '~/lib/gi';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
+import {getVariantInventory} from '~/lib/admin/operations';
 
 export const meta = ({data}) => [
   {title: `${data?.product?.title ?? 'Producto'} · Generando Ideas`},
@@ -40,21 +41,13 @@ async function loadCriticalData({context, params, request}) {
   if (!product?.id) throw new Response(null, {status: 404});
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
-  // Inventory needs the `unauthenticated_read_product_inventory` scope on the
-  // Storefront token. It's a SEPARATE, best-effort query AND gated behind the
-  // SHOW_INVENTORY env flag so a store without the scope doesn't log a
-  // denied-field error on every product view. To enable: grant the scope, then
-  // set SHOW_INVENTORY=1. Degrades to null (no badge) otherwise.
-  let stock = null;
-  const variantId = product.selectedOrFirstAvailableVariant?.id;
-  if (variantId && context.env.SHOW_INVENTORY) {
-    try {
-      const inv = await storefront.query(VARIANT_INVENTORY_QUERY, {variables: {id: variantId}});
-      stock = inv?.node?.quantityAvailable ?? null;
-    } catch (err) {
-      console.warn('[product] inventory query failed (check the inventory scope):', err?.message);
-    }
-  }
+  // Inventory comes from the Admin API (the Hydrogen-managed Storefront token
+  // can't get the inventory scope). Best-effort: needs the Admin `read_inventory`
+  // scope + a real Admin token; degrades to null (no badge) otherwise.
+  const stock = await getVariantInventory(
+    context.env,
+    product.selectedOrFirstAvailableVariant?.id,
+  );
 
   return {product, stock};
 }
@@ -567,15 +560,4 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
-`;
-
-// Separate, best-effort query so a missing inventory scope can't break the PDP.
-const VARIANT_INVENTORY_QUERY = `#graphql
-  query VariantInventory($id: ID!) {
-    node(id: $id) {
-      ... on ProductVariant {
-        quantityAvailable
-      }
-    }
-  }
 `;

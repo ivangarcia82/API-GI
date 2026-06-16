@@ -11,6 +11,7 @@ import {
   createCustomer,
   createDraftOrder,
   getCustomerAdvisor,
+  getVariantInventory,
 } from './operations.js';
 
 beforeEach(() => {
@@ -239,5 +240,28 @@ describe('getCustomerAdvisor', () => {
 
     expect(advisor).toEqual({email: null, fields: {}});
     expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('getVariantInventory', () => {
+  it('returns null in stub mode without calling adminFetch', async () => {
+    isStubMode.mockReturnValue(true);
+    expect(await getVariantInventory({}, 'gid://shopify/ProductVariant/1')).toBeNull();
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns the inventoryQuantity from the Admin API', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({node: {inventoryQuantity: 42}});
+    expect(await getVariantInventory({}, 'gid://shopify/ProductVariant/1')).toBe(42);
+  });
+
+  it('returns null for a missing variant id or on error (e.g. no read_inventory)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    isStubMode.mockReturnValue(false);
+    expect(await getVariantInventory({}, null)).toBeNull();
+    adminFetch.mockRejectedValue(new Error('Access denied for inventoryQuantity'));
+    expect(await getVariantInventory({}, 'gid://shopify/ProductVariant/1')).toBeNull();
+    warn.mockRestore();
   });
 });
