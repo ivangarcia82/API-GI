@@ -59,7 +59,7 @@ export default function Cotizacion() {
   }
   if (!isLoggedIn) return <Gated navigate={navigate} />;
 
-  const subtotal = quote.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
+  const subtotal = quote.reduce((s, i) => s + (i.effectiveUnitPrice || 0) * i.qty, 0);
   const estTotal = subtotal * 1.16;
   const totalPieces = quote.reduce((n, i) => n + i.qty, 0);
 
@@ -155,34 +155,44 @@ export default function Cotizacion() {
 
       <div className="cart-page">
         <div className="cart-list stagger">
-          {quote.map((item, idx) => (
-            <div key={`${item.variantId}-${idx}`} className="cart-item">
+          {quote.map((item) => (
+            <div key={item.id} className="cart-item">
               <PH src={item.image} alt={item.title} />
               <div className="cart-item-info">
                 <div className="cart-item-meta">{item.sku}</div>
                 <div className="cart-item-name">{item.title}</div>
-                {item.options?.length > 0 && (
-                  <div style={{display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap'}}>
-                    {item.options.map((o) => (
-                      <span key={o.name} className="tag">
-                        {o.name}: {o.value}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <div style={{display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap'}}>
+                  {item.technique && item.technique !== 'Sin decorado' && (
+                    <span className="tag">
+                      {item.technique}
+                      {item.size ? ` · ${item.size}` : ''}
+                    </span>
+                  )}
+                  {item.options?.map((o) => (
+                    <span key={o.name} className="tag">
+                      {o.name}: {o.value}
+                    </span>
+                  ))}
+                </div>
               </div>
               <div className="cart-item-controls">
                 <div className="pdp-qty" style={{borderRadius: 999}}>
-                  <button onClick={() => updateQuoteQty(item.variantId, Math.max(1, item.qty - 1))}>
+                  <button
+                    onClick={() => updateQuoteQty(item.id, Math.max(1, item.qty - 1))}
+                    aria-label="Disminuir cantidad"
+                  >
                     <Icon name="minus" size={12} />
                   </button>
                   <input
                     value={item.qty}
                     onChange={(e) =>
-                      updateQuoteQty(item.variantId, Math.max(1, +e.target.value || 1))
+                      updateQuoteQty(item.id, Math.max(1, +e.target.value || 1))
                     }
                   />
-                  <button onClick={() => updateQuoteQty(item.variantId, item.qty + 1)}>
+                  <button
+                    onClick={() => updateQuoteQty(item.id, item.qty + 1)}
+                    aria-label="Aumentar cantidad"
+                  >
                     <Icon name="plus" size={12} />
                   </button>
                 </div>
@@ -195,11 +205,11 @@ export default function Cotizacion() {
                     letterSpacing: '0.04em',
                   }}
                 >
-                  Estimado · {formatPrice((item.price || 0) * item.qty)}
+                  Estimado · {formatPrice((item.effectiveUnitPrice || 0) * item.qty)}
                 </div>
                 <button
                   onClick={() => {
-                    removeFromQuote(item.variantId);
+                    removeFromQuote(item.id);
                     toast('Producto removido');
                   }}
                   style={{
