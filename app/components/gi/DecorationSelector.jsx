@@ -71,53 +71,88 @@ export default function DecorationSelector({product, basePrice, qty, onChange}) 
   const decoPerUnit = showPrice ? round2(calc.unitPrice) : null;
 
   return (
-    <div data-testid="decoration-selector" data-deco-error={hasError ? 'true' : 'false'}>
-      <label htmlFor="gi-decorado-select">Elige tipo de decorado:</label>
-      <select id="gi-decorado-select" value={technique} onChange={handleTechnique}>
-        <option value="" disabled>
-          Seleccione técnica de impresión
-        </option>
-        <option value={SIN_DECORADO}>{SIN_DECORADO}</option>
-        {techniques.map((t) => (
-          <option key={t} value={t}>
-            {t}
+    <div
+      className="deco-selector"
+      data-testid="decoration-selector"
+      data-deco-error={hasError ? 'true' : 'false'}
+      style={{display: 'flex', flexDirection: 'column', gap: 'var(--s-4)'}}
+    >
+      <div className="field">
+        <label htmlFor="gi-decorado-select">Elige tipo de decorado</label>
+        <select
+          id="gi-decorado-select"
+          className="input"
+          value={technique}
+          onChange={handleTechnique}
+        >
+          <option value="" disabled>
+            Seleccione técnica de impresión
           </option>
-        ))}
-      </select>
+          <option value={SIN_DECORADO}>{SIN_DECORADO}</option>
+          {techniques.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <label htmlFor="gi-medida-select">Elige la medida:</label>
-      <select
-        id="gi-medida-select"
-        value={effectiveSize === 'N/A' ? '' : size}
-        onChange={handleSize}
-        disabled={technique === '' || technique === SIN_DECORADO}
-      >
-        <option value="" disabled>
-          {technique === SIN_DECORADO ? 'N/A' : 'Seleccione medida'}
-        </option>
-        {measures.map((m) => (
-          <option key={m} value={m}>
-            {m}
+      <div className="field">
+        <label htmlFor="gi-medida-select">Elige la medida</label>
+        <select
+          id="gi-medida-select"
+          className="input"
+          value={effectiveSize === 'N/A' ? '' : size}
+          onChange={handleSize}
+          disabled={technique === '' || technique === SIN_DECORADO}
+        >
+          <option value="" disabled>
+            {technique === SIN_DECORADO ? 'N/A' : 'Seleccione medida'}
           </option>
-        ))}
-      </select>
+          {measures.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {hasError && (
-        <p role="alert" data-testid="deco-error">
+        <p className="error-msg" role="alert" data-testid="deco-error">
           {calc.error}
         </p>
       )}
 
       {showPrice && (
-        <div>
-          <p data-testid="deco-unit-price">$ {fmt(unitPrice)} MXN</p>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            paddingTop: 'var(--s-3)',
+            borderTop: '1px solid var(--line)',
+          }}
+        >
+          <p
+            data-testid="deco-unit-price"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              fontSize: 22,
+              color: 'var(--ink)',
+            }}
+          >
+            $ {fmt(unitPrice)} MXN
+          </p>
           {technique !== SIN_DECORADO && (
-            <p data-testid="deco-included">incluye decorado ${fmt(decoPerUnit)}/pz</p>
+            <p className="help-msg" data-testid="deco-included">
+              incluye decorado ${fmt(decoPerUnit)}/pz
+            </p>
           )}
           {technique !== SIN_DECORADO && !calc.isMinPriceUsed && (
-            <p data-testid="deco-fixed-charge">
-              Cargo fijo de decorado ${fmt(calc.totalPrice)}; alcanza {calc.neededQtyForMin} piezas
-              para precio por unidad
+            <p className="help-msg" data-testid="deco-fixed-charge">
+              Cargo fijo de decorado ${fmt(calc.totalPrice)}; alcanza {calc.neededQtyForMin}{' '}
+              piezas para precio por unidad
             </p>
           )}
         </div>

@@ -102,16 +102,35 @@ export function getTechniques(metafieldValue) {
       /* fall through to dash split */
     }
   }
-  return raw
-    .split('-')
-    .map((s) => s.trim())
-    .filter(Boolean);
+  // Real store data is COMMA-separated ("Serigrafía, Grabado en láser, …").
+  // The legacy Liquid used dashes; keep that as a fallback when no comma exists.
+  const parts = raw.includes(',') ? raw.split(',') : raw.split('-');
+  return parts.map((s) => s.trim()).filter(Boolean);
+}
+
+/* Store technique labels don't always match PRICE_MATRIX keys 1:1 (case/wording).
+   Map known store labels (normalized uppercase) to the canonical matrix key. */
+const TECHNIQUE_ALIASES = {
+  'GRABADO EN LASER': 'GRABADO LÁSER',
+  'GRABADO EN LÁSER': 'GRABADO LÁSER',
+  'GRABADO LASER': 'GRABADO LÁSER',
+};
+
+/** Resolve a (possibly differently-cased/worded) technique label to a PRICE_MATRIX key,
+ *  or null if it has no pricing entry yet. */
+export function resolveTechniqueKey(technique) {
+  if (PRICE_MATRIX[technique]) return technique; // exact
+  const u = String(technique ?? '').trim().toUpperCase();
+  if (TECHNIQUE_ALIASES[u]) return TECHNIQUE_ALIASES[u];
+  return Object.keys(PRICE_MATRIX).find((k) => k.toUpperCase() === u) || null;
 }
 
 /** List of available measures (medida) for a technique + product surface. */
 export function getMeasures(technique, surface) {
-  const key = matchSurfaceKey(technique, surface);
-  return key ? PRICE_MATRIX[technique][key].map((op) => op.medida) : [];
+  const tk = resolveTechniqueKey(technique);
+  if (!tk) return [];
+  const key = matchSurfaceKey(tk, surface);
+  return key ? PRICE_MATRIX[tk][key].map((op) => op.medida) : [];
 }
 
 /** round2(n) = Math.round(n * 100) / 100 */
@@ -126,14 +145,15 @@ export function calcDecoration(technique, surface, qty, size) {
   if (technique === 'Sin decorado') {
     return {error: null, totalPrice: 0, unitPrice: 0, neededQtyForMin: 0, isMinPriceUsed: false};
   }
-  if (!PRICE_MATRIX[technique]) {
+  const tk = resolveTechniqueKey(technique);
+  if (!tk) {
     return {error: `Tipo de decorado no encontrado: ${technique}`, totalPrice: 0, unitPrice: 0, neededQtyForMin: 0, isMinPriceUsed: false};
   }
-  const key = matchSurfaceKey(technique, surface);
+  const key = matchSurfaceKey(tk, surface);
   if (!key) {
     return {error: `Superficie no encontrada: ${String(surface).toUpperCase()}`, totalPrice: 0, unitPrice: 0, neededQtyForMin: 0, isMinPriceUsed: false};
   }
-  const op = PRICE_MATRIX[technique][key].find(
+  const op = PRICE_MATRIX[tk][key].find(
     (o) => o.medida.toLowerCase() === String(size).toLowerCase(),
   );
   if (!op) {
