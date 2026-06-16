@@ -6,53 +6,27 @@ import {Icon} from './Icon';
 import {useApp} from '~/lib/AppContext';
 
 export function RoleBanner() {
-  const {role, setRole, isLoggedIn} = useApp();
+  const {role, isLoggedIn} = useApp();
   if (!isLoggedIn) return null;
   return (
     <div className="role-banner">
       <div className="container">
         <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
-          <span style={{opacity: 0.7}}>Modo simulación · sesión iniciada como</span>
+          <span style={{opacity: 0.7}}>Sesión iniciada como</span>
           <span className="role-tag">
             {role === 'buyer' ? 'CLIENTE COMPRADOR' : 'CLIENTE COTIZADOR'}
           </span>
-        </div>
-        <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
-          <span style={{opacity: 0.5}}>Cambiar rol:</span>
-          {[
-            ['buyer', 'COMPRADOR'],
-            ['quoter', 'COTIZADOR'],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              onClick={() => setRole(value)}
-              style={{
-                padding: '4px 10px',
-                borderRadius: 999,
-                fontSize: 11,
-                fontFamily: 'var(--font-mono)',
-                background: role === value ? 'var(--accent)' : 'transparent',
-                color: role === value ? 'var(--accent-ink)' : 'rgba(244,242,236,0.7)',
-                border: `1px solid ${
-                  role === value ? 'var(--accent)' : 'rgba(244,242,236,0.2)'
-                }`,
-                fontWeight: 600,
-              }}
-            >
-              {label}
-            </button>
-          ))}
         </div>
       </div>
     </div>
   );
 }
 
-const ACCENTS = ['#f5b800', '#d97757', '#1f8a5b', '#2a6fdb', '#7a4ee0'];
+const ACCENTS = ['#ff8300', '#d97757', '#1f8a5b', '#2a6fdb', '#7a4ee0'];
 
 /** Floating tweaks panel (accent color, density, role, banner). */
 export function TweaksPanel() {
-  const {tweaks, setTweak, role, setRole, isLoggedIn} = useApp();
+  const {tweaks, setTweak} = useApp();
   const [open, setOpen] = useState(false);
 
   return (
@@ -106,19 +80,6 @@ export function TweaksPanel() {
           >
             // Tweaks
           </div>
-
-          {isLoggedIn && (
-            <TweakGroup label="Rol simulado">
-              <Segmented
-                value={role}
-                onChange={setRole}
-                options={[
-                  {value: 'buyer', label: 'Comprador'},
-                  {value: 'quoter', label: 'Cotizador'},
-                ]}
-              />
-            </TweakGroup>
-          )}
 
           <TweakGroup label="Color de acento">
             <div style={{display: 'flex', gap: 8}}>

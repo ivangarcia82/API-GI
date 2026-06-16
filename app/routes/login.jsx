@@ -1,82 +1,65 @@
-import {useState} from 'react';
+import {Form, useActionData, useNavigation} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
-import {useApp} from '~/lib/AppContext';
+
+export {action} from './auth.login.jsx';
 
 export const meta = () => [{title: 'Iniciar sesión · Generando Ideas'}];
 
 export default function Login() {
-  const {setRole} = useApp();
-  const [role, setLocalRole] = useState('buyer');
-  const [email, setEmail] = useState('');
-
-  // Real auth is delegated to Shopify's Customer Account (OAuth). We persist
-  // the chosen B2B role first, then hand off to /account/login.
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setRole(role);
-    window.location.href = email
-      ? `/account/login?login_hint=${encodeURIComponent(email)}`
-      : '/account/login';
-  };
+  const actionData = useActionData();
+  const nav = useNavigation();
+  const busy = nav.state !== 'idle';
 
   return (
     <div className="auth-wrap" data-screen-label="02 Login">
       <div className="auth-form-col">
         <div className="eyebrow">// Acceso · /login</div>
         <h1>Inicia sesión.</h1>
-        <p>Accede a precios para clientes, tu lista de cotización y el historial de pedidos.</p>
+        <p>Accede a tu lista de cotización y al historial de cotizaciones.</p>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <Form className="auth-form" method="post">
           <div className="field">
-            <label>Correo corporativo</label>
+            <label htmlFor="login-email">Correo corporativo</label>
             <input
+              id="login-email"
               className="input"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              required
               placeholder="mariana@empresa.mx"
             />
           </div>
 
           <div className="field">
-            <label>Tipo de cuenta</label>
-            <div className="role-pick">
-              <button
-                type="button"
-                onClick={() => setLocalRole('buyer')}
-                className={role === 'buyer' ? 'active' : ''}
-              >
-                Cliente comprador
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocalRole('quoter')}
-                className={role === 'quoter' ? 'active' : ''}
-              >
-                Cliente cotizador
-              </button>
-            </div>
-            <span className="help-msg">
-              {role === 'buyer'
-                ? 'Acceso completo: compra directa con precios autorizados.'
-                : 'Solicita cotizaciones; sin checkout directo.'}
-            </span>
+            <label htmlFor="login-password">Contraseña</label>
+            <input
+              id="login-password"
+              className="input"
+              type="password"
+              name="password"
+              required
+              placeholder="••••••••"
+            />
           </div>
+
+          {actionData?.error && (
+            <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+              {actionData.error}
+            </span>
+          )}
 
           <Button
             type="submit"
             variant="primary"
             size="lg"
             iconRight="arrow_right"
+            disabled={busy}
             style={{width: '100%', justifyContent: 'center', marginTop: 8}}
           >
-            Continuar con Shopify
+            {busy ? 'Entrando…' : 'Iniciar sesión'}
           </Button>
-          <span className="help-msg" style={{textAlign: 'center'}}>
-            Acceso seguro con Shopify Customer Accounts (código por correo).
-          </span>
-        </form>
+        </Form>
 
         <div
           style={{
@@ -115,11 +98,11 @@ export default function Login() {
         </div>
         <div className="auth-perks">
           {[
-            'Precios netos por volumen y tier',
+            'Precios netos por proyecto',
             'Lista de cotización ilimitada',
-            'Historial completo de pedidos',
+            'Historial completo de cotizaciones',
             'Asesor de cuenta dedicado',
-            'Re-órdenes con un solo clic',
+            'Re-cotizaciones con un solo clic',
           ].map((p) => (
             <div key={p} className="p">
               <Icon name="check" size={16} />

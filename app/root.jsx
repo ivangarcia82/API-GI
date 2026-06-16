@@ -16,6 +16,7 @@ import giScreens from '~/styles/gi-screens.css?url';
 import giSections from '~/styles/gi-sections.css?url';
 import {PageLayout} from './components/PageLayout';
 import {AppProvider} from '~/lib/AppContext';
+import {getSessionUser} from '~/lib/auth/session';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -54,7 +55,7 @@ export function links() {
     {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous'},
     {
       rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap',
+      href: 'https://fonts.googleapis.com/css2?family=Gantari:wght@300;400;500;600;700;800&family=Open+Sans:wght@300;400;500;600;700;800&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&display=swap',
     },
     {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
   ];
@@ -97,20 +98,24 @@ export async function loader(args) {
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context}) {
-  const {storefront, customerAccount} = context;
+  const {storefront, session} = context;
+  const sessionUser = getSessionUser(session);
 
-  const [header, isLoggedIn] = await Promise.all([
+  const [header] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
-    customerAccount.isLoggedIn().catch(() => false),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
-  return {header, isLoggedIn};
+  return {
+    header,
+    isLoggedIn: Boolean(sessionUser),
+    role: sessionUser?.role ?? null,
+  };
 }
 
 /**
@@ -182,7 +187,7 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
-      <AppProvider isLoggedIn={data.isLoggedIn}>
+      <AppProvider isLoggedIn={data.isLoggedIn} role={data.role}>
         <PageLayout {...data}>
           <Outlet />
         </PageLayout>

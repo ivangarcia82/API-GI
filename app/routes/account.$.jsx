@@ -1,12 +1,12 @@
 import {redirect} from 'react-router';
+import {requireUser} from '~/lib/auth/guard';
 
-// fallback wild card for all unauthenticated routes in account section
+// fallback wild card for all unauthenticated routes in the account section
 /**
  * @param {Route.LoaderArgs}
  */
 export async function loader({context}) {
-  await context.customerAccount.handleAuthStatus();
-
+  await requireUser(context);
   return redirect('/account');
 }
 

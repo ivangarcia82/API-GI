@@ -1,17 +1,20 @@
 import {useState} from 'react';
+import {Form, useActionData} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
-import {useApp} from '~/lib/AppContext';
+
+export {action} from './auth.signup.jsx';
 
 export const meta = () => [{title: 'Crear cuenta · Generando Ideas'}];
 
 export default function Registro() {
-  const {setRole} = useApp();
+  const actionData = useActionData();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     name: '',
     lastName: '',
     email: '',
+    password: '',
     company: '',
     role: '',
     phone: '',
@@ -22,18 +25,6 @@ export default function Registro() {
     terms: false,
   });
   const setField = (k, v) => setForm((f) => ({...f, [k]: v}));
-
-  const next = (e) => {
-    e.preventDefault();
-    if (step < 3) {
-      setStep(step + 1);
-      return;
-    }
-    setRole(form.accountType);
-    window.location.href = form.email
-      ? `/account/login?login_hint=${encodeURIComponent(form.email)}`
-      : '/account/login';
-  };
 
   return (
     <div className="auth-wrap" data-screen-label="03 Register">
@@ -57,13 +48,22 @@ export default function Registro() {
           ))}
         </div>
 
-        <form className="auth-form" onSubmit={next}>
+        <Form className="auth-form" method="post">
+          {/* Hidden mirrors so values from non-active wizard steps still post. */}
+          <input type="hidden" name="firstName" value={form.name} />
+          <input type="hidden" name="lastName" value={form.lastName} />
+          <input type="hidden" name="email" value={form.email} />
+          <input type="hidden" name="password" value={form.password} />
+          <input type="hidden" name="company" value={form.company} />
+          <input type="hidden" name="rfc" value={form.rfc} />
+
           {step === 1 && (
             <>
               <div className="row-fields">
                 <div className="field">
-                  <label>Nombre</label>
+                  <label htmlFor="reg-first">Nombre</label>
                   <input
+                    id="reg-first"
                     className="input"
                     value={form.name}
                     onChange={(e) => setField('name', e.target.value)}
@@ -72,8 +72,9 @@ export default function Registro() {
                   />
                 </div>
                 <div className="field">
-                  <label>Apellido</label>
+                  <label htmlFor="reg-last">Apellido</label>
                   <input
+                    id="reg-last"
                     className="input"
                     value={form.lastName}
                     onChange={(e) => setField('lastName', e.target.value)}
@@ -83,8 +84,9 @@ export default function Registro() {
                 </div>
               </div>
               <div className="field">
-                <label>Correo corporativo</label>
+                <label htmlFor="reg-email">Correo corporativo</label>
                 <input
+                  id="reg-email"
                   className="input"
                   type="email"
                   value={form.email}
@@ -95,6 +97,19 @@ export default function Registro() {
                 <span className="help-msg">
                   Usa el correo de la empresa para acelerar la aprobación.
                 </span>
+              </div>
+              <div className="field">
+                <label htmlFor="reg-password">Contraseña</label>
+                <input
+                  id="reg-password"
+                  className="input"
+                  type="password"
+                  minLength={8}
+                  required
+                  value={form.password}
+                  onChange={(e) => setField('password', e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                />
               </div>
               <div className="field">
                 <label>Teléfono</label>
@@ -112,8 +127,9 @@ export default function Registro() {
           {step === 2 && (
             <>
               <div className="field">
-                <label>Empresa</label>
+                <label htmlFor="reg-company">Empresa</label>
                 <input
+                  id="reg-company"
                   className="input"
                   value={form.company}
                   onChange={(e) => setField('company', e.target.value)}
@@ -139,8 +155,9 @@ export default function Registro() {
                 </select>
               </div>
               <div className="field">
-                <label>RFC (opcional)</label>
+                <label htmlFor="reg-rfc">RFC (opcional)</label>
                 <input
+                  id="reg-rfc"
                   className="input"
                   value={form.rfc}
                   onChange={(e) => setField('rfc', e.target.value)}
@@ -262,6 +279,12 @@ export default function Registro() {
             </>
           )}
 
+          {actionData?.error && (
+            <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+              {actionData.error}
+            </span>
+          )}
+
           <div style={{display: 'flex', gap: 10, marginTop: 16}}>
             {step > 1 && (
               <Button type="button" variant="ghost" onClick={() => setStep(step - 1)}>
@@ -269,16 +292,17 @@ export default function Registro() {
               </Button>
             )}
             <Button
-              type="submit"
+              type={step === 3 ? 'submit' : 'button'}
               variant="primary"
               className="grow"
               iconRight={step === 3 ? 'check' : 'arrow_right'}
+              onClick={step === 3 ? undefined : () => setStep(step + 1)}
               style={{flex: 1, justifyContent: 'center'}}
             >
               {step === 3 ? 'Crear cuenta' : 'Continuar'}
             </Button>
           </div>
-        </form>
+        </Form>
 
         <div style={{marginTop: 32, fontSize: 13, color: 'var(--ink-3)'}}>
           ¿Ya tienes cuenta?{' '}
