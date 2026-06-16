@@ -1,7 +1,6 @@
 /* Generando Ideas — page layout shell */
 import {GiHeader} from '~/components/gi/Header';
 import {GiFooter} from '~/components/gi/Footer';
-import {TweaksPanel} from '~/components/gi/RoleBanner';
 import {QuoteDrawer} from '~/components/gi/QuoteDrawer';
 
 /**
@@ -18,7 +17,6 @@ export function PageLayout({cart, isLoggedIn = false, children}) {
         {children}
       </main>
       <GiFooter />
-      <TweaksPanel />
       <QuoteDrawer />
     </>
   );
