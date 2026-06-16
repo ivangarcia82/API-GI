@@ -1,0 +1,356 @@
+{% if product.metafields.custom.tecnicas_de_impresion != blank %}
+  <label for="decorado-select">Elige tipo de decorado:</label>
+  <select id="decorado-select">
+    <option value="" disabled selected>Seleccione técnica de impresión</option>
+    <option value="Sin decorado">Sin decorado</option>
+    {% assign techniques = product.metafields.custom.tecnicas_de_impresion.value | split: '-' %}
+    {% for technique in techniques %}
+      <option value="{{ technique }}">{{ technique }}</option>
+    {% endfor %}
+  </select>
+{% endif %}
+
+<label for="medida-select" style="display:block; margin-top:10px;">Elige la medida:</label>
+<select id="medida-select" disabled>
+  <option value="" disabled selected>Seleccione primero el tipo de decorado</option>
+</select>
+
+
+
+<script>
+const matrizPrecios = {
+  "SERIGRAFÍA": {
+    "ACERO / METAL / MADERA / PLÁSTICO": [
+      { "medida": "4 x 4", "precioMinimo": 1, "precioMaximo": 1641.80, "cantidadMinima": 1000 },
+      { "medida": "10 X 10", "precioMinimo": 2.10, "precioMaximo": 1641.80, "cantidadMinima": 500 },
+      { "medida": "15 x 15", "precioMinimo": 2.10, "precioMaximo": 1641.80, "cantidadMinima": 500 }
+    ],
+    "TEXTIL": [
+      { "medida": "4 x 4", "precioMinimo": 3.33, "precioMaximo": 1641.80, "cantidadMinima": 300 },
+      { "medida": "10 x 10", "precioMinimo": 3.33, "precioMaximo": 1641.80, "cantidadMinima": 300 },
+      { "medida": "18 x 18", "precioMinimo": 3.33, "precioMaximo": 1641.80, "cantidadMinima": 300 }
+
+    ],
+    "RUBBER / VIDRIO": [
+      { "medida": "4 x 4", "precioMinimo": 3.60, "precioMaximo": 2686.56, "cantidadMinima": 500 },
+      { "medida": "10 x 10", "precioMinimo": 3.60, "precioMaximo": 2686.56, "cantidadMinima": 500 },
+      { "medida": "18 x 18", "precioMinimo": 3.60, "precioMaximo": 2686.56, "cantidadMinima": 500 }
+    ],
+    "TRANSFER": [
+      { "medida": "4 x 4", "precioMinimo": 4, "precioMaximo": 1791.04, "cantidadMinima": 300 },
+      { "medida": "10 x 10", "precioMinimo": 4, "precioMaximo":  1791.04, "cantidadMinima": 300 },
+      { "medida": "18 x 18", "precioMinimo": 4, "precioMaximo":  1791.04, "cantidadMinima": 300 }
+    ]
+  },
+  "BORDADO": {
+    "TEXTIL": [
+      { "medida": "8 x 8", "precioMinimo": 18, "precioMaximo": 59.70, "cantidadMinima": 50 },
+      { "medida": "20 x 10", "precioMinimo": 30, "precioMaximo": 89.55, "cantidadMinima": 50 }
+    ]
+  },
+  "PARCHE SUBLIMADO": {
+    "TEXTIL": [
+      { "medida": "8 x 8", "precioMinimo": 40, "precioMaximo": 89.55, "cantidadMinima": 50 }
+    ]
+  },
+  "VINIL IMPRIMIBLE Y DTF": {
+    "TEXTIL / PLASTICO / MADERA / METAL": [
+      { "medida": "9 x 9", "precioMinimo": 15, "precioMaximo": 22.38, "cantidadMinima": 1 },
+      { "medida": "18 x 18", "precioMinimo": 30, "precioMaximo": 44.77, "cantidadMinima": 1 },
+      { "medida": "28 x 28", "precioMinimo": 80, "precioMaximo": 119.40, "cantidadMinima": 1 }
+    ]
+  },
+  "IMPRESIÓN UV PLANA FULL COLOR": {
+    "TEXTIL / PLASTICO / MADERA / METAL": [
+      { "medida": "9 x 9", "precioMinimo": 15, "precioMaximo": 22.38, "cantidadMinima": 1 },
+      { "medida": "18 x 18", "precioMinimo": 30, "precioMaximo": 44.77, "cantidadMinima": 1 },
+      { "medida": "28 x 28", "precioMinimo": 60, "precioMaximo": 89.5, "cantidadMinima": 1 }
+    ]
+  },
+  "IMPRESIÓN 360° FULL COLOR": {
+    "TEXTIL / PLASTICO / MADERA / METAL": [
+      { "medida": "MEDIDAS en CM", "precioMinimo": 30, "precioMaximo": 52.23, "cantidadMinima": 50 }
+    ]
+  },
+  "SUBLIMACION": {
+    "TEXTIL / CERAMICA / ACERO": [
+      { "medida": "MEDIDAS en CM", "precioMinimo": 20, "precioMaximo": 29.85, "cantidadMinima": 1 }
+    ]
+  },
+  "GRABADO LÁSER": {
+    "MADERA / METAL / VIDRIO": [
+      { "medida": "5 x 5", "precioMinimo": 5, "precioMaximo": 7.46, "cantidadMinima": 1 },
+      { "medida": "10 x 10", "precioMinimo": 7, "precioMaximo": 10.44, "cantidadMinima": 1 },
+      { "medida": "13 x 13", "precioMinimo": 10, "precioMaximo": 14.92, "cantidadMinima": 1 },
+      { "medida": "Rotativo", "precioMinimo": 15, "precioMaximo": 22.38, "cantidadMinima": 1 },
+      { "medida": "Personalizado", "precioMinimo": 12, "precioMaximo": 17.91, "cantidadMinima": 1 },
+      { "medida": "14 x 21", "precioMinimo": 20, "precioMaximo": 20.85, "cantidadMinima": 1 }
+    ]
+  },
+  "GOTA DE RESINA": {
+    "PLASTICO / METAL": [
+      { "medida": "2 x 2", "precioMinimo": 3, "precioMaximo": 4.47, "cantidadMinima": 1 },
+      { "medida": "3 x 3", "precioMinimo": 6, "precioMaximo": 8.95, "cantidadMinima": 1 },
+      { "medida": "5 x 5", "precioMinimo": 12, "precioMaximo": 17.91, "cantidadMinima": 1 }
+    ]
+  }
+};
+
+  function calcularPrecioDecoradoConDetalle(tipoDecorado, superficie, cantidad, medida) {
+    const result = {
+      error: null,
+      totalPrice: 0,
+      unitPrice: 0,
+      neededQtyForMin: 0,
+      isMinPriceUsed: false
+    };
+  
+    let superficieFinal = superficie.toUpperCase();
+  
+    // Validar tipoDecorado
+    if (!matrizPrecios[tipoDecorado]) {
+      result.error = `Tipo de decorado no encontrado: ${tipoDecorado}`;
+      return result;
+    }
+  
+    // Verificar superficie
+    const superficies = Object.keys(matrizPrecios[tipoDecorado]);
+    const superficieValida = superficies.find(s => s.split(" / ").includes(superficieFinal));
+    if (!superficieValida) {
+      result.error = `Superficie no encontrada: ${superficieFinal}`;
+      return result;
+    }
+  
+    // Opciones en esa superficie
+    const opcionesSuperficie = matrizPrecios[tipoDecorado][superficieValida];
+    const opcion = opcionesSuperficie.find(op => op.medida.toLowerCase() === medida.toLowerCase());
+    if (!opcion) {
+      result.error = `Medida no encontrada: ${medida}`;
+      return result;
+    }
+  
+    // Cantidad mínima
+    const neededQty = opcion.cantidadMinima;
+    result.neededQtyForMin = neededQty;
+  
+    console.log("LA OPCIÓN ES:", opcion)
+    // Cálculo
+    if (cantidad >= neededQty) {
+      // Usa precio mínimo por unidad
+      result.isMinPriceUsed = true;
+      console.log("DECORADO CON PRECIO MÍNIMO ES:", opcion.precioMinimo)
+      console.log("LA CANTIDAD", cantidad)
+      console.log("EL TOTAL", (cantidad * opcion.precioMinimo) / .67)
+      result.totalPrice = (cantidad * opcion.precioMinimo) / .67;
+    } else {
+      // Usa precio máximo como total
+      result.isMinPriceUsed = false;
+      result.totalPrice = opcion.precioMaximo;
+    }
+  
+    // Precio unitario
+    if (cantidad > 0) {
+      result.unitPrice = result.totalPrice / cantidad;
+    }
+  
+    return result;
+  }
+  
+  /* =========================================================================
+     OBTENER LISTADO DE MEDIDAS PARA UNA SUPERFICIE
+     ========================================================================= */
+  function obtenerMedidasPorTipoYSuperficie(tipoDecorado, superficie) {
+    let superficieFinal = superficie.toUpperCase();
+    if (!matrizPrecios[tipoDecorado]) return [];
+  
+    const superficies = Object.keys(matrizPrecios[tipoDecorado]);
+    console.log("superficies", superficies);
+    const superficieValida = superficies.find(s => s.split(" / ").includes(superficieFinal));
+      console.log("superficieValida", superficieValida);
+    if (!superficieValida) return [];
+  
+    const opcionesSuperficie = matrizPrecios[tipoDecorado][superficieValida];
+    return opcionesSuperficie.map(op => op.medida);
+  }
+  
+  /* =========================================================================
+     LÓGICA PRINCIPAL
+     ========================================================================= */
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1. Referencias a elementos
+    const precioProducto = document.getElementById('precioProducto'); 
+    // Este elemento contiene tu precio base, por ejemplo: "$ 40.60 MXN"
+    
+    const decoradoSelect = document.getElementById('decorado-select');
+    const medidaSelect = document.getElementById('medida-select');
+    const qtyInput = document.querySelector('input[name=quantity]') || document.querySelector('.quantity__input');
+  
+    const qtyPlusBtns = document.querySelectorAll('.qty-button.qty-plus.no-js-hidden');
+    const qtyMinusBtns = document.querySelectorAll('.qty-button.qty-minus.no-js-hidden');
+  
+    // 2. Guardamos el PRECIO BASE ORIGINAL para no “pisarlo” en cada recalculo
+    const basePriceStr = precioProducto.innerText || ""; // Ej: "$ 40.60 MXN"
+    // Extraemos sólo la parte numérica
+    const basePriceNumOriginal = parseFloat(basePriceStr.replace(/[^0-9.]/g, '')) || 0;
+  
+    // 3. Creamos un contenedor para el resultado del decorado
+    const precioDecoradoContainer = document.createElement('div');
+    precioDecoradoContainer.id = 'precio-decorado-container';
+    precioDecoradoContainer.style.marginTop = '10px';
+  precioDecoradoContainer.style.fontWeight = 'bold';
+    precioDecoradoContainer.style.display = 'none';
+  
+  
+    // Lo insertamos debajo del select de medida
+    if (medidaSelect) {
+      medidaSelect.parentNode.insertBefore(precioDecoradoContainer, medidaSelect.nextSibling);
+    }
+  
+    // Función para poblar el select de medidas
+    function poblarSelectMedidas() {
+      medidaSelect.innerHTML = '';
+      const tipoDecorado = decoradoSelect.value;
+  
+      if (tipoDecorado === 'Sin decorado') {
+        medidaSelect.disabled = true;
+        medidaSelect.innerHTML = '<option value="N/A" selected>N/A</option>';
+        return;
+       }
+
+      if (!tipoDecorado) {
+        medidaSelect.disabled = true;
+        medidaSelect.innerHTML = '<option value="">Seleccione primero el tipo de decorado</option>';
+        return;
+      }
+  
+      // Obtenemos medidas según la superficie del producto
+      const superficieProducto = "{{ product.metafields.custom.superficie }}";
+      const medidas = obtenerMedidasPorTipoYSuperficie(tipoDecorado, superficieProducto);
+  
+      if (medidas.length === 0) {
+        medidaSelect.disabled = true;
+        medidaSelect.innerHTML = '<option value="">No hay medidas para esta superficie</option>';
+        return;
+      }
+  
+      medidaSelect.disabled = false;
+      medidaSelect.innerHTML = '<option value="" disabled selected>Seleccione medida</option>';
+      medidas.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        medidaSelect.appendChild(opt);
+      });
+    }
+  
+    function actualizarPrecio() {
+      console.log("SE ACTUALIZA EL PRECIO JEJE", decoradoSelect)
+      const tipoDecorado = decoradoSelect.value;
+      console.log("LLEGUÉ AQUÍ")
+      const medida = medidaSelect.value;
+      console.log("LLEGUÉ AQUÍ 2")
+      const cantidad = qtyInput ? (parseFloat(qtyInput.value) || 0) : 1;
+    
+      if (tipoDecorado === 'Sin decorado') {
+        precioDecoradoContainer.innerText = "";
+        precioProducto.innerText = `$ ${basePriceNumOriginal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
+        let decoradoProperty = document.getElementById('decoradoProperty');
+        let uniqueId = document.getElementById('uniqueProperty');
+        decoradoProperty.setAttribute("value", "0");
+        uniqueId.setAttribute("value", "Sin decorado");
+        return;
+      }
+
+      // Si falta algo, no calculamos
+      if (!tipoDecorado || !medida || cantidad <= 0) {
+        precioDecoradoContainer.innerText = "";
+        // Revertir el texto del precio producto a su base (opcional, depende de tu UX)
+        precioProducto.innerText = `$ ${basePriceNumOriginal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
+        return;
+      }
+    
+      // 1) Calcular precio del DECORADO
+      const superficieProducto = "{{ product.metafields.custom.superficie }}";
+      const detail = calcularPrecioDecoradoConDetalle(tipoDecorado, superficieProducto, cantidad, medida);
+      if (detail.error) {
+        precioDecoradoContainer.innerText = detail.error;
+        return;
+      }
+    
+      // Formateamos decimales
+      const totalPriceDecorado = detail.totalPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const unitPriceDecorado = detail.unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+      // Mensaje adicional
+      let minPriceMsg = `Para obtener el precio mínimo necesitas al menos ${detail.neededQtyForMin} unidades.`;
+      if (detail.isMinPriceUsed) {
+        minPriceMsg = `Estás recibiendo el precio mínimo (desde ${detail.neededQtyForMin} uds).`;
+      }
+    
+      // Mostramos info del decorado
+      const msg = `
+        Precio total de decorado: $${totalPriceDecorado}<br/>
+        Precio unitario (decorado): $${unitPriceDecorado} por pieza<br/>
+        ${minPriceMsg}
+      `;
+      precioDecoradoContainer.innerHTML = msg;
+    
+      // 2) Calcular el precio final (Producto + Decorado)
+      //    - El precio base original del producto * la cantidad
+      const productSubtotal = basePriceNumOriginal * cantidad;
+
+      console.log("LA CANTIDAD ES", cantidad)
+      //    - Sumamos el precio total del decorado
+      const finalTotal = (productSubtotal + detail.totalPrice) / cantidad;
+    
+      // 3) Mostrar en pantalla el precio final
+      //    - Ej: "$ 1,120.75 MXN"
+      precioProducto.innerText = `$ ${finalTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
+    
+      let decoradoProperty = document.getElementById('decoradoProperty');
+      let uniqueId = document.getElementById('uniqueProperty');
+      decoradoProperty.setAttribute("value", totalPriceDecorado);
+      uniqueId.setAttribute("value", tipoDecorado + ' - ' + medida);
+    }
+    // EVENTOS
+    // Al cambiar TIPO DECORADO
+    if (decoradoSelect) {
+      decoradoSelect.addEventListener('change', () => {
+        poblarSelectMedidas();
+        actualizarPrecio();
+      });
+    }
+  
+    // Al cambiar MEDIDAS
+    if (medidaSelect) {
+      medidaSelect.addEventListener('change', actualizarPrecio);
+    }
+  
+    // Al cambiar/teclear la CANTIDAD
+    if (qtyInput) {
+      qtyInput.addEventListener('change', actualizarPrecio);
+      qtyInput.addEventListener('keyup', actualizarPrecio);
+    }
+  
+    // Botones + y -
+    qtyPlusBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        let currentVal = parseFloat(qtyInput.value) || 0;
+        currentVal += 1;
+        qtyInput.value = currentVal;
+        actualizarPrecio();
+      });
+    });
+  
+    qtyMinusBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        let currentVal = parseFloat(qtyInput.value) || 0;
+        if (currentVal > 1) {
+          currentVal -= 1;
+          qtyInput.value = currentVal;
+          actualizarPrecio();
+        }
+      });
+    });
+  });
+</script>
