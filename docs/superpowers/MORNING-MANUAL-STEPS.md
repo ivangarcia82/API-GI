@@ -144,11 +144,38 @@ matriz (p.ej. "TEXTIL"); si no, dará "Superficie no encontrada".
 P1 auth · P2 shopify(stub) · P5 decorado · P4 cotizaciones/draft orders · P3 wishlist ·
 P6 quitar MOQ · P7 AppContext/UI · P8 email(Resend) · P9 asesor. Todo en `feat/auth-decoration-quotes`.
 
-### Pendiente conocido: `npm run lint` truena (config, no del código)
-La config de ESLint aplica `eslint-plugin-jest` a `*.test.{js,jsx}` pero el proyecto usa Vitest
-(jest no está instalado), así que ESLint crashea ("Unable to detect Jest version") en cualquier
-archivo de test. Los archivos fuente lintan limpio individualmente. FIX (mañana): en `eslint.config.js`
-quitar/!reemplazar `eslint-plugin-jest` por `eslint-plugin-vitest`, o excluir `**/*.test.*` de ese bloque.
+### ✅ Bug latente encontrado y arreglado (post-resumen, commit `4d25966`)
+Dos archivos de test vivían en `app/routes/` (`api.wishlist.shape.test.js`,
+`account.favoritos.helper.test.js`). `flatRoutes` los tomaba como **rutas reales** y metía
+`vitest` al bundle de producción (`dist/server/index.js`) — además de crashear la colección de
+vitest vía `/virtual:react-router/server-build`. Fix: pasar `ignoredRouteFiles: ['**/*.test.*']`
+a `flatRoutes` en `app/routes.js`. Verificado: build limpio (0 refs a vitest en el bundle) y 143/143.
+
+### ✅ RESUELTO (post-resumen): `npm run lint` ya corre
+Estaba crasheando repo-wide: `eslint-plugin-jest` aplicaba la regla
+`jest/no-deprecated-functions` a `*.test.*` y truena ("Unable to detect Jest version")
+porque el proyecto usa **Vitest** (jest no instalado). Lo arreglé (commits `e66a037` + `4ab129e`):
+- Quité el plugin jest y declaré los globals de Vitest directamente.
+- Ignoré `design_download/` (mockups de referencia descargados, no son la app) y `**/*.d.ts`
+  (arreglaba el error `tsconfig.json ENOENT` al lintar `env.d.ts`).
+- Exenté `*.test.*` del veto a `@libsql/client` (los tests usan el build de Node para `:memory:`).
+- Permití `console` en `scripts/` y `*.mjs` (herramientas CLI).
+- Desactivé `react/jsx-no-comment-textnodes`: el diseño usa texto `//` a propósito en los
+  eyebrows (p.ej. `// Catálogo · 01`) — eran 28 falsos positivos, NO comentarios perdidos.
+
+Resultado: de 460 problemas espurios → **50 reales** (`npm run lint` ya es señal útil).
+
+### Pendiente (NO bloquea): 50 hallazgos de lint reales (a11y + código muerto)
+Son **pre-existentes del scaffold del storefront** (no del feature de auth/decorado/cotizaciones)
+y no rompen funcionalidad (143/143 tests, build OK). NO los toqué autónomo porque varios requieren
+criterio de diseño/markup (y tú defines tu estándar de a11y). Desglose (`npm run lint`):
+- 15 `jsx-a11y/label-has-associated-control` — `<label>` sin control asociado (añadir `htmlFor`+`id` o anidar el input).
+- 11 `no-unused-vars` — variables muertas.
+- 8 `jsx-a11y/no-static-element-interactions` + 8 `jsx-a11y/click-events-have-key-events` — `<div onClick>`
+  que deberían ser `<button>` o llevar `role` + handler de teclado.
+- 6 `react/no-array-index-key` (warning) · 2 `react-hooks/exhaustive-deps` (warning).
+Concentrados en: `registro.jsx`, `HomeSections.jsx`, `ProductCard.jsx`, `Header.jsx`, `Content.jsx`,
+`products.$handle.jsx`, `cotizacion.jsx`. Dime si quieres que haga la pasada de a11y y los limpie.
 
 ### Para probar TODO en vivo (mañana)
 1. `set -a; . ./.env; set +a; node scripts/migrate.mjs`  (crea email_tokens también).
