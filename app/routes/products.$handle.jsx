@@ -46,7 +46,7 @@ async function loadCriticalData({context, params, request}) {
 export default function Product() {
   const {product} = useLoaderData();
   const navigate = useNavigate();
-  const {isLoggedIn, canBuy, favs, toggleFav} = useApp();
+  const {isLoggedIn, canBuy, favs, toggleFav, addToQuote} = useApp();
   const toast = useToast();
 
   const selectedVariant = useOptimisticVariant(
@@ -99,20 +99,28 @@ export default function Product() {
   const isOffer = (product.tags || []).includes('oferta');
   const mainImage = images[activeImg]?.url || selectedVariant?.image?.url;
 
-  const {addToQuote} = useApp();
-  const handleQuote = () => {
-    addToQuote({
-      variantId: selectedVariant.id,
-      productId: product.id,
-      handle: product.handle,
-      title: product.title,
-      sku: selectedVariant.sku,
-      image: mainImage,
-      price: unit,
-      qty,
-      options: selectedVariant.selectedOptions,
-    });
-    toast(`${product.title} en tu lista de cotización`, {icon: 'quote', accent: true});
+  const handleQuote = async () => {
+    try {
+      await addToQuote({
+        variantId: selectedVariant.id,
+        // metadata used only by the anonymous client-side fallback render:
+        productId: product.id,
+        handle: product.handle,
+        title: product.title,
+        sku: selectedVariant.sku,
+        image: mainImage,
+        options: selectedVariant.selectedOptions,
+        // the five fields the server reads (spec §7.2); default to no decoration
+        // when the selector has not emitted a detail yet:
+        technique: decoDetail?.technique ?? 'Sin decorado',
+        surface: decoDetail?.surface ?? '',
+        size: decoDetail?.size ?? '',
+        qty: decoDetail?.qty ?? qty,
+      });
+      toast(`${product.title} en tu lista de cotización`, {icon: 'quote', accent: true});
+    } catch (err) {
+      toast(err.message || 'No se pudo agregar a la cotización');
+    }
   };
 
   return (
@@ -402,7 +410,7 @@ export default function Product() {
                   size="lg"
                   icon="quote"
                   onClick={handleQuote}
-                  disabled={decoError}
+                  disabled={Boolean(decoError) || !selectedVariant?.id}
                 >
                   Añadir a cotización
                 </Button>
