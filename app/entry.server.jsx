@@ -25,6 +25,10 @@ export default async function handleRequest(
     // Allow Google Fonts (Gantari / Open Sans / Bebas Neue — tipografías de marca)
     styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.shopify.com', 'https://fonts.googleapis.com'],
     fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+    // img-src falls back to default-src (self + cdn.shopify.com), which blocks
+    // the editorial/lifestyle imagery served from Unsplash (lookbook grid,
+    // hero, reviews). Allow it explicitly while keeping Shopify product images.
+    imgSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://images.unsplash.com'],
   });
 
   const body = await renderToReadableStream(
