@@ -27,6 +27,7 @@
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@graphql-codegen/cli": "5.0.2",
+    "@libsql/client": "^0.17.4",
     "@react-router/dev": "7.14.0",
     "@react-router/fs-routes": "7.14.0",
     "@shopify/cli": "3.93.2",
@@ -34,6 +35,8 @@
     "@shopify/mini-oxygen": "4.1.0",
     "@shopify/oxygen-workers-types": "^4.1.6",
     "@shopify/prettier-config": "^1.1.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/eslint": "^9.6.1",
     "@types/react": "^18.3.28",
@@ -51,9 +54,11 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
     "graphql-config": "^5.0.3",
+    "jsdom": "^29.1.1",
     "prettier": "^3.4.2",
     "typescript": "^5.9.2",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "vitest": "^4.1.9"
   },
   "engines": {
     "node": "^22 || ^24"
