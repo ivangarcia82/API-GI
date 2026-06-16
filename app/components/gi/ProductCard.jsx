@@ -56,7 +56,7 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
     return (
       <CartForm
         route="/cart"
-        inputs={{lines: [{merchandiseId: product.firstVariantId, quantity: product.moq}]}}
+        inputs={{lines: [{merchandiseId: product.firstVariantId, quantity: 1}]}}
         action={CartForm.ACTIONS.LinesAdd}
       >
         {(fetcher) => (
@@ -99,7 +99,7 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
           sku: product.sku,
           image: product.image,
           price: product.price,
-          qty: product.moq,
+          qty: 1,
         });
         toast(`${product.title} agregado a tu cotización`, {
           icon: 'quote',
@@ -129,9 +129,7 @@ export function ProductCard({product, view = 'grid'}) {
             {product.isOffer && <span className="tag tag-ink">Oferta</span>}
           </div>
           <div className="pcard-name">{product.title}</div>
-          <div className="pcard-sku">
-            {product.sku} · MOQ {product.moq} pz
-          </div>
+          <div className="pcard-sku">{product.sku}</div>
           {product.colors.length > 0 && <Swatches colors={product.colors} size={16} />}
         </div>
         <div className="pcard-list-actions">
@@ -184,9 +182,7 @@ export function ProductCard({product, view = 'grid'}) {
         </div>
       </div>
       <div className="pcard-info">
-        <div className="pcard-sku">
-          {product.sku} · MOQ {product.moq} pz
-        </div>
+        <div className="pcard-sku">{product.sku}</div>
         <div className="pcard-name">{product.title}</div>
         {product.colors.length > 0 && <Swatches colors={product.colors} />}
         <div className="pcard-foot">
