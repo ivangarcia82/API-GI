@@ -14,6 +14,8 @@ import {Button, PH} from '~/components/gi/ui';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, parseMoq, volumeTiers, colorHex, TECHNIQUES} from '~/lib/gi';
+import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
+import {getTechniques, calcDecoration} from '~/lib/decoration/engine.js';
 
 export const meta = ({data}) => [
   {title: `${data?.product?.title ?? 'Producto'} · Generando Ideas`},
@@ -72,6 +74,27 @@ export default function Product() {
   const [hasFile, setHasFile] = useState(false);
   const [technique, setTechnique] = useState(TECHNIQUES[0].id);
   const [tab, setTab] = useState('desc');
+  const [decoDetail, setDecoDetail] = useState(null);
+
+  // Decoration metafields → engine inputs (route uses the raw loader product,
+  // not normalizeProduct, so derive techniques/surface from product.metafields).
+  const readMetafield = (key) =>
+    (product.metafields || []).find(
+      (m) => m && m.namespace === 'custom' && m.key === key,
+    )?.value ?? null;
+  const decoProduct = {
+    techniques: getTechniques(readMetafield('tecnicas_de_impresion')),
+    surface: String(readMetafield('superficie') ?? ''),
+  };
+  const decoCalc = decoDetail
+    ? calcDecoration(
+        decoDetail.technique,
+        decoDetail.surface,
+        decoDetail.qty,
+        decoDetail.size,
+      )
+    : null;
+  const decoError = Boolean(decoCalc && decoCalc.error);
 
   const isFav = favs.includes(product.id);
   const tierPrice = tiers[tier]?.price ?? unit;
@@ -201,6 +224,19 @@ export default function Product() {
                   Iniciar sesión
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* DECORATION SELECTOR */}
+          {isLoggedIn && unit != null && decoProduct.techniques.length > 0 && (
+            <div className="pdp-section">
+              <h3>Decorado</h3>
+              <DecorationSelector
+                product={decoProduct}
+                basePrice={unit}
+                qty={qty}
+                onChange={setDecoDetail}
+              />
             </div>
           )}
 
@@ -397,6 +433,7 @@ export default function Product() {
                   size="lg"
                   icon="quote"
                   onClick={handleQuote}
+                  disabled={decoError}
                 >
                   Añadir a cotización
                 </Button>
