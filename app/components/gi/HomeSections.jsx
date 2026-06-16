@@ -185,7 +185,6 @@ export function ProductSpotlight({product}) {
   const specs = [
     {l: 'Material', v: product.vendor ? `Línea ${product.vendor}` : 'Premium'},
     {l: 'Personalización', v: 'Láser / Serigrafía'},
-    {l: 'Mínimo', v: `${product.moq} piezas`},
     {l: 'Entrega', v: '8–15 días'},
   ];
 

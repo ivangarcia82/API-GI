@@ -72,10 +72,6 @@ export default function Collection() {
               <div className="l">Productos</div>
             </div>
             <div>
-              <div className="n ticker">50</div>
-              <div className="l">MOQ promedio</div>
-            </div>
-            <div>
               <div className="n ticker">8–12d</div>
               <div className="l">Producción</div>
             </div>
