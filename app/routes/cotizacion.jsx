@@ -1,5 +1,5 @@
-import {useState} from 'react';
-import {useNavigate} from 'react-router';
+import {useEffect, useState} from 'react';
+import {useFetcher, useNavigate} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
@@ -30,11 +30,29 @@ function Gated({navigate}) {
 export default function Cotizacion() {
   const navigate = useNavigate();
   const toast = useToast();
+  const submitFetcher = useFetcher();
   const {hydrated, isLoggedIn, quote, updateQuoteQty, removeFromQuote, clearQuote} = useApp();
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
   const [notes, setNotes] = useState('');
   const [deadline, setDeadline] = useState('');
+  const submitting = submitFetcher.state !== 'idle';
+  const submitted = Boolean(result);
+
+  useEffect(() => {
+    const data = submitFetcher.data;
+    if (submitFetcher.state === 'idle' && data) {
+      if (data.error) {
+        toast(data.error, {icon: 'alert'});
+        return;
+      }
+      if (data.folio && !result) {
+        setResult(data);
+        toast('Cotización enviada · respuesta en menos de 24h', {icon: 'check', accent: true});
+        clearQuote();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitFetcher.state, submitFetcher.data]);
 
   if (!hydrated) {
     return <div className="container" style={{minHeight: '50vh'}} />;
@@ -46,13 +64,10 @@ export default function Cotizacion() {
   const totalPieces = quote.reduce((n, i) => n + i.qty, 0);
 
   const submit = () => {
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSubmitted(true);
-      toast('Cotización enviada · respuesta en menos de 24h', {icon: 'check', accent: true});
-      clearQuote();
-    }, 1400);
+    submitFetcher.submit(
+      {notes, deadline},
+      {method: 'POST', action: '/api/quote/submit', encType: 'application/x-www-form-urlencoded'},
+    );
   };
 
   if (submitted) {
@@ -78,6 +93,16 @@ export default function Cotizacion() {
             Tu solicitud fue enviada a nuestro equipo comercial.<br />
             Recibirás propuesta personalizada en menos de <strong>24 horas hábiles</strong>.
           </p>
+          <p style={{fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink-3)'}}>
+            Folio · {result.folio}
+          </p>
+          {result.invoiceUrl && (
+            <p>
+              <a href={result.invoiceUrl} target="_blank" rel="noreferrer">
+                Ver / pagar cotización
+              </a>
+            </p>
+          )}
           <div style={{display: 'flex', gap: 8, justifyContent: 'center'}}>
             <Button variant="primary" iconRight="arrow_right" onClick={() => navigate('/account/cotizaciones')}>
               Ver mis cotizaciones
@@ -148,7 +173,7 @@ export default function Cotizacion() {
               </div>
               <div className="cart-item-controls">
                 <div className="pdp-qty" style={{borderRadius: 999}}>
-                  <button onClick={() => updateQuoteQty(item.variantId, Math.max(1, item.qty - 25))}>
+                  <button onClick={() => updateQuoteQty(item.variantId, Math.max(1, item.qty - 1))}>
                     <Icon name="minus" size={12} />
                   </button>
                   <input
@@ -157,7 +182,7 @@ export default function Cotizacion() {
                       updateQuoteQty(item.variantId, Math.max(1, +e.target.value || 1))
                     }
                   />
-                  <button onClick={() => updateQuoteQty(item.variantId, item.qty + 25)}>
+                  <button onClick={() => updateQuoteQty(item.variantId, item.qty + 1)}>
                     <Icon name="plus" size={12} />
                   </button>
                 </div>
