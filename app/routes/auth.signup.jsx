@@ -4,6 +4,7 @@ import {getDb} from '~/lib/db/client';
 import {createUser, EmailTakenError} from '~/lib/auth/users';
 import {loginSession} from '~/lib/auth/session';
 import {linkSignupCustomer} from '~/lib/auth/signup-link';
+import {sendVerificationEmail} from '~/lib/auth/verify-link';
 
 /**
  * @param {import('./+types/auth.signup').Route.ActionArgs} args
@@ -47,6 +48,9 @@ export async function action({request, context}) {
   // gid on the user row; the session snapshot reads it just below.
   const shopifyGid = await linkSignupCustomer(db, context.env, user);
   user.shopifyCustomerGid = shopifyGid;
+
+  // Send the verification email (best-effort; signup succeeds even if it fails).
+  await sendVerificationEmail(db, context.env, user, new URL(request.url).origin);
 
   // Rotate to a brand-new session before setting identity (anti-fixation).
   await context.session.destroy();
