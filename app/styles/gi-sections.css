@@ -407,7 +407,8 @@
 .cpn-sku { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; }
 .cpn-name { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -0.02em; margin-top: 4px; }
 .customizer-group { display: flex; flex-direction: column; gap: 10px; }
-.customizer-group label {
+.customizer-group label,
+.customizer-group .cz-group-label {
   font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;

@@ -1,6 +1,5 @@
 /* Generando Ideas — site footer */
 import {NavLink} from 'react-router';
-import {Icon} from './Icon';
 
 function Logo() {
   return (
@@ -31,9 +30,17 @@ export function GiFooter() {
               Producción, fulfillment y proyectos especiales.
             </p>
             <div style={{display: 'flex', gap: 8, marginTop: 20}}>
-              {['LI', 'IG', 'FB'].map((s) => (
-                <div
-                  key={s}
+              {[
+                {s: 'LI', label: 'LinkedIn', href: 'https://www.linkedin.com/company/generandoideas'},
+                {s: 'IG', label: 'Instagram', href: 'https://www.instagram.com/generandoideas'},
+                {s: 'FB', label: 'Facebook', href: 'https://www.facebook.com/generandoideas'},
+              ].map((it) => (
+                <a
+                  key={it.s}
+                  href={it.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={it.label}
                   style={{
                     width: 36,
                     height: 36,
@@ -45,11 +52,11 @@ export function GiFooter() {
                     fontSize: 11,
                     fontWeight: 600,
                     color: 'var(--ink-3)',
-                    cursor: 'pointer',
+                    textDecoration: 'none',
                   }}
                 >
-                  {s}
-                </div>
+                  {it.s}
+                </a>
               ))}
             </div>
           </div>
@@ -74,9 +81,7 @@ export function GiFooter() {
         </div>
         <div className="footer-legal">
           <span>©2026 Generando Ideas · México</span>
-          <span>
-            <Icon name="bolt" size={11} className="" /> Powered by Remix + Shopify (Hydrogen)
-          </span>
+          <span>Producción · Fulfillment · Proyectos especiales</span>
         </div>
       </div>
     </footer>

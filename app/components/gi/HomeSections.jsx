@@ -104,14 +104,6 @@ export function HeroCollage({images = [], featured, isLoggedIn}) {
 
       <div className="hc-float hc-float-1">
         <img src={secondary} alt="" />
-        <div className="hc-rating">
-          <div style={{display: 'flex', gap: 1, color: 'var(--accent-deep)'}}>
-            {[0, 1, 2, 3, 4].map((s) => (
-              <Icon key={s} name="star_fill" size={11} />
-            ))}
-          </div>
-          <span>4.9 · 1,240 reseñas</span>
-        </div>
       </div>
       <div className="hc-float hc-float-2">
         <img src={tertiary} alt="" />
@@ -202,21 +194,6 @@ export function ProductSpotlight({product}) {
               alt={product.title}
               style={{transform: `translateY(${imgOffset}px) scale(1.12)`}}
             />
-          </div>
-          <div
-            className="spotlight-chip sc-1"
-            style={{
-              opacity: inView ? 1 : 0,
-              transform: inView ? 'translateY(0)' : 'translateY(20px)',
-            }}
-          >
-            <span className="sc-star">
-              <Icon name="star_fill" size={12} />
-            </span>
-            <div>
-              <div className="sc-v">4.9 · 86</div>
-              <div className="sc-l">Reseñas verificadas</div>
-            </div>
           </div>
           <div
             className="spotlight-chip sc-2"
@@ -323,6 +300,14 @@ function LookbookCard({lb, index, onClick}) {
       ref={ref}
       className={`lookbook-card lb-${lb.span}`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
       style={{
         opacity: inView ? 1 : 0,
         transform: inView ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.98)',
@@ -448,8 +433,8 @@ export function CustomizerSection({product}) {
               <div className="cpn-name">{product.title}</div>
             </div>
 
-            <div className="customizer-group">
-              <label>Color del producto</label>
+            <div className="customizer-group" role="group" aria-label="Color del producto">
+              <span className="cz-group-label">Color del producto</span>
               <div className="customizer-swatches">
                 {bgColors.map((c) => (
                   <button
@@ -464,8 +449,8 @@ export function CustomizerSection({product}) {
               </div>
             </div>
 
-            <div className="customizer-group">
-              <label>Técnica de marcado</label>
+            <div className="customizer-group" role="group" aria-label="Técnica de marcado">
+              <span className="cz-group-label">Técnica de marcado</span>
               <div className="customizer-segmented">
                 {['Grabado láser', 'Serigrafía', 'Sublimación'].map((t) => (
                   <button
@@ -479,8 +464,8 @@ export function CustomizerSection({product}) {
               </div>
             </div>
 
-            <div className="customizer-group">
-              <label>Posición del logo</label>
+            <div className="customizer-group" role="group" aria-label="Posición del logo">
+              <span className="cz-group-label">Posición del logo</span>
               <div className="customizer-segmented">
                 {[
                   {k: 'left', l: 'Izquierda'},

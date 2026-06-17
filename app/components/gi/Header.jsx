@@ -108,7 +108,7 @@ export function GiHeader({isLoggedIn}) {
                 </button>
                 {userMenu && (
                   <div
-                    onClick={() => setUserMenu(false)}
+                    role="menu"
                     style={{
                       position: 'absolute',
                       top: 'calc(100% + 8px)',
@@ -129,7 +129,11 @@ export function GiHeader({isLoggedIn}) {
                     ].map((m) => (
                       <button
                         key={m.to}
-                        onClick={() => navigate(m.to)}
+                        role="menuitem"
+                        onClick={() => {
+                          setUserMenu(false);
+                          navigate(m.to);
+                        }}
                         style={menuItemStyle}
                       >
                         <Icon name={m.icon} size={15} />
@@ -146,6 +150,8 @@ export function GiHeader({isLoggedIn}) {
                       <Form method="post" action="/auth/logout">
                         <button
                           type="submit"
+                          role="menuitem"
+                          onClick={() => setUserMenu(false)}
                           style={{...menuItemStyle, color: 'var(--ink-3)'}}
                         >
                           <Icon name="log_out" size={15} />
@@ -170,12 +176,7 @@ export function GiHeader({isLoggedIn}) {
       </header>
 
       {mobile && (
-        <div
-          className="mobile-menu"
-          onClick={(e) => {
-            if (e.target.tagName === 'A') setMobile(false);
-          }}
-        >
+        <div className="mobile-menu">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} onClick={() => setMobile(false)}>
               {n.label}

@@ -228,11 +228,6 @@ export default function Product() {
           <h1 className="pdp-title">{product.title}</h1>
 
           <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
-            <div style={{display: 'flex', gap: 1, color: 'var(--accent-deep)'}}>
-              {[0, 1, 2, 3, 4].map((s) => (
-                <Icon key={s} name="star_fill" size={14} />
-              ))}
-            </div>
             <span style={{fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-3)'}}>
               {product.vendor ? `Línea ${product.vendor}` : 'Producto promocional'}
             </span>

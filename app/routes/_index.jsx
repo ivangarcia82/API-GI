@@ -19,7 +19,6 @@ import {
   HOME_CATEGORIES,
   FEATURED_COLLECTIONS,
   LIFESTYLE,
-  REVIEWS,
   FAQ,
 } from '~/lib/gi';
 
@@ -416,82 +415,6 @@ export default function Homepage() {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className="section container">
-        <div className="section-head">
-          <div>
-            <div className="eyebrow">// Clientes · 06</div>
-            <h2>Confianza desde 2013.</h2>
-          </div>
-        </div>
-        <ScrollReveal>
-          <div
-            style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16}}
-            className="testimonials-grid"
-          >
-            {REVIEWS.map((r) => (
-              <div key={r.name} className="testi-card lift">
-                <div style={{display: 'flex', gap: 2, color: 'var(--accent-deep)'}}>
-                  {[0, 1, 2, 3, 4].map((s) => (
-                    <Icon key={s} name="star_fill" size={14} />
-                  ))}
-                </div>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 17,
-                    lineHeight: 1.4,
-                    fontFamily: 'var(--font-display)',
-                    fontWeight: 500,
-                    letterSpacing: '-0.01em',
-                    flex: 1,
-                  }}
-                >
-                  &ldquo;{r.quote}&rdquo;
-                </p>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    marginTop: 'auto',
-                    paddingTop: 16,
-                    borderTop: '1px solid var(--line)',
-                  }}
-                >
-                  <img
-                    src={r.avatar}
-                    alt=""
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid var(--bg)',
-                    }}
-                  />
-                  <div>
-                    <div style={{fontWeight: 600, fontSize: 14}}>{r.name}</div>
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: 11,
-                        color: 'var(--ink-4)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        marginTop: 2,
-                      }}
-                    >
-                      {r.company}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollReveal>
       </section>
 
       {/* FAQ */}
