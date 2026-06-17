@@ -1,5 +1,6 @@
 /* Generando Ideas — site footer */
 import {NavLink} from 'react-router';
+import {Icon} from './Icon';
 
 function Logo() {
   return (
@@ -31,12 +32,11 @@ export function GiFooter() {
             </p>
             <div style={{display: 'flex', gap: 8, marginTop: 20}}>
               {[
-                {s: 'LI', label: 'LinkedIn', href: 'https://www.linkedin.com/company/generandoideas'},
-                {s: 'IG', label: 'Instagram', href: 'https://www.instagram.com/generandoideas'},
-                {s: 'FB', label: 'Facebook', href: 'https://www.facebook.com/generandoideas'},
+                {name: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/generandoideasgi'},
+                {name: 'facebook', label: 'Facebook', href: 'https://www.facebook.com/generandoideasgi'},
               ].map((it) => (
                 <a
-                  key={it.s}
+                  key={it.name}
                   href={it.href}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -48,14 +48,10 @@ export function GiFooter() {
                     border: '1px solid var(--line)',
                     display: 'grid',
                     placeItems: 'center',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 11,
-                    fontWeight: 600,
                     color: 'var(--ink-3)',
-                    textDecoration: 'none',
                   }}
                 >
-                  {it.s}
+                  <Icon name={it.name} size={16} />
                 </a>
               ))}
             </div>
