@@ -1,7 +1,7 @@
 /* Generando Ideas — quote drawer (cart-style).
    The single surface for the B2B quote: add multiple products, adjust qty,
    add notes, and submit. Controlled by AppContext (quoteDrawerOpen). */
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useFetcher, useNavigate} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
@@ -22,6 +22,8 @@ export function QuoteDrawer() {
   const toast = useToast();
   const navigate = useNavigate();
   const submitFetcher = useFetcher();
+  const panelRef = useRef(null);
+  const lastFocusedRef = useRef(null);
   const [result, setResult] = useState(null);
   const [notes, setNotes] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -45,6 +47,42 @@ export function QuoteDrawer() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [quoteDrawerOpen, closeQuoteDrawer]);
+
+  // Focus management: move focus into the panel on open, trap Tab within it,
+  // and restore focus to the trigger on close.
+  useEffect(() => {
+    if (!quoteDrawerOpen) return undefined;
+    const panel = panelRef.current;
+    if (!panel) return undefined;
+    lastFocusedRef.current = document.activeElement;
+    const getFocusables = () =>
+      Array.from(
+        panel.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    getFocusables()[0]?.focus();
+
+    const onKey = (e) => {
+      if (e.key !== 'Tab') return;
+      const items = getFocusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    panel.addEventListener('keydown', onKey);
+    return () => {
+      panel.removeEventListener('keydown', onKey);
+      lastFocusedRef.current?.focus?.();
+    };
+  }, [quoteDrawerOpen]);
 
   // Reset the post-submit success view once the drawer is dismissed.
   useEffect(() => {
@@ -172,7 +210,14 @@ export function QuoteDrawer() {
                     </button>
                     <input
                       value={item.qty}
-                      onChange={(e) => updateQuoteQty(item.id, Math.max(1, +e.target.value || 1))}
+                      inputMode="numeric"
+                      aria-label="Cantidad"
+                      onChange={(e) =>
+                        updateQuoteQty(
+                          item.id,
+                          Math.min(100000, Math.max(1, +e.target.value || 1)),
+                        )
+                      }
                     />
                     <button onClick={() => updateQuoteQty(item.id, item.qty + 1)} aria-label="Aumentar cantidad">
                       <Icon name="plus" size={12} />
@@ -271,10 +316,17 @@ export function QuoteDrawer() {
         type="button"
         className="qd-scrim"
         aria-label="Cerrar cotización"
-        tabIndex={quoteDrawerOpen ? 0 : -1}
+        tabIndex={-1}
         onClick={closeQuoteDrawer}
       />
-      <aside className="qd-panel" role="dialog" aria-modal="true" aria-label="Tu cotización">
+      <aside
+        ref={panelRef}
+        className="qd-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tu cotización"
+        {...(quoteDrawerOpen ? {} : {inert: ''})}
+      >
         <header className="qd-head">
           <div>
             <div className="eyebrow">// Cotización</div>

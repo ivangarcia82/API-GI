@@ -50,7 +50,7 @@ export function HeroCollage({images = [], featured, isLoggedIn}) {
       <div className="hc-main">
         {pool.map((src, i) => (
           <img
-            key={i}
+            key={src}
             src={src}
             alt=""
             style={{
@@ -91,9 +91,9 @@ export function HeroCollage({images = [], featured, isLoggedIn}) {
           </div>
         )}
         <div className="hc-main-dots">
-          {pool.map((_, i) => (
+          {pool.map((src, i) => (
             <button
-              key={i}
+              key={src}
               className={i === idx ? 'on' : ''}
               onClick={() => setIdx(i)}
               aria-label={`Producto ${i + 1}`}
@@ -153,7 +153,8 @@ export function ImageMarquee({products = [], direction = 'left', speed = 50}) {
         }}
       >
         {duplicated.map((p, i) => (
-          <div key={i} className="img-marquee-item">
+          // eslint-disable-next-line react/no-array-index-key -- marquee intentionally repeats items
+          <div key={`${p.sku ?? p.title}-${i}`} className="img-marquee-item">
             <img src={p.image} alt={p.title} loading="lazy" />
             <div className="img-marquee-label">
               <span className="mm-sku">{p.sku}</span>
@@ -347,7 +348,7 @@ export function StatsBand() {
       <div className="container stats-band-inner">
         {stats.map((s, i) => (
           <div
-            key={i}
+            key={s.label}
             className="stats-band-item"
             style={{
               opacity: inView ? 1 : 0,
@@ -510,7 +511,7 @@ export function FAQAccordion({items}) {
     <div style={{display: 'flex', flexDirection: 'column'}}>
       {items.map((it, i) => (
         <div
-          key={i}
+          key={it.q}
           style={{
             borderTop: '1px solid var(--line)',
             borderBottom: i === items.length - 1 ? '1px solid var(--line)' : 'none',

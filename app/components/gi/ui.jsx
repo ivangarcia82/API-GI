@@ -100,6 +100,9 @@ export function useInView(opts = {}) {
     );
     obs.observe(ref.current);
     return () => obs.disconnect();
+    // Observe once on mount; `opts` is a per-render literal and would otherwise
+    // re-create the observer every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return [ref, inView];
 }
