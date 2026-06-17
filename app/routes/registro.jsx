@@ -21,7 +21,6 @@ export default function Registro() {
     rfc: '',
     needs: '',
     volume: '',
-    accountType: 'buyer',
     terms: false,
   });
   const setField = (k, v) => setForm((f) => ({...f, [k]: v}));
@@ -187,61 +186,6 @@ export default function Registro() {
 
           {step === 3 && (
             <>
-              <div className="field">
-                <label>¿Qué tipo de cuenta necesitas?</label>
-                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8}}>
-                  {[
-                    {k: 'buyer', icon: 'cart', t: 'Comprador', d: 'Compra directa con precios autorizados, sin esperar cotización.'},
-                    {k: 'quoter', icon: 'quote', t: 'Cotizador', d: 'Arma lista de productos y solicita propuesta personalizada.'},
-                  ].map((opt) => (
-                    <button
-                      key={opt.k}
-                      type="button"
-                      onClick={() => setField('accountType', opt.k)}
-                      style={{
-                        padding: 16,
-                        borderRadius: 12,
-                        border: `1.5px solid ${
-                          form.accountType === opt.k ? 'var(--ink)' : 'var(--line)'
-                        }`,
-                        background: 'var(--bg-elev)',
-                        textAlign: 'left',
-                        transition: 'all 220ms cubic-bezier(0.16,1,0.3,1)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          marginBottom: 8,
-                        }}
-                      >
-                        <Icon name={opt.icon} size={20} />
-                        <div
-                          style={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: '50%',
-                            border: `1.5px solid ${
-                              form.accountType === opt.k ? 'var(--ink)' : 'var(--line-strong)'
-                            }`,
-                            background: form.accountType === opt.k ? 'var(--ink)' : 'transparent',
-                            display: 'grid',
-                            placeItems: 'center',
-                            color: 'var(--bg-elev)',
-                          }}
-                        >
-                          {form.accountType === opt.k && <Icon name="check" size={10} />}
-                        </div>
-                      </div>
-                      <div style={{fontWeight: 600, fontSize: 14, marginBottom: 4}}>{opt.t}</div>
-                      <div style={{fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.4}}>{opt.d}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="field">
                 <label>¿Qué buscas? (opcional)</label>
                 <textarea

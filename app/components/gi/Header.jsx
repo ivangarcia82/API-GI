@@ -9,6 +9,7 @@ const NAV = [
   {to: '/catalogo', label: 'Catálogo'},
   {to: '/collections', label: 'Colecciones'},
   {to: '/lookbook', label: 'Lookbook'},
+  {to: '/contacto', label: 'Contacto'},
 ];
 
 function Logo() {

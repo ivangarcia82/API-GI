@@ -16,7 +16,7 @@ export function isEmailStubMode(env) {
  * @param {{to: string, subject: string, html: string}} msg
  * @returns {Promise<{stub: boolean, id: string|null}>}
  */
-export async function sendEmail(env, {to, subject, html}) {
+export async function sendEmail(env, {to, subject, html, replyTo}) {
   if (isEmailStubMode(env)) {
     console.warn(
       '[email][STUB] sendEmail invoked (no RESEND_API_KEY). ' +
@@ -31,7 +31,13 @@ export async function sendEmail(env, {to, subject, html}) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${env.RESEND_API_KEY}`,
     },
-    body: JSON.stringify({from: env.EMAIL_FROM, to, subject, html}),
+    body: JSON.stringify({
+      from: env.EMAIL_FROM,
+      to,
+      subject,
+      html,
+      ...(replyTo ? {reply_to: replyTo} : {}),
+    }),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {

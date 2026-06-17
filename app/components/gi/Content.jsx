@@ -1,5 +1,6 @@
-/* Generando Ideas — content page primitives (servicios, nosotros, contacto) */
-import {useState} from 'react';
+/* Generando Ideas — content page primitives (contacto) */
+import {useEffect} from 'react';
+import {Form, useActionData, useNavigation} from 'react-router';
 import {Icon} from './Icon';
 import {Button} from './ui';
 import {useToast} from '~/lib/AppContext';
@@ -69,7 +70,20 @@ export function StubScreen({title, label, desc, items}) {
 
 export function ContactScreen() {
   const toast = useToast();
-  const [sent, setSent] = useState(false);
+  const actionData = useActionData();
+  const {state} = useNavigation();
+  const submitting = state !== 'idle';
+  const sent = Boolean(actionData && actionData.ok);
+
+  useEffect(() => {
+    if (!actionData) return;
+    if (actionData.ok) {
+      toast('Mensaje enviado · te contactaremos pronto', {icon: 'check', accent: true});
+    } else if (actionData.error) {
+      toast(actionData.error, {icon: 'alert'});
+    }
+  }, [actionData, toast]);
+
   return (
     <div className="container" data-screen-label="10 Contact" style={{padding: '40px 0 80px'}}>
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56}} className="contact-grid">
@@ -148,42 +162,59 @@ export function ContactScreen() {
           >
             Envíanos un mensaje
           </h3>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setSent(true);
-              toast('Mensaje enviado · te contactaremos pronto', {icon: 'check', accent: true});
-            }}
-            style={{display: 'flex', flexDirection: 'column', gap: 14}}
-          >
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
-              <div className="field">
-                <label>Nombre</label>
-                <input className="input" required />
+          {sent ? (
+            <div className="empty" style={{padding: '40px 24px'}}>
+              <div className="qd-success-check" style={{margin: '0 auto 12px'}}>
+                <Icon name="check" size={24} strokeWidth={2.5} />
+              </div>
+              <h3>¡Mensaje enviado!</h3>
+              <p>Gracias por escribirnos. Un asesor te contactará pronto.</p>
+            </div>
+          ) : (
+            <Form method="post" style={{display: 'flex', flexDirection: 'column', gap: 14}}>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
+                <div className="field">
+                  <label htmlFor="c-name">Nombre</label>
+                  <input id="c-name" name="name" className="input" required />
+                </div>
+                <div className="field">
+                  <label htmlFor="c-company">Empresa</label>
+                  <input id="c-company" name="company" className="input" />
+                </div>
               </div>
               <div className="field">
-                <label>Empresa</label>
-                <input className="input" required />
+                <label htmlFor="c-email">Correo</label>
+                <input id="c-email" name="email" className="input" type="email" required />
               </div>
-            </div>
-            <div className="field">
-              <label>Correo</label>
-              <input className="input" type="email" required />
-            </div>
-            <div className="field">
-              <label>¿En qué te ayudamos?</label>
-              <textarea
-                className="input"
-                rows="5"
-                style={{resize: 'vertical', fontFamily: 'inherit'}}
-                placeholder="Cuéntanos sobre tu proyecto…"
-                required
-              />
-            </div>
-            <Button type="submit" variant="primary" size="lg" iconRight="arrow_right" style={{justifyContent: 'center'}}>
-              {sent ? 'Mensaje enviado ✓' : 'Enviar mensaje'}
-            </Button>
-          </form>
+              <div className="field">
+                <label htmlFor="c-message">¿En qué te ayudamos?</label>
+                <textarea
+                  id="c-message"
+                  name="message"
+                  className="input"
+                  rows="5"
+                  style={{resize: 'vertical', fontFamily: 'inherit'}}
+                  placeholder="Cuéntanos sobre tu proyecto…"
+                  required
+                />
+              </div>
+              {actionData?.error && (
+                <p className="error-msg" role="alert">
+                  {actionData.error}
+                </p>
+              )}
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                iconRight="arrow_right"
+                disabled={submitting}
+                style={{justifyContent: 'center'}}
+              >
+                {submitting ? 'Enviando…' : 'Enviar mensaje'}
+              </Button>
+            </Form>
+          )}
         </div>
       </div>
     </div>
