@@ -17,10 +17,22 @@ import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
 import {getVariantInventory} from '~/lib/admin/operations';
 
-export const meta = ({data}) => [
-  {title: `${data?.product?.title ?? 'Producto'} · Generando Ideas`},
-  {rel: 'canonical', href: `/products/${data?.product?.handle}`},
-];
+export const meta = ({data}) => {
+  const p = data?.product;
+  const desc =
+    p?.seo?.description ||
+    p?.description ||
+    'Artículo promocional personalizable. Cotiza en línea con precios por proyecto.';
+  const img = p?.featuredImage?.url;
+  return [
+    {title: `${p?.title ?? 'Producto'} · Generando Ideas`},
+    {name: 'description', content: desc},
+    {rel: 'canonical', href: `/products/${p?.handle}`},
+    {property: 'og:title', content: `${p?.title ?? 'Producto'} · Generando Ideas`},
+    {property: 'og:description', content: desc},
+    ...(img ? [{property: 'og:image', content: img}] : []),
+  ];
+};
 
 export async function loader(args) {
   const criticalData = await loadCriticalData(args);
@@ -69,6 +81,9 @@ export default function Product() {
   });
 
   const unit = selectedVariant?.price ? parseFloat(selectedVariant.price.amount) : null;
+  const compareAt = selectedVariant?.compareAtPrice
+    ? parseFloat(selectedVariant.compareAtPrice.amount)
+    : null;
   const currency = selectedVariant?.price?.currencyCode || 'MXN';
 
   const images = product.images?.nodes?.length
@@ -76,6 +91,9 @@ export default function Product() {
     : [selectedVariant?.image].filter(Boolean);
 
   const [qty, setQty] = useState(1);
+  // The input can sit briefly empty ('') while editing; qtyNum is the numeric
+  // value used for all pricing/math so a transient empty field never yields NaN.
+  const qtyNum = typeof qty === 'number' && qty >= 1 ? qty : 1;
   const [activeImg, setActiveImg] = useState(0);
   const [tab, setTab] = useState('desc');
   const [decoDetail, setDecoDetail] = useState(null);
@@ -90,11 +108,13 @@ export default function Product() {
     techniques: getTechniques(readMetafield('tecnicas_de_impresion')),
     surface: String(readMetafield('material') ?? ''),
   };
+  // Recompute decoration from the live quantity (qtyNum), not decoDetail.qty —
+  // otherwise the total flashes a stale value for a frame on each qty change.
   const decoCalc = decoDetail
     ? calcDecoration(
         decoDetail.technique,
         decoDetail.surface,
-        decoDetail.qty,
+        qtyNum,
         decoDetail.size,
       )
     : null;
@@ -102,8 +122,8 @@ export default function Product() {
 
   // Single integrated price: unit + total, decoration already folded in.
   const decoTotal = decoCalc && !decoCalc.error ? decoCalc.totalPrice : 0;
-  const effUnit = unit != null ? round2(effectiveUnitPrice(unit, decoTotal, qty)) : null;
-  const effTotal = unit != null ? round2(unit * qty + decoTotal) : null;
+  const effUnit = unit != null ? round2(effectiveUnitPrice(unit, decoTotal, qtyNum)) : null;
+  const effTotal = unit != null ? round2(unit * qtyNum + decoTotal) : null;
 
   const isFav = favs.includes(product.id);
   const isNew = (product.tags || []).includes('nuevo');
@@ -126,7 +146,7 @@ export default function Product() {
         technique: decoDetail?.technique ?? 'Sin decorado',
         surface: decoDetail?.surface ?? '',
         size: decoDetail?.size ?? '',
-        qty: decoDetail?.qty ?? qty,
+        qty: qtyNum,
       });
       toast(`${product.title} en tu lista de cotización`, {icon: 'quote', accent: true});
       openQuoteDrawer();
@@ -165,13 +185,15 @@ export default function Product() {
           {images.length > 1 && (
             <div className="pdp-thumbs">
               {images.slice(0, 5).map((img, i) => (
-                <div
-                  key={i}
+                <button
+                  type="button"
+                  key={img.url ?? i}
                   className={`pdp-thumb ${activeImg === i ? 'active' : ''}`}
                   onClick={() => setActiveImg(i)}
+                  aria-label={`Ver imagen ${i + 1}`}
                 >
                   <PH src={img.url} alt="" />
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -220,31 +242,55 @@ export default function Product() {
 
           {/* PRICE */}
           {isLoggedIn ? (
-            <div className="pdp-price-bar">
-              <div>
-                <div className="pdp-price-from">Precio por pieza</div>
-                <div className="pdp-price">{formatPrice(effUnit, currency)}</div>
-              </div>
-              <div style={{textAlign: 'right'}}>
-                <div className="pdp-price-from">Total · {qty} pz</div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontWeight: 600,
-                    fontSize: 22,
-                    color: 'var(--ink-2)',
-                    letterSpacing: '-0.01em',
-                  }}
-                >
-                  {formatPrice(effTotal, currency)}
+            unit != null ? (
+              <div className="pdp-price-bar">
+                <div>
+                  <div className="pdp-price-from">Precio por pieza</div>
+                  <div className="pdp-price">{formatPrice(effUnit, currency)}</div>
+                  {compareAt != null && compareAt > unit && decoTotal === 0 && (
+                    <div
+                      style={{
+                        textDecoration: 'line-through',
+                        color: 'var(--ink-4)',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 13,
+                        marginTop: 2,
+                      }}
+                    >
+                      {formatPrice(compareAt, currency)}
+                    </div>
+                  )}
+                </div>
+                <div style={{textAlign: 'right'}}>
+                  <div className="pdp-price-from">Total · {qtyNum} pz</div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontWeight: 600,
+                      fontSize: 22,
+                      color: 'var(--ink-2)',
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    {formatPrice(effTotal, currency)}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="pdp-price-bar">
+                <div>
+                  <div className="pdp-price-from">Precio</div>
+                  <div className="pdp-price" style={{fontSize: 20}}>
+                    Consultar con asesor
+                  </div>
+                </div>
+              </div>
+            )
           ) : (
             <div className="pdp-gated">
               <Icon name="eye_off" size={20} className="muted-2" />
               <h3>Precios solo para clientes registrados</h3>
-              <p>Crea tu cuenta gratuita para ver precios, cotizar y comprar.</p>
+              <p>Crea tu cuenta gratuita para ver precios y cotizar.</p>
               <div style={{display: 'flex', gap: 8, justifyContent: 'center'}}>
                 <Button variant="accent" iconRight="arrow_right" onClick={() => navigate('/registro')}>
                   Crear cuenta
@@ -262,7 +308,7 @@ export default function Product() {
               <h3>Decorado</h3>
               <DecorationSelector
                 product={decoProduct}
-                qty={qty}
+                qty={qtyNum}
                 onChange={setDecoDetail}
               />
             </div>
@@ -279,7 +325,6 @@ export default function Product() {
                   {option.optionValues.map((value) => {
                     const {
                       name,
-                      handle,
                       variantUriQuery,
                       selected,
                       available,
@@ -323,16 +368,26 @@ export default function Product() {
             <h3>Cantidad</h3>
             <div style={{display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap'}}>
               <div className="pdp-qty">
-                <button onClick={() => setQty(Math.max(1, qty - 1))}>
+                <button onClick={() => setQty(Math.max(1, qtyNum - 1))} aria-label="Disminuir cantidad">
                   <Icon name="minus" size={14} />
                 </button>
                 <input
                   type="number"
                   value={qty}
-                  onChange={(e) => setQty(Math.max(1, +e.target.value || 1))}
                   min={1}
+                  inputMode="numeric"
+                  aria-label="Cantidad"
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === '') return setQty('');
+                    const n = parseInt(v, 10);
+                    if (!Number.isNaN(n)) setQty(Math.max(1, n));
+                  }}
+                  onBlur={() => {
+                    if (qty === '' || qty < 1) setQty(1);
+                  }}
                 />
-                <button onClick={() => setQty(qty + 1)}>
+                <button onClick={() => setQty(qtyNum + 1)} aria-label="Aumentar cantidad">
                   <Icon name="plus" size={14} />
                 </button>
               </div>

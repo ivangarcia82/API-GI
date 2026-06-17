@@ -52,7 +52,7 @@ export function buildAdvisorEmail({advisorEmail, quote, user, items, invoiceUrl}
     .join('');
 
   const invoiceBlock = invoiceUrl
-    ? `<p><a href="${escapeHtml(invoiceUrl)}">Ver / pagar cotización en Shopify</a></p>`
+    ? `<p><a href="${escapeHtml(invoiceUrl)}">Ver cotización en Shopify</a></p>`
     : '';
 
   const notesBlock = quote.notes

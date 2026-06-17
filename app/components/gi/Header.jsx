@@ -1,6 +1,6 @@
 /* Generando Ideas — site header */
 import {useState} from 'react';
-import {NavLink, useNavigate} from 'react-router';
+import {Form, NavLink, useNavigate} from 'react-router';
 import {Icon} from './Icon';
 import {Button} from './ui';
 import {useApp} from '~/lib/AppContext';
@@ -143,13 +143,15 @@ export function GiHeader({isLoggedIn}) {
                         paddingTop: 4,
                       }}
                     >
-                      <button
-                        onClick={() => navigate('/account/logout')}
-                        style={{...menuItemStyle, color: 'var(--ink-3)'}}
-                      >
-                        <Icon name="log_out" size={15} />
-                        Cerrar sesión
-                      </button>
+                      <Form method="post" action="/auth/logout">
+                        <button
+                          type="submit"
+                          style={{...menuItemStyle, color: 'var(--ink-3)'}}
+                        >
+                          <Icon name="log_out" size={15} />
+                          Cerrar sesión
+                        </button>
+                      </Form>
                     </div>
                   </div>
                 )}

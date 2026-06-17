@@ -4,7 +4,7 @@ import {Link, useLoaderData} from 'react-router';
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.policy.title ?? ''}`}];
+  return [{title: `${data?.policy.title ?? 'Política'} · Generando Ideas`}];
 };
 
 /**
@@ -44,15 +44,24 @@ export default function Policy() {
   const {policy} = useLoaderData();
 
   return (
-    <div className="policy">
-      <br />
-      <br />
-      <div>
-        <Link to="/policies">← Back to Policies</Link>
+    <div className="container policy" style={{padding: '40px 0 80px', maxWidth: 760}}>
+      <div style={{marginBottom: 16}}>
+        <Link to="/policies" style={{color: 'var(--ink-3)', fontWeight: 600}}>
+          ← Volver a políticas
+        </Link>
       </div>
-      <br />
-      <h1>{policy.title}</h1>
-      <div dangerouslySetInnerHTML={{__html: policy.body}} />
+      <h1
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
+          fontSize: 'clamp(32px, 4vw, 52px)',
+          letterSpacing: '-0.03em',
+          margin: '8px 0 24px',
+        }}
+      >
+        {policy.title}
+      </h1>
+      <div className="rte" dangerouslySetInnerHTML={{__html: policy.body}} />
     </div>
   );
 }

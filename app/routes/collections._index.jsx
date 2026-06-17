@@ -2,11 +2,22 @@ import {useLoaderData, useNavigate} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {PH} from '~/components/gi/ui';
 
-export const meta = () => [{title: 'Colecciones · Generando Ideas'}];
+export const meta = () => [
+  {title: 'Colecciones · Generando Ideas'},
+  {
+    name: 'description',
+    content:
+      'Explora nuestras colecciones de artículos promocionales: líneas premium, ecológicas y temáticas para campañas B2B en México.',
+  },
+];
 
 export async function loader({context}) {
-  const {collections} = await context.storefront.query(COLLECTIONS_QUERY);
-  const items = (collections?.nodes || []).map((c) => ({
+  const data = await context.storefront.query(COLLECTIONS_QUERY).catch((error) => {
+    // Don't 500 the whole page on a Storefront hiccup; render an empty state.
+    console.error('[collections] query failed:', error);
+    return null;
+  });
+  const items = (data?.collections?.nodes || []).map((c) => ({
     id: c.id,
     handle: c.handle,
     title: c.title,
@@ -35,12 +46,18 @@ export default function Collections() {
             maxWidth: 900,
           }}
         >
-          {collections.length} colecciones curadas<br />
-          para campañas{' '}
-          <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent-deep)'}}>
-            precisas
-          </em>
-          .
+          {collections.length > 0 ? (
+            <>
+              {collections.length} colecciones curadas<br />
+              para campañas{' '}
+              <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent-deep)'}}>
+                precisas
+              </em>
+              .
+            </>
+          ) : (
+            'Colecciones'
+          )}
         </h1>
         <p style={{color: 'var(--ink-3)', fontSize: 17, maxWidth: 600}}>
           Cada colección une calidad, oferta y propósito. Desde nuestras líneas premium
@@ -48,6 +65,13 @@ export default function Collections() {
         </p>
       </div>
 
+      {collections.length === 0 ? (
+        <div className="empty" style={{marginBottom: 80}}>
+          <Icon name="search" size={32} className="muted-2" />
+          <h3>No hay colecciones por ahora</h3>
+          <p>Vuelve pronto o explora el catálogo completo.</p>
+        </div>
+      ) : (
       <div
         style={{
           display: 'grid',
@@ -62,6 +86,14 @@ export default function Collections() {
             key={c.id}
             className="coll-card"
             onClick={() => navigate(`/collections/${c.handle}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate(`/collections/${c.handle}`);
+              }
+            }}
+            role="button"
+            tabIndex={0}
             style={{minHeight: 420}}
           >
             <div className="coll-card-img">
@@ -92,6 +124,7 @@ export default function Collections() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

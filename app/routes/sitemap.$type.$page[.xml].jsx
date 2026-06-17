@@ -4,15 +4,19 @@ import {getSitemap} from '@shopify/hydrogen';
  * @param {Route.LoaderArgs}
  */
 export async function loader({request, params, context: {storefront}}) {
+  // This store no longer ships /pages or /blogs routes — don't emit sitemaps
+  // whose URLs would 404.
+  if (params.type === 'pages' || params.type === 'articles') {
+    throw new Response('Not found', {status: 404});
+  }
+
   const response = await getSitemap({
     storefront,
     request,
     params,
-    locales: ['EN-US', 'EN-CA', 'FR-CA'],
-    getLink: ({type, baseUrl, handle, locale}) => {
-      if (!locale) return `${baseUrl}/${type}/${handle}`;
-      return `${baseUrl}/${locale}/${type}/${handle}`;
-    },
+    // Single-locale store (es-MX); no locale-prefixed URLs.
+    locales: [],
+    getLink: ({type, baseUrl, handle}) => `${baseUrl}/${type}/${handle}`,
   });
 
   response.headers.set('Cache-Control', `max-age=${60 * 60 * 24}`);

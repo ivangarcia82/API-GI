@@ -1963,3 +1963,7 @@
   text-align: center;
   margin: 10px 0 0;
 }
+
+/* Contact (/contacto) */
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+@media (max-width: 880px) { .contact-grid { grid-template-columns: 1fr; gap: 32px; } }

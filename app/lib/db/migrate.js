@@ -12,6 +12,9 @@ const STATEMENTS = [
     last_name            TEXT,
     company              TEXT,
     rfc                  TEXT,
+    phone                TEXT,
+    volume               TEXT,
+    needs                TEXT,
     role                 TEXT NOT NULL DEFAULT 'quoter',
     shopify_customer_gid TEXT,
     email_verified_at    TEXT,
@@ -88,6 +91,9 @@ export async function migrate(db) {
   // Idempotent column additions for databases created before the column
   // existed (CREATE TABLE IF NOT EXISTS won't alter an existing table).
   await addColumnIfMissing(db, 'quote_items', 'image', 'TEXT');
+  await addColumnIfMissing(db, 'users', 'phone', 'TEXT');
+  await addColumnIfMissing(db, 'users', 'volume', 'TEXT');
+  await addColumnIfMissing(db, 'users', 'needs', 'TEXT');
 }
 
 async function addColumnIfMissing(db, table, column, type) {

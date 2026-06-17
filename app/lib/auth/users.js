@@ -23,6 +23,9 @@ function rowToUser(row) {
     lastName: row.last_name ?? null,
     company: row.company ?? null,
     rfc: row.rfc ?? null,
+    phone: row.phone ?? null,
+    volume: row.volume ?? null,
+    needs: row.needs ?? null,
     role: row.role,
     shopifyCustomerGid: row.shopify_customer_gid ?? null,
     sessionVersion: Number(row.session_version),
@@ -32,7 +35,7 @@ function rowToUser(row) {
   };
 }
 
-const SELECT_COLS = `id, email, first_name, last_name, company, rfc, role,
+const SELECT_COLS = `id, email, first_name, last_name, company, rfc, phone, volume, needs, role,
   shopify_customer_gid, session_version, email_verified_at, created_at, updated_at`;
 
 // Detects the libSQL UNIQUE-constraint violation surfaced by Turso.
@@ -41,7 +44,7 @@ function isUniqueViolation(err) {
   return msg.includes('UNIQUE') || msg.includes('CONSTRAINT');
 }
 
-export async function createUser(db, env, {email, password, firstName, lastName, company, rfc, role}) {
+export async function createUser(db, env, {email, password, firstName, lastName, company, rfc, phone, volume, needs, role}) {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   const normalizedEmail = normalizeEmail(email);
@@ -50,9 +53,9 @@ export async function createUser(db, env, {email, password, firstName, lastName,
     await db.execute({
       sql: `INSERT INTO users
         (id, email, password_hash, password_salt, password_iterations,
-         session_version, first_name, last_name, company, rfc, role,
+         session_version, first_name, last_name, company, rfc, phone, volume, needs, role,
          shopify_customer_gid, email_verified_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
       args: [
         id,
         normalizedEmail,
@@ -63,6 +66,9 @@ export async function createUser(db, env, {email, password, firstName, lastName,
         lastName ?? null,
         company ?? null,
         rfc ?? null,
+        phone ?? null,
+        volume ?? null,
+        needs ?? null,
         role ?? 'quoter',
         now,
         now,
@@ -79,6 +85,9 @@ export async function createUser(db, env, {email, password, firstName, lastName,
     lastName: lastName ?? null,
     company: company ?? null,
     rfc: rfc ?? null,
+    phone: phone ?? null,
+    volume: volume ?? null,
+    needs: needs ?? null,
     role: role ?? 'quoter',
     shopifyCustomerGid: null,
     sessionVersion: 1,

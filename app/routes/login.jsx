@@ -1,4 +1,4 @@
-import {Form, useActionData, useNavigation} from 'react-router';
+import {Form, useActionData, useNavigation, useLoaderData} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
 
@@ -6,8 +6,15 @@ export {action} from './auth.login.jsx';
 
 export const meta = () => [{title: 'Iniciar sesión · Generando Ideas'}];
 
+/** @param {{request: Request}} args */
+export function loader({request}) {
+  const url = new URL(request.url);
+  return {registrado: url.searchParams.get('registrado') === '1'};
+}
+
 export default function Login() {
   const actionData = useActionData();
+  const {registrado} = useLoaderData();
   const nav = useNavigation();
   const busy = nav.state !== 'idle';
 
@@ -17,6 +24,29 @@ export default function Login() {
         <div className="eyebrow">// Acceso · /login</div>
         <h1>Inicia sesión.</h1>
         <p>Accede a tu lista de cotización y al historial de cotizaciones.</p>
+
+        {registrado && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
+              alignItems: 'start',
+              padding: 14,
+              marginBottom: 16,
+              background: 'var(--accent-soft, var(--bg-soft))',
+              borderRadius: 12,
+              fontSize: 13,
+              color: 'var(--ink-2)',
+            }}
+            role="status"
+          >
+            <Icon name="check" size={16} className="muted" />
+            <span>
+              <strong style={{color: 'var(--ink)'}}>Cuenta creada.</strong> Te enviamos un
+              correo para verificar tu cuenta. Ábrelo y haz clic en el enlace para activarla.
+            </span>
+          </div>
+        )}
 
         <Form className="auth-form" method="post">
           <div className="field">

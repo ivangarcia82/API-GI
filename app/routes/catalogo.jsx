@@ -9,7 +9,14 @@ import {
 } from '~/lib/giFragments';
 import {normalizeProduct, HOME_CATEGORIES, FEATURED_COLLECTIONS, colorHex} from '~/lib/gi';
 
-export const meta = () => [{title: 'Catálogo · Generando Ideas'}];
+export const meta = () => [
+  {title: 'Catálogo · Generando Ideas'},
+  {
+    name: 'description',
+    content:
+      'Catálogo de artículos promocionales y regalos corporativos personalizables. Filtra por categoría, color y precio, y cotiza en línea.',
+  },
+];
 
 const SORTS = {
   relevance: {global: ['RELEVANCE', false], collection: ['COLLECTION_DEFAULT', false]},

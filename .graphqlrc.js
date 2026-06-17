@@ -16,12 +16,8 @@ const graphqlConfig = {
       ],
     },
 
-    customer: {
-      schema: getSchema('customer-account'),
-      documents: ['./app/graphql/customer-account/*.{ts,tsx,js,jsx}'],
-    },
-
-    // Add your own GraphQL projects here for CMS, Shopify Admin API, etc.
+    // Customer Account API is unused (quote-only store; custom auth handles
+    // accounts). Add your own GraphQL projects here for CMS, Admin API, etc.
   },
 };
 

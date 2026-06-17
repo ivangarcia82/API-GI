@@ -8,7 +8,7 @@ import {getEmptyPredictiveSearchResult} from '~/lib/search';
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: `Hydrogen | Search`}];
+  return [{title: `Buscar · Generando Ideas`}];
 };
 
 /**
@@ -38,33 +38,35 @@ export default function SearchPage() {
   if (type === 'predictive') return null;
 
   return (
-    <div className="search">
-      <h1>Search</h1>
+    <div className="search container" style={{padding: '40px 0 80px'}}>
+      <div className="eyebrow">// Buscar · /search</div>
+      <h1 style={{fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(36px,5vw,64px)', letterSpacing: '-0.03em', margin: '12px 0 20px'}}>
+        Buscar
+      </h1>
       <SearchForm>
         {({inputRef}) => (
           <>
             <input
+              className="input"
               defaultValue={term}
               name="q"
-              placeholder="Search…"
+              placeholder="Busca productos…"
               ref={inputRef}
               type="search"
             />
             &nbsp;
-            <button type="submit">Search</button>
+            <button className="btn btn-primary" type="submit">Buscar</button>
           </>
         )}
       </SearchForm>
-      {error && <p style={{color: 'red'}}>{error}</p>}
+      {error && <p style={{color: 'var(--err)'}}>{error}</p>}
       {!term || !result?.total ? (
         <SearchResults.Empty />
       ) : (
         <SearchResults result={result} term={term}>
-          {({articles, pages, products, term}) => (
+          {({products, term}) => (
             <div>
               <SearchResults.Products products={products} term={term} />
-              <SearchResults.Pages pages={pages} term={term} />
-              <SearchResults.Articles articles={articles} term={term} />
             </div>
           )}
         </SearchResults>

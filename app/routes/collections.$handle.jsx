@@ -1,14 +1,21 @@
 import {useLoaderData, useNavigate, redirect} from 'react-router';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {Icon} from '~/components/gi/Icon';
-import {PH} from '~/components/gi/ui';
+import {Button, PH} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {GI_PRODUCT_CARD_FRAGMENT} from '~/lib/giFragments';
 import {normalizeProduct} from '~/lib/gi';
 
-export const meta = ({data}) => [
-  {title: `${data?.collection?.title ?? 'Colección'} · Generando Ideas`},
-];
+export const meta = ({data}) => {
+  const c = data?.collection;
+  const desc =
+    c?.description ||
+    `Productos de la colección ${c?.title ?? ''} para campañas y regalos corporativos. Cotiza en línea.`;
+  return [
+    {title: `${c?.title ?? 'Colección'} · Generando Ideas`},
+    {name: 'description', content: desc},
+  ];
+};
 
 export async function loader(args) {
   const {handle} = args.params;
@@ -104,11 +111,22 @@ export default function Collection() {
           </h2>
           <span className="cat-results-meta">{products.length} productos</span>
         </div>
-        <div className="product-grid stagger">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <div className="empty">
+            <Icon name="search" size={32} className="muted-2" />
+            <h3>Aún no hay productos en esta colección</h3>
+            <p>Explora el catálogo completo mientras la preparamos.</p>
+            <Button variant="accent" iconRight="arrow_right" onClick={() => navigate('/catalogo')}>
+              Ver catálogo
+            </Button>
+          </div>
+        ) : (
+          <div className="product-grid stagger">
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </div>
 
       <Analytics.CollectionView

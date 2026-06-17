@@ -59,8 +59,15 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
       className={className}
       onClick={(e) => {
         e.stopPropagation();
+        // Quick-add needs a real ProductVariant gid to price + image the line.
+        // Without one, send the user to the PDP to choose a variant instead of
+        // creating a $0, imageless quote line.
+        if (!product.firstVariantId) {
+          navigate(`/products/${product.handle}`);
+          return;
+        }
         addToQuote({
-          variantId: product.firstVariantId || product.id,
+          variantId: product.firstVariantId,
           productId: product.id,
           handle: product.handle,
           title: product.title,
@@ -87,10 +94,22 @@ export function ProductCard({product, view = 'grid'}) {
   const toast = useToast();
   const isFav = favs.includes(product.id);
   const go = () => navigate(`/products/${product.handle}`);
+  const onCardKey = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      go();
+    }
+  };
 
   if (view === 'list') {
     return (
-      <div className="pcard-list lift" onClick={go}>
+      <div
+        className="pcard-list lift"
+        onClick={go}
+        role="button"
+        tabIndex={0}
+        onKeyDown={onCardKey}
+      >
         <PH src={product.image} alt={product.imageAlt} zoom />
         <div style={{display: 'flex', flexDirection: 'column', gap: 4}}>
           <div style={{display: 'flex', gap: 6}}>
@@ -121,7 +140,13 @@ export function ProductCard({product, view = 'grid'}) {
   }
 
   return (
-    <div className="pcard" onClick={go}>
+    <div
+      className="pcard"
+      onClick={go}
+      role="button"
+      tabIndex={0}
+      onKeyDown={onCardKey}
+    >
       <div className="pcard-img">
         <PH src={product.image} alt={product.imageAlt} zoom />
         <div className="pcard-badges">

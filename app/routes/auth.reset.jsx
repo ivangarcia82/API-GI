@@ -2,7 +2,7 @@ import {data, redirect, Form, useLoaderData, useActionData} from 'react-router';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {getDb} from '~/lib/db/client';
 import {verifyAndConsumeToken} from '~/lib/auth/tokens';
-import {updatePassword, findById} from '~/lib/auth/users';
+import {updatePassword, findById, markEmailVerified} from '~/lib/auth/users';
 import {loginSession} from '~/lib/auth/session';
 
 /**
@@ -34,6 +34,12 @@ export async function action({request, context}) {
 
   await updatePassword(db, context.env, consumed.userId, password);
   const user = await findById(db, consumed.userId);
+
+  // Clicking an emailed reset link proves inbox ownership, so treat the email as
+  // verified — otherwise a reset would dead-end at the "verify your email" gate.
+  if (user && !user.emailVerifiedAt) {
+    await markEmailVerified(db, user.id);
+  }
 
   // Rotate the session to a fresh one, then log the user in.
   await context.session.destroy();

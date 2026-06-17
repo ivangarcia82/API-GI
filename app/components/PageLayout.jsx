@@ -12,8 +12,11 @@ import {QuoteDrawer} from '~/components/gi/QuoteDrawer';
 export function PageLayout({cart, isLoggedIn = false, children}) {
   return (
     <>
+      <a href="#main" className="skip-link">
+        Saltar al contenido
+      </a>
       <GiHeader cart={cart} isLoggedIn={isLoggedIn} />
-      <main style={{minHeight: '60vh'}} className="fade-in">
+      <main id="main" tabIndex={-1} style={{minHeight: '60vh'}} className="fade-in">
         {children}
       </main>
       <GiFooter />

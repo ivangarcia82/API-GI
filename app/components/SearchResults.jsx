@@ -1,5 +1,5 @@
 import {Link} from 'react-router';
-import {Image, Money, Pagination} from '@shopify/hydrogen';
+import {Image, Pagination} from '@shopify/hydrogen';
 import {urlWithTrackingParams} from '~/lib/search';
 
 /**
@@ -94,7 +94,7 @@ function SearchResultsProducts({term, products}) {
 
   return (
     <div className="search-result">
-      <h2>Products</h2>
+      <h2>Productos</h2>
       <Pagination connection={products}>
         {({nodes, isLoading, NextLink, PreviousLink}) => {
           const ItemsMarkup = nodes.map((product) => {
@@ -104,7 +104,6 @@ function SearchResultsProducts({term, products}) {
               term,
             });
 
-            const price = product?.selectedOrFirstAvailableVariant?.price;
             const image = product?.selectedOrFirstAvailableVariant?.image;
 
             return (
@@ -115,7 +114,6 @@ function SearchResultsProducts({term, products}) {
                   )}
                   <div>
                     <p>{product.title}</p>
-                    <small>{price && <Money data={price} />}</small>
                   </div>
                 </Link>
               </div>
@@ -148,7 +146,7 @@ function SearchResultsProducts({term, products}) {
 }
 
 function SearchResultsEmpty() {
-  return <p>No results, try a different search.</p>;
+  return <p>Sin resultados. Intenta con otra búsqueda.</p>;
 }
 
 /** @typedef {RegularSearchReturn['result']['items']} SearchItems */

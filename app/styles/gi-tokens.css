@@ -697,3 +697,20 @@ img, svg {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
+
+/* Skip-to-content link: visually hidden until focused (keyboard a11y) */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 200;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--bg-elev);
+  border-radius: 0 0 8px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 160ms ease;
+}
+.skip-link:focus { top: 0; outline: 2px solid var(--accent); }

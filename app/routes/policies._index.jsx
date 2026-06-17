@@ -1,5 +1,7 @@
 import {useLoaderData, Link} from 'react-router';
 
+export const meta = () => [{title: 'Políticas · Generando Ideas'}];
+
 /**
  * @param {Route.LoaderArgs}
  */
@@ -27,13 +29,39 @@ export default function Policies() {
   const {policies} = useLoaderData();
 
   return (
-    <div className="policies">
-      <h1>Policies</h1>
-      <div>
+    <div className="container policies" style={{padding: '40px 0 80px'}}>
+      <div className="eyebrow">// Legal · /policies</div>
+      <h1
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
+          fontSize: 'clamp(36px, 5vw, 64px)',
+          letterSpacing: '-0.03em',
+          margin: '12px 0 24px',
+        }}
+      >
+        Políticas
+      </h1>
+      <div style={{display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 520}}>
         {policies.map((policy) => (
-          <fieldset key={policy.id}>
-            <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
-          </fieldset>
+          <Link
+            key={policy.id}
+            to={`/policies/${policy.handle}`}
+            className="lift"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 20px',
+              background: 'var(--bg-elev)',
+              border: '1px solid var(--line)',
+              borderRadius: 12,
+              fontWeight: 600,
+            }}
+          >
+            {policy.title}
+            <span aria-hidden>→</span>
+          </Link>
         ))}
       </div>
     </div>

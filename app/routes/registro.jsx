@@ -16,7 +16,6 @@ export default function Registro() {
     email: '',
     password: '',
     company: '',
-    role: '',
     phone: '',
     rfc: '',
     needs: '',
@@ -55,6 +54,9 @@ export default function Registro() {
           <input type="hidden" name="password" value={form.password} />
           <input type="hidden" name="company" value={form.company} />
           <input type="hidden" name="rfc" value={form.rfc} />
+          <input type="hidden" name="phone" value={form.phone} />
+          <input type="hidden" name="volume" value={form.volume} />
+          <input type="hidden" name="needs" value={form.needs} />
 
           {step === 1 && (
             <>
@@ -111,8 +113,9 @@ export default function Registro() {
                 />
               </div>
               <div className="field">
-                <label>Teléfono</label>
+                <label htmlFor="reg-phone">Teléfono</label>
                 <input
+                  id="reg-phone"
                   className="input"
                   type="tel"
                   value={form.phone}
@@ -137,23 +140,6 @@ export default function Registro() {
                 />
               </div>
               <div className="field">
-                <label>Tu rol</label>
-                <select
-                  className="input"
-                  value={form.role}
-                  onChange={(e) => setField('role', e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona…</option>
-                  <option>Recursos Humanos</option>
-                  <option>Marketing</option>
-                  <option>Compras</option>
-                  <option>Comunicación interna</option>
-                  <option>Agencia / Cliente externo</option>
-                  <option>Otro</option>
-                </select>
-              </div>
-              <div className="field">
                 <label htmlFor="reg-rfc">RFC (opcional)</label>
                 <input
                   id="reg-rfc"
@@ -167,8 +153,9 @@ export default function Registro() {
                 </span>
               </div>
               <div className="field">
-                <label>Volumen mensual estimado</label>
+                <label htmlFor="reg-volume">Volumen mensual estimado</label>
                 <select
+                  id="reg-volume"
                   className="input"
                   value={form.volume}
                   onChange={(e) => setField('volume', e.target.value)}
@@ -187,8 +174,9 @@ export default function Registro() {
           {step === 3 && (
             <>
               <div className="field">
-                <label>¿Qué buscas? (opcional)</label>
+                <label htmlFor="reg-needs">¿Qué buscas? (opcional)</label>
                 <textarea
+                  id="reg-needs"
                   className="input"
                   rows="3"
                   value={form.needs}

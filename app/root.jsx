@@ -50,6 +50,20 @@ export const shouldRevalidate = ({formMethod, currentUrl, nextUrl}) => {
  * It's a temporary fix until the issue is resolved.
  * https://github.com/remix-run/remix/issues/9242
  */
+/**
+ * Brand SEO defaults. React Router renders the deepest route's meta, so this
+ * applies as a fallback to routes that don't export their own meta.
+ * @type {Route.MetaFunction}
+ */
+export const meta = () => [
+  {title: 'Generando Ideas · Artículos promocionales y regalos corporativos B2B'},
+  {
+    name: 'description',
+    content:
+      'Catálogo B2B de artículos promocionales y regalos corporativos personalizados en México. Cotiza en línea con precios por proyecto.',
+  },
+];
+
 export function links() {
   return [
     {rel: 'preconnect', href: 'https://cdn.shopify.com'},
@@ -149,7 +163,7 @@ async function loadCriticalData({context}) {
  * @param {Route.LoaderArgs}
  */
 function loadDeferredData({context}) {
-  const {storefront, customerAccount, cart} = context;
+  const {storefront, cart} = context;
 
   // defer the footer query (below the fold)
   const footer = storefront
@@ -181,6 +195,9 @@ export function Layout({children}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Generando Ideas" />
+        <meta name="twitter:card" content="summary_large_image" />
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={giTokens}></link>
         <link rel="stylesheet" href={giScreens}></link>
@@ -226,25 +243,35 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  let errorMessage = 'Unknown error';
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
-    errorMessage = error?.data?.message ?? error.data;
     errorStatus = error.status;
-  } else if (error instanceof Error) {
-    errorMessage = error.message;
   }
+  const isNotFound = errorStatus === 404;
 
   return (
-    <div className="route-error">
-      <h1>Oops</h1>
-      <h2>{errorStatus}</h2>
-      {errorMessage && (
-        <fieldset>
-          <pre>{errorMessage}</pre>
-        </fieldset>
-      )}
+    <div className="container" style={{padding: '96px 0', textAlign: 'center'}}>
+      <div className="eyebrow">// Error {errorStatus}</div>
+      <h1
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
+          fontSize: 'clamp(40px, 6vw, 72px)',
+          letterSpacing: '-0.03em',
+          margin: '12px 0 12px',
+        }}
+      >
+        {isNotFound ? 'Página no encontrada' : 'Algo salió mal'}
+      </h1>
+      <p style={{color: 'var(--ink-3)', maxWidth: 480, margin: '0 auto 24px'}}>
+        {isNotFound
+          ? 'La página que buscas no existe o fue movida.'
+          : 'Ocurrió un error inesperado. Intenta de nuevo en unos momentos.'}
+      </p>
+      <a className="btn btn-primary" href="/">
+        Volver al inicio
+      </a>
     </div>
   );
 }

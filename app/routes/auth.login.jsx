@@ -2,8 +2,9 @@ import {redirect, data} from 'react-router';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {getDb} from '~/lib/db/client';
 import {findByEmail, normalizeEmail} from '~/lib/auth/users';
-import {verifyPassword} from '~/lib/auth/password';
+import {verifyPassword, hashPassword} from '~/lib/auth/password';
 import {loginSession} from '~/lib/auth/session';
+import {sendVerificationEmail} from '~/lib/auth/verify-link';
 
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_ATTEMPTS = 8; // per email OR per IP within the window
@@ -77,9 +78,11 @@ export async function action({request, context}) {
       iterations: Number(row?.password_iterations ?? 100000),
     }, context.env);
   } else {
-    // Dummy rec: keeps the verify path warm so timing matches the user-exists case.
-    const dummyRec = {hash: '', salt: '', iterations: 100000};
-    await verifyPassword(password, dummyRec, context.env);
+    // No user: run an equivalent PBKDF2 (pepper + derive, 100k) so the response
+    // timing matches the user-exists path. Defeats account enumeration via latency.
+    // (The previous dummy rec had an empty hash, which verifyPassword short-circuits
+    // before doing any crypto — leaking that the account doesn't exist.)
+    await hashPassword(password, context.env);
   }
 
   if (!user || !ok) {
@@ -88,6 +91,20 @@ export async function action({request, context}) {
   }
 
   await recordAttempt(db, email, ip, true);
+
+  // Gate access on a verified email. Credentials are valid, but until the email
+  // is confirmed the account stays locked — re-send the link and block sign-in.
+  if (!user.emailVerifiedAt) {
+    await sendVerificationEmail(db, context.env, user, new URL(request.url).origin);
+    return data(
+      {
+        error:
+          'Tu cuenta aún no está verificada. Te reenviamos el enlace de verificación a tu correo.',
+        needsVerification: true,
+      },
+      {status: 403},
+    );
+  }
 
   // Rotate the session before setting identity (anti-fixation).
   await context.session.destroy();

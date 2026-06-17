@@ -4,7 +4,14 @@ import {Button} from '~/components/gi/ui';
 import {LookbookGrid} from '~/components/gi/HomeSections';
 import {LIFESTYLE} from '~/lib/gi';
 
-export const meta = () => [{title: 'Lookbook · Generando Ideas'}];
+export const meta = () => [
+  {title: 'Lookbook · Generando Ideas'},
+  {
+    name: 'description',
+    content:
+      'Inspiración de proyectos: kits de bienvenida, merch de marca y regalos corporativos personalizados por Generando Ideas.',
+  },
+];
 
 export default function Lookbook() {
   const navigate = useNavigate();

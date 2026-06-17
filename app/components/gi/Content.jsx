@@ -86,7 +86,7 @@ export function ContactScreen() {
 
   return (
     <div className="container" data-screen-label="10 Contact" style={{padding: '40px 0 80px'}}>
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56}} className="contact-grid">
+      <div className="contact-grid">
         <div>
           <div className="eyebrow">// Contacto · /contacto</div>
           <h1
@@ -172,6 +172,15 @@ export function ContactScreen() {
             </div>
           ) : (
             <Form method="post" style={{display: 'flex', flexDirection: 'column', gap: 14}}>
+              {/* Honeypot: invisible to humans; bots fill it and get silently dropped. */}
+              <input
+                type="text"
+                name="company_website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0}}
+              />
               <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
                 <div className="field">
                   <label htmlFor="c-name">Nombre</label>
@@ -182,9 +191,15 @@ export function ContactScreen() {
                   <input id="c-company" name="company" className="input" />
                 </div>
               </div>
-              <div className="field">
-                <label htmlFor="c-email">Correo</label>
-                <input id="c-email" name="email" className="input" type="email" required />
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
+                <div className="field">
+                  <label htmlFor="c-email">Correo</label>
+                  <input id="c-email" name="email" className="input" type="email" required />
+                </div>
+                <div className="field">
+                  <label htmlFor="c-phone">Teléfono (opcional)</label>
+                  <input id="c-phone" name="phone" className="input" type="tel" />
+                </div>
               </div>
               <div className="field">
                 <label htmlFor="c-message">¿En qué te ayudamos?</label>

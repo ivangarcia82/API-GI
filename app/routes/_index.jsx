@@ -243,6 +243,14 @@ export default function Homepage() {
                 key={c.handle}
                 className={`coll-card ${i === 0 ? 'coll-card-large' : ''}`}
                 onClick={() => navigate(`/collections/${c.handle}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/collections/${c.handle}`);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
               >
                 <div className="coll-card-img">
                   <PH
@@ -322,7 +330,7 @@ export default function Homepage() {
           <div className="how-steps">
             {[
               {num: '01', title: 'Explora el catálogo', desc: '1,800+ productos visibles. Crea favoritos y compara sin registro previo.'},
-              {num: '02', title: 'Cotiza o compra', desc: 'Compradores aprobados pagan directo. Clientes nuevos solicitan cotización con un clic.'},
+              {num: '02', title: 'Solicita tu cotización', desc: 'Agrega productos a tu lista y envíala a un asesor con un clic. Te respondemos con precios por proyecto.'},
               {num: '03', title: 'Aprueba arte', desc: 'Subes tu logo, preparamos dummies digitales para tu validación en 24h.'},
               {num: '04', title: 'Recibe y rastrea', desc: 'Producción 8-15 días. Fulfillment opcional con envíos individuales.'},
             ].map((s) => (

@@ -2,7 +2,6 @@ import {redirect, data} from 'react-router';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {getDb} from '~/lib/db/client';
 import {createUser, EmailTakenError} from '~/lib/auth/users';
-import {loginSession} from '~/lib/auth/session';
 import {linkSignupCustomer} from '~/lib/auth/signup-link';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
 
@@ -19,6 +18,9 @@ export async function action({request, context}) {
   const lastName = String(form.get('lastName') ?? '') || null;
   const company = String(form.get('company') ?? '') || null;
   const rfc = String(form.get('rfc') ?? '') || null;
+  const phone = String(form.get('phone') ?? '') || null;
+  const volume = String(form.get('volume') ?? '') || null;
+  const needs = String(form.get('needs') ?? '') || null;
 
   if (!email || password.length < 8) {
     return data({error: 'Correo y contraseña (mínimo 8 caracteres) son obligatorios.'}, {status: 400});
@@ -35,6 +37,9 @@ export async function action({request, context}) {
       lastName,
       company,
       rfc,
+      phone,
+      volume,
+      needs,
       role: 'quoter',
     });
   } catch (err) {
@@ -44,23 +49,14 @@ export async function action({request, context}) {
     throw err;
   }
 
-  // Link to Shopify (best-effort; reconciled later if it fails). Sets the
-  // gid on the user row; the session snapshot reads it just below.
+  // Link to Shopify (best-effort; reconciled later if it fails).
   const shopifyGid = await linkSignupCustomer(db, context.env, user);
   user.shopifyCustomerGid = shopifyGid;
 
   // Send the verification email (best-effort; signup succeeds even if it fails).
   await sendVerificationEmail(db, context.env, user, new URL(request.url).origin);
 
-  // Rotate to a brand-new session before setting identity (anti-fixation).
-  await context.session.destroy();
-  loginSession(context.session, {
-    userId: user.id,
-    role: user.role,
-    gid: user.shopifyCustomerGid,
-    sessionVersion: user.sessionVersion,
-  });
-
-  // server.js (isPending) attaches Set-Cookie to the redirect response.
-  return redirect('/account');
+  // Account access requires a verified email — do NOT create a session here.
+  // The user verifies via the emailed link (which logs them in), then can sign in.
+  return redirect('/login?registrado=1');
 }

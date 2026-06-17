@@ -1,7 +1,8 @@
-import {data, useLoaderData} from 'react-router';
+import {data, redirect, useLoaderData} from 'react-router';
 import {getDb} from '~/lib/db/client';
 import {verifyAndConsumeToken} from '~/lib/auth/tokens';
-import {markEmailVerified} from '~/lib/auth/users';
+import {markEmailVerified, findById} from '~/lib/auth/users';
+import {loginSession} from '~/lib/auth/session';
 
 /**
  * @param {import('./+types/auth.verify').Route.LoaderArgs} args
@@ -15,6 +16,20 @@ export async function loader({request, context}) {
   if (!consumed) return data({ok: false});
 
   await markEmailVerified(db, consumed.userId);
+
+  // Verifying the email proves inbox ownership — log the user straight in so
+  // clicking the link lands them in their account (Set-Cookie rides the redirect).
+  const user = await findById(db, consumed.userId);
+  if (user) {
+    await context.session.destroy();
+    loginSession(context.session, {
+      userId: user.id,
+      role: user.role,
+      gid: user.shopifyCustomerGid,
+      sessionVersion: user.sessionVersion,
+    });
+    return redirect('/account');
+  }
   return data({ok: true});
 }
 
