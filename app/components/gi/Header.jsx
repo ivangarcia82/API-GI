@@ -26,7 +26,7 @@ function Logo() {
 
 export function GiHeader({isLoggedIn}) {
   const navigate = useNavigate();
-  const {quoteCount, openQuoteDrawer} = useApp();
+  const {quoteCount, openQuoteDrawer, openSearch} = useApp();
   const [mobile, setMobile] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
 
@@ -50,7 +50,7 @@ export function GiHeader({isLoggedIn}) {
             <button
               className="appbar-iconbtn"
               aria-label="Buscar"
-              onClick={() => navigate('/search')}
+              onClick={openSearch}
             >
               <Icon name="search" size={18} />
             </button>

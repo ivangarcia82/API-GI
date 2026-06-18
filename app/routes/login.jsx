@@ -141,7 +141,7 @@ export default function Login() {
           ))}
         </div>
         <div className="auth-quote">
-          “Pedimos 1,200 kits de bienvenida personalizados. Llegaron en 11 días, impecables.”
+          “Pedimos 1,200 kits de bienvenida personalizados. Llegaron impecables, justo como los pedimos.”
           <div style={{marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent)'}}>
             MARIANA RUIZ · HR LEAD · BANORTE
           </div>

@@ -12,7 +12,10 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
-import {formatPrice, colorHex} from '~/lib/gi';
+import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
+import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
+import {ProductCard} from '~/components/gi/ProductCard';
+import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
 import {getVariantInventory} from '~/lib/admin/operations';
@@ -56,16 +59,24 @@ async function loadCriticalData({context, params, request}) {
   // Inventory comes from the Admin API (the Hydrogen-managed Storefront token
   // can't get the inventory scope). Best-effort: needs the Admin `read_inventory`
   // scope + a real Admin token; degrades to null (no badge) otherwise.
-  const stock = await getVariantInventory(
-    context.env,
-    product.selectedOrFirstAvailableVariant?.id,
-  );
+  // Related products power the "Productos similares" strip; best-effort too.
+  const [stock, recommendations] = await Promise.all([
+    getVariantInventory(context.env, product.selectedOrFirstAvailableVariant?.id),
+    storefront
+      .query(GI_PRODUCT_RECOMMENDATIONS_QUERY, {variables: {productId: product.id}})
+      .then((r) =>
+        (r?.productRecommendations || [])
+          .map(normalizeProduct)
+          .filter((p) => p && p.id !== product.id),
+      )
+      .catch(() => []),
+  ]);
 
-  return {product, stock};
+  return {product, stock, recommendations};
 }
 
 export default function Product() {
-  const {product, stock} = useLoaderData();
+  const {product, stock, recommendations = []} = useLoaderData();
   const navigate = useNavigate();
   const {isLoggedIn, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
@@ -130,6 +141,30 @@ export default function Product() {
   const isOffer = (product.tags || []).includes('oferta');
   const mainImage = images[activeImg]?.url || selectedVariant?.image?.url;
 
+  // Compact snapshot for the "Vistos recientemente" history (ProductCard shape).
+  const colorOption = (product.options || []).find((o) => /color/i.test(o.name));
+  const recentSnapshot = {
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    sku: selectedVariant?.sku || product.handle?.toUpperCase() || '',
+    image:
+      product.featuredImage?.url ||
+      images[0]?.url ||
+      selectedVariant?.image?.url ||
+      null,
+    imageAlt: product.featuredImage?.altText || product.title,
+    price: unit,
+    currency,
+    colors: colorOption
+      ? colorOption.optionValues.map((v) => v.name).slice(0, 8)
+      : [],
+    isNew,
+    isOffer,
+    firstVariantId:
+      product.selectedOrFirstAvailableVariant?.id || selectedVariant?.id || null,
+  };
+
   const handleQuote = async () => {
     try {
       await addToQuote({
@@ -156,7 +191,8 @@ export default function Product() {
   };
 
   return (
-    <div className="container" data-screen-label={`06 Product: ${product.title}`}>
+    <>
+      <div className="container" data-screen-label={`06 Product: ${product.title}`}>
       {/* Breadcrumbs */}
       <div
         style={{
@@ -229,7 +265,7 @@ export default function Product() {
 
           <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
             <span style={{fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-3)'}}>
-              {product.vendor ? `Línea ${product.vendor}` : 'Producto promocional'}
+              Producto promocional
             </span>
           </div>
 
@@ -440,7 +476,7 @@ export default function Product() {
             }}
           >
             {[
-              {icon: 'truck', label: 'Producción', value: '8–15 días'},
+              {icon: 'truck', label: 'Producción', value: 'Bajo pedido'},
               {icon: 'package', label: 'Personalización', value: 'Incluida'},
               {icon: 'shield', label: 'Garantía', value: 'Reposición s/c'},
             ].map((m) => (
@@ -507,26 +543,53 @@ export default function Product() {
             <table>
               <tbody>
                 <tr><td>SKU</td><td className="mono">{selectedVariant?.sku || product.handle}</td></tr>
-                <tr><td>Proveedor</td><td>{product.vendor || 'Generando Ideas'}</td></tr>
+                <tr><td>Marca</td><td>Generando Ideas</td></tr>
                 <tr><td>Técnicas</td><td>{decoProduct.techniques.length ? decoProduct.techniques.join(' · ') : 'Consultar con asesor'}</td></tr>
-                <tr><td>Tiempo de producción</td><td>8–15 días hábiles</td></tr>
-                <tr><td>Origen</td><td>México · proveeduría seleccionada</td></tr>
+                <tr><td>Tiempo de producción</td><td>Según técnica y volumen</td></tr>
+                <tr><td>Origen</td><td>México</td></tr>
               </tbody>
             </table>
           )}
           {tab === 'logistics' && (
             <table>
               <tbody>
-                <tr><td>Tiempo de producción</td><td>8–15 días hábiles</td></tr>
-                <tr><td>Envío nacional</td><td>2–5 días hábiles, paquetería seleccionada</td></tr>
+                <tr><td>Tiempo de producción</td><td>Según técnica y volumen</td></tr>
+                <tr><td>Envío nacional</td><td>Paquetería seleccionada</td></tr>
                 <tr><td>Cobertura</td><td>Toda la República Mexicana</td></tr>
                 <tr><td>Devoluciones</td><td>Reposición sin costo en defectos de fabricación</td></tr>
-                <tr><td>Fulfillment</td><td>Disponible · envíos individuales con tu identidad</td></tr>
               </tbody>
             </table>
           )}
         </div>
       </div>
+      </div>
+
+      {/* PRODUCTOS SIMILARES */}
+      {recommendations.length > 0 && (
+        <section className="section container" style={{paddingTop: 8}}>
+          <div className="section-head">
+            <div>
+              <div className="eyebrow">// Relacionados</div>
+              <h2>Productos similares</h2>
+            </div>
+            <Button
+              variant="ghost"
+              iconRight="arrow_right"
+              onClick={() => navigate('/catalogo')}
+            >
+              Ver catálogo
+            </Button>
+          </div>
+          <div className="product-grid">
+            {recommendations.slice(0, 4).map((rec) => (
+              <ProductCard key={rec.id} product={rec} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* VISTOS RECIENTEMENTE */}
+      <RecentlyViewed current={recentSnapshot} />
 
       <Analytics.ProductView
         data={{
@@ -535,7 +598,6 @@ export default function Product() {
               id: product.id,
               title: product.title,
               price: selectedVariant?.price?.amount || '0',
-              vendor: product.vendor,
               variantId: selectedVariant?.id || '',
               variantTitle: selectedVariant?.title || '',
               quantity: 1,
@@ -543,7 +605,7 @@ export default function Product() {
           ],
         }}
       />
-    </div>
+    </>
   );
 }
 
@@ -566,7 +628,6 @@ const PRODUCT_FRAGMENT = `#graphql
   fragment Product on Product {
     id
     title
-    vendor
     handle
     tags
     descriptionHtml

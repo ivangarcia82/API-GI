@@ -101,7 +101,7 @@ export default function Lookbook() {
                 'Curaduría temática por temporada',
                 'Empaque y kitting personalizado',
                 'Dummies digitales antes de producir',
-                'Fulfillment con envíos individuales',
+                'Envíos individuales personalizados',
               ].map((t) => (
                 <li key={t}>
                   <Icon name="check" size={15} /> {t}

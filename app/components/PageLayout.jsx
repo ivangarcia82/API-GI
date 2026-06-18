@@ -2,6 +2,7 @@
 import {GiHeader} from '~/components/gi/Header';
 import {GiFooter} from '~/components/gi/Footer';
 import {QuoteDrawer} from '~/components/gi/QuoteDrawer';
+import {GiSearchModal} from '~/components/gi/SearchModal';
 
 /**
  * @param {object} props
@@ -21,6 +22,7 @@ export function PageLayout({cart, isLoggedIn = false, children}) {
       </main>
       <GiFooter />
       <QuoteDrawer />
+      <GiSearchModal />
     </>
   );
 }

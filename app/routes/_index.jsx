@@ -331,7 +331,7 @@ export default function Homepage() {
               {num: '01', title: 'Explora el catálogo', desc: '1,800+ productos visibles. Crea favoritos y compara sin registro previo.'},
               {num: '02', title: 'Solicita tu cotización', desc: 'Agrega productos a tu lista y envíala a un asesor con un clic. Te respondemos con precios por proyecto.'},
               {num: '03', title: 'Aprueba arte', desc: 'Subes tu logo, preparamos dummies digitales para tu validación en 24h.'},
-              {num: '04', title: 'Recibe y rastrea', desc: 'Producción 8-15 días. Fulfillment opcional con envíos individuales.'},
+              {num: '04', title: 'Recibe y rastrea', desc: 'Coordinamos la producción y el envío de tu pedido con seguimiento en cada etapa.'},
             ].map((s) => (
               <div key={s.num} className="how-step">
                 <div className="num">{s.num}</div>
@@ -400,7 +400,7 @@ export default function Homepage() {
           <div className="feat-strip-list">
             {[
               {icon: 'shield', title: 'Calidad garantizada', desc: 'Inspección al 100% antes de envío. Reposición sin costo en cualquier defecto.'},
-              {icon: 'truck', title: 'Logística nacional', desc: 'Cobertura en CDMX, Yucatán, Sonora y Baja California Sur. Fulfillment punto a punto.'},
+              {icon: 'truck', title: 'Logística nacional', desc: 'Cobertura en CDMX, Yucatán, Sonora y Baja California Sur. Envíos a todo el país.'},
               {icon: 'sparkle', title: 'Diseño incluido', desc: 'Dummies digitales y propuestas creativas sin costo para clientes registrados.'},
             ].map((f) => (
               <div key={f.title} className="feat-row">

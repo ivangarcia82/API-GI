@@ -113,7 +113,7 @@ export function HeroCollage({images = [], featured, isLoggedIn}) {
         <Icon name="bolt" size={14} />
         <div>
           <div className="hc-chip-l">Producción</div>
-          <div className="hc-chip-v">8–15 días</div>
+          <div className="hc-chip-v">Nacional</div>
         </div>
       </div>
       <div className="hc-chip hc-chip-2">
@@ -176,9 +176,9 @@ export function ProductSpotlight({product}) {
   if (!product) return null;
 
   const specs = [
-    {l: 'Material', v: product.vendor ? `Línea ${product.vendor}` : 'Premium'},
+    {l: 'Material', v: product.surface || 'Premium'},
     {l: 'Personalización', v: 'Láser / Serigrafía'},
-    {l: 'Entrega', v: '8–15 días'},
+    {l: 'Garantía', v: 'Reposición s/c'},
   ];
 
   return (
@@ -340,7 +340,7 @@ export function StatsBand() {
     {to: 1847, label: 'Productos en catálogo', suffix: ''},
     {to: 49, label: 'Colecciones curadas', suffix: ''},
     {to: 420, label: 'Clientes corporativos', suffix: '+'},
-    {to: 98, label: 'Satisfacción de entrega', suffix: '%'},
+    {to: 98, label: 'Satisfacción del cliente', suffix: '%'},
   ];
   return (
     <section className="stats-band" ref={ref}>

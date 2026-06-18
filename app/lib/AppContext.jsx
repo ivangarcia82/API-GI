@@ -58,6 +58,11 @@ export function AppProvider({
   const openQuoteDrawer = useCallback(() => setQuoteDrawerOpen(true), []);
   const closeQuoteDrawer = useCallback(() => setQuoteDrawerOpen(false), []);
 
+  // Predictive search modal open/close — search stays in-page (no navigation).
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+
   // Tracks an in-flight quote mutation so consumers can surface a
   // spinner/disabled state while a /api/quote/* POST is settling.
   const [quotePending, setQuotePending] = useState(false);
@@ -250,6 +255,9 @@ export function AppProvider({
     quoteDrawerOpen,
     openQuoteDrawer,
     closeQuoteDrawer,
+    searchOpen,
+    openSearch,
+    closeSearch,
     favs,
     toggleFav,
     tweaks,

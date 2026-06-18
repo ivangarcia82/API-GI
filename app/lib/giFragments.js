@@ -7,7 +7,6 @@ export const GI_PRODUCT_CARD_FRAGMENT = `#graphql
     handle
     title
     description
-    vendor
     tags
     featuredImage { id url altText width height }
     priceRange { minVariantPrice { amount currencyCode } }
@@ -70,6 +69,20 @@ export const GI_COLLECTION_PRODUCTS_QUERY = `#graphql
         nodes { ...GiProductCard }
         pageInfo { hasNextPage endCursor }
       }
+    }
+  }
+`;
+
+/** Related products for the PDP "Productos similares" section. */
+export const GI_PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
+  ${GI_PRODUCT_CARD_FRAGMENT}
+  query GiProductRecommendations(
+    $productId: ID!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    productRecommendations(productId: $productId, intent: RELATED) {
+      ...GiProductCard
     }
   }
 `;

@@ -88,7 +88,6 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
     publishedAt
     title
     trackingParameters
-    vendor
     selectedOrFirstAvailableVariant(
       selectedOptions: []
       ignoreUnknownOptions: true

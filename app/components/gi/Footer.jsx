@@ -28,7 +28,7 @@ export function GiFooter() {
             </p>
             <p style={{color: 'var(--ink-3)', maxWidth: 320, fontSize: 14, lineHeight: 1.55}}>
               Empresa 100% mexicana líder en la industria promocional desde 2013.
-              Producción, fulfillment y proyectos especiales.
+              Producción y proyectos especiales.
             </p>
             <div style={{display: 'flex', gap: 8, marginTop: 20}}>
               {[
@@ -77,7 +77,7 @@ export function GiFooter() {
         </div>
         <div className="footer-legal">
           <span>©2026 Generando Ideas · México</span>
-          <span>Producción · Fulfillment · Proyectos especiales</span>
+          <span>Producción · Proyectos especiales</span>
         </div>
       </div>
     </footer>
