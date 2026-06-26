@@ -28,7 +28,7 @@ function SearchResultsArticles({term, articles}) {
 
   return (
     <div className="search-result">
-      <h2>Articles</h2>
+      <h2>Artículos</h2>
       <div>
         {articles?.nodes?.map((article) => {
           const articleUrl = urlWithTrackingParams({
@@ -61,7 +61,7 @@ function SearchResultsPages({term, pages}) {
 
   return (
     <div className="search-result">
-      <h2>Pages</h2>
+      <h2>Páginas</h2>
       <div>
         {pages?.nodes?.map((page) => {
           const pageUrl = urlWithTrackingParams({
@@ -124,7 +124,7 @@ function SearchResultsProducts({term, products}) {
             <div>
               <div>
                 <PreviousLink>
-                  {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
+                  {isLoading ? 'Cargando…' : <span>↑ Cargar anteriores</span>}
                 </PreviousLink>
               </div>
               <div>
@@ -133,7 +133,7 @@ function SearchResultsProducts({term, products}) {
               </div>
               <div>
                 <NextLink>
-                  {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+                  {isLoading ? 'Cargando…' : <span>Cargar más ↓</span>}
                 </NextLink>
               </div>
             </div>

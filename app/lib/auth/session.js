@@ -25,3 +25,9 @@ export function getSessionUser(session) {
     sessionVersion: Number(snap.sessionVersion),
   };
 }
+
+// Drops the user snapshot from the session. unset flips AppSession.isPending=true
+// so server.js emits a Set-Cookie that persists the cookie WITHOUT gi_user.
+export function logoutSession(session) {
+  session.unset(KEY);
+}

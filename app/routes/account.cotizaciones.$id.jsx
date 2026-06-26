@@ -69,6 +69,23 @@ export default function CotizacionDetail() {
         </div>
       )}
 
+      {(quote.deadline || quote.notes) && (
+        <div className="quote-card">
+          {quote.deadline && (
+            <div style={{marginBottom: quote.notes ? 8 : 0}}>
+              <div className="quote-card-label">Fecha objetivo</div>
+              <div>{quote.deadline}</div>
+            </div>
+          )}
+          {quote.notes && (
+            <div>
+              <div className="quote-card-label">Notas para el asesor</div>
+              <div style={{whiteSpace: 'pre-wrap'}}>{quote.notes}</div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="quote-card quote-items">
         <table>
           <thead>

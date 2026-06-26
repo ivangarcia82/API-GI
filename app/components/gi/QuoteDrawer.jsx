@@ -104,7 +104,9 @@ export function QuoteDrawer() {
       if (data.folio && !result) {
         setResult(data);
         toast('Cotización enviada · respuesta en menos de 24h', {icon: 'check', accent: true});
-        clearQuote();
+        // The quote is already finalized server-side; clearing local state is
+        // best-effort cleanup, so swallow any failure here.
+        clearQuote().catch(() => {});
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,6 +122,22 @@ export function QuoteDrawer() {
       {method: 'POST', action: '/api/quote/submit', encType: 'application/x-www-form-urlencoded'},
     );
   };
+
+  // Quote mutations are optimistic + server-reconciled; surface any failure as a
+  // toast (and AppContext rolls the optimistic change back) instead of letting
+  // the rejection go unhandled.
+  const handleQty = (id, q) =>
+    updateQuoteQty(id, q).catch((e) =>
+      toast(e?.message || 'No se pudo actualizar la cantidad', {icon: 'alert'}),
+    );
+  const handleRemove = (id) =>
+    removeFromQuote(id)
+      .then(() => toast('Producto removido'))
+      .catch((e) => toast(e?.message || 'No se pudo quitar el producto', {icon: 'alert'}));
+  const handleClear = () =>
+    clearQuote()
+      .then(() => toast('Lista vaciada'))
+      .catch((e) => toast(e?.message || 'No se pudo vaciar la lista', {icon: 'alert'}));
 
   const goAndClose = (to) => {
     closeQuoteDrawer();
@@ -205,7 +223,7 @@ export function QuoteDrawer() {
                 </div>
                 <div className="qd-item-row">
                   <div className="pdp-qty" style={{borderRadius: 999}}>
-                    <button onClick={() => updateQuoteQty(item.id, Math.max(1, item.qty - 1))} aria-label="Disminuir cantidad">
+                    <button onClick={() => handleQty(item.id, Math.max(1, item.qty - 1))} aria-label="Disminuir cantidad">
                       <Icon name="minus" size={12} />
                     </button>
                     <input
@@ -213,13 +231,13 @@ export function QuoteDrawer() {
                       inputMode="numeric"
                       aria-label="Cantidad"
                       onChange={(e) =>
-                        updateQuoteQty(
+                        handleQty(
                           item.id,
                           Math.min(100000, Math.max(1, +e.target.value || 1)),
                         )
                       }
                     />
-                    <button onClick={() => updateQuoteQty(item.id, item.qty + 1)} aria-label="Aumentar cantidad">
+                    <button onClick={() => handleQty(item.id, item.qty + 1)} aria-label="Aumentar cantidad">
                       <Icon name="plus" size={12} />
                     </button>
                   </div>
@@ -229,10 +247,7 @@ export function QuoteDrawer() {
                   <button
                     className="qd-remove"
                     aria-label="Quitar producto"
-                    onClick={() => {
-                      removeFromQuote(item.id);
-                      toast('Producto removido');
-                    }}
+                    onClick={() => handleRemove(item.id)}
                   >
                     <Icon name="trash" size={13} />
                   </button>
@@ -264,13 +279,7 @@ export function QuoteDrawer() {
             />
           </div>
 
-          <button
-            className="qd-clear"
-            onClick={() => {
-              clearQuote();
-              toast('Lista vaciada');
-            }}
-          >
+          <button className="qd-clear" onClick={handleClear}>
             <Icon name="trash" size={12} /> Vaciar lista
           </button>
         </div>

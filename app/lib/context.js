@@ -43,8 +43,9 @@ export async function createHydrogenRouterContext(
       cache,
       waitUntil,
       session,
-      // Or detect from URL path based on locale subpath, cookies, or any other strategy
-      i18n: {language: 'EN', country: 'US'},
+      // Mexican storefront: Storefront API queries run @inContext(country: MX,
+      // language: ES) so prices come back in MXN to match the es-MX UI.
+      i18n: {language: 'ES', country: 'MX'},
       cart: {
         queryFragment: CART_QUERY_FRAGMENT,
       },

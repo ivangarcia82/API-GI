@@ -59,6 +59,28 @@ describe('buildAdvisorEmail', () => {
     expect(msg.html).toContain('A &amp; B &lt;Co&gt;');
   });
 
+  it('renders the target deadline when present and omits it otherwise', () => {
+    const withDeadline = buildAdvisorEmail({
+      advisorEmail: 'maria@generandoideas.com',
+      quote: {id: 'q-9', notes: null, deadline: '2026-07-15'},
+      user: USER,
+      items: ITEMS,
+      invoiceUrl: null,
+    });
+    expect(withDeadline.html).toContain('Fecha objetivo');
+    expect(withDeadline.html).toContain('2026-07-15');
+
+    // QUOTE has no deadline → no "Fecha objetivo" line.
+    const withoutDeadline = buildAdvisorEmail({
+      advisorEmail: 'maria@generandoideas.com',
+      quote: QUOTE,
+      user: USER,
+      items: ITEMS,
+      invoiceUrl: null,
+    });
+    expect(withoutDeadline.html).not.toContain('Fecha objetivo');
+  });
+
   it('omits the invoice link block when invoiceUrl is null', () => {
     const msg = buildAdvisorEmail({
       advisorEmail: 'maria@generandoideas.com',

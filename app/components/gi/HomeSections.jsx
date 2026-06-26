@@ -196,22 +196,6 @@ export function ProductSpotlight({product}) {
               style={{transform: `translateY(${imgOffset}px) scale(1.12)`}}
             />
           </div>
-          <div
-            className="spotlight-chip sc-2"
-            style={{
-              opacity: inView ? 1 : 0,
-              transform: inView ? 'translateY(0)' : 'translateY(20px)',
-              transitionDelay: '150ms',
-            }}
-          >
-            <span className="sc-bolt">
-              <Icon name="bolt" size={12} />
-            </span>
-            <div>
-              <div className="sc-v">+2,400 vendidos</div>
-              <div className="sc-l">Últimos 90 días</div>
-            </div>
-          </div>
         </div>
 
         <div className="spotlight-info">

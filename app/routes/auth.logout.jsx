@@ -6,9 +6,11 @@ import {assertSameOrigin} from '~/lib/http/csrf';
  */
 export async function action({request, context}) {
   assertSameOrigin(request);
-  // destroy() (not unset) emits a Set-Cookie that expires the cookie.
-  await context.session.destroy();
-  return redirect('/');
+  // destroy() returns the Set-Cookie that EXPIRES the cookie. It does NOT flip
+  // isPending, so server.js won't emit it for us — we must attach it ourselves,
+  // otherwise the session cookie survives and the user stays logged in.
+  const expiredCookie = await context.session.destroy();
+  return redirect('/', {headers: {'Set-Cookie': expiredCookie}});
 }
 
 // GET /auth/logout should not act; bounce to home.

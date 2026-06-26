@@ -58,6 +58,13 @@ const PATHS = {
   ),
   check: <path d="M5 12.5 10 17.5l9-10" />,
   x: <path d="M6 6l12 12M18 6 6 18" />,
+  alert: (
+    <>
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </>
+  ),
   chevron_down: <path d="m6 9 6 6 6-6" />,
   chevron_right: <path d="m9 6 6 6-6 6" />,
   filter: <path d="M3 6h18M6 12h12M10 18h4" />,

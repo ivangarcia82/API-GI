@@ -135,6 +135,17 @@ export async function setShopifyGid(db, id, gid) {
   });
 }
 
+// Reads the user's current session_version (null if the user no longer exists).
+// Used by requireUser to validate a cookie snapshot against the live record.
+export async function getSessionVersion(db, id) {
+  const res = await db.execute({
+    sql: `SELECT session_version FROM users WHERE id = ?`,
+    args: [id],
+  });
+  const row = res.rows[0];
+  return row ? Number(row.session_version) : null;
+}
+
 export async function bumpSessionVersion(db, id) {
   await db.execute({
     sql: `UPDATE users SET session_version = session_version + 1, updated_at = ? WHERE id = ?`,

@@ -1,10 +1,24 @@
 import {useLoaderData, useNavigate, redirect} from 'react-router';
-import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
+import {getPaginationVariables, Analytics, Pagination} from '@shopify/hydrogen';
 import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {GI_PRODUCT_CARD_FRAGMENT} from '~/lib/giFragments';
 import {normalizeProduct} from '~/lib/gi';
+
+const paginationLinkStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '12px 24px',
+  borderRadius: 999,
+  border: '1px solid var(--line)',
+  background: 'var(--bg-soft)',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 13,
+  letterSpacing: '0.02em',
+  color: 'var(--ink)',
+};
 
 export const meta = ({data}) => {
   const c = data?.collection;
@@ -121,11 +135,30 @@ export default function Collection() {
             </Button>
           </div>
         ) : (
-          <div className="product-grid stagger">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          <Pagination connection={collection.products}>
+            {({nodes, isLoading, PreviousLink, NextLink}) => {
+              const pageProducts = nodes.map(normalizeProduct).filter(Boolean);
+              return (
+                <>
+                  <div style={{display: 'flex', justifyContent: 'center', marginBottom: 24}}>
+                    <PreviousLink style={paginationLinkStyle}>
+                      {isLoading ? 'Cargando…' : '↑ Cargar productos anteriores'}
+                    </PreviousLink>
+                  </div>
+                  <div className="product-grid stagger">
+                    {pageProducts.map((p) => (
+                      <ProductCard key={p.id} product={p} />
+                    ))}
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'center', marginTop: 40}}>
+                    <NextLink style={paginationLinkStyle}>
+                      {isLoading ? 'Cargando…' : 'Cargar más productos ↓'}
+                    </NextLink>
+                  </div>
+                </>
+              );
+            }}
+          </Pagination>
         )}
       </div>
 

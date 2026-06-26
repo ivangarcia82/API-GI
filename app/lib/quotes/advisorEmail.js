@@ -27,7 +27,7 @@ function decorationLabel(item) {
 /**
  * @param {{
  *   advisorEmail: string,
- *   quote: {id: string, notes?: string|null},
+ *   quote: {id: string, notes?: string|null, deadline?: string|null},
  *   user: {email: string, firstName?: string, lastName?: string, company?: string},
  *   items: Array<{title: string, qty: number, technique?: string, size?: string, effectiveUnitPrice: number}>,
  *   invoiceUrl: string|null,
@@ -55,6 +55,10 @@ export function buildAdvisorEmail({advisorEmail, quote, user, items, invoiceUrl}
     ? `<p><a href="${escapeHtml(invoiceUrl)}">Ver cotización en Shopify</a></p>`
     : '';
 
+  const deadlineBlock = quote.deadline
+    ? `<p><strong>Fecha objetivo:</strong> ${escapeHtml(quote.deadline)}</p>`
+    : '';
+
   const notesBlock = quote.notes
     ? `<p><strong>Notas del cliente:</strong> ${escapeHtml(quote.notes)}</p>`
     : '';
@@ -67,6 +71,7 @@ export function buildAdvisorEmail({advisorEmail, quote, user, items, invoiceUrl}
         <strong>Empresa:</strong> ${escapeHtml(user.company || '—')}<br/>
         <strong>Correo:</strong> ${escapeHtml(user.email)}
       </p>
+      ${deadlineBlock}
       ${notesBlock}
       <table style="border-collapse:collapse;width:100%;margin-top:12px">
         <thead>

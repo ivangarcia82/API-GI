@@ -56,11 +56,20 @@ function lineItem(item) {
   };
 }
 
+/** Fold the buyer's target date + notes into the single draft-order note field
+ *  so the fulfilling team actually sees the requested deadline. */
+function composeNote(quote) {
+  const parts = [];
+  if (quote.deadline) parts.push(`Fecha objetivo: ${quote.deadline}`);
+  if (quote.notes) parts.push(quote.notes);
+  return parts.length ? parts.join('\n') : null;
+}
+
 export function buildDraftOrderInput({quote, items, customerGid, email}) {
   const input = {
     email,
     presentmentCurrencyCode: CURRENCY,
-    note: quote.notes ?? null,
+    note: composeNote(quote),
     lineItems: items.map(lineItem),
   };
   // Link the customer explicitly when we resolved a real gid; otherwise Shopify

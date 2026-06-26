@@ -3,7 +3,12 @@ import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {getOrCreateDraftQuote, upsertQuoteItem, getQuoteWithItems} from '~/lib/quotes/repo';
 import {recomputeItemPricing} from '~/lib/quotes/recompute';
+import {getTechniques} from '~/lib/decoration/engine';
 
+// Authoritative product data for pricing: base price/image PLUS the decoration
+// metafields (material = surface, tecnicas_de_impresion = offered techniques).
+// Pricing reads these — never the client-supplied surface/technique — so a forged
+// request can't pick a cheaper price group or a technique the product never offers.
 const PRODUCT_PRICE_QUERY = `#graphql
   query QuoteVariant($id: ID!) {
     node(id: $id) {
@@ -12,11 +17,27 @@ const PRODUCT_PRICE_QUERY = `#graphql
         title
         price { amount }
         image { url }
-        product { handle title featuredImage { url } }
+        product {
+          handle
+          title
+          featuredImage { url }
+          metafields(identifiers: [
+            {namespace: "custom", key: "material"},
+            {namespace: "custom", key: "tecnicas_de_impresion"}
+          ]) { namespace key value }
+        }
       }
     }
   }
 `;
+
+/** Read a custom.<key> metafield value from a Storefront metafields array. */
+function readMetafield(metafields, key) {
+  const mf = (metafields || []).find(
+    (m) => m && m.namespace === 'custom' && m.key === key,
+  );
+  return mf?.value ?? null;
+}
 
 export async function action({request, context}) {
   assertSameOrigin(request);
@@ -27,7 +48,8 @@ export async function action({request, context}) {
   const form = await request.formData();
   const variantId = String(form.get('variantId') || '');
   const technique = String(form.get('technique') || '');
-  const surface = String(form.get('surface') || '');
+  // Note: the client-supplied surface is intentionally NOT read — the product's
+  // authoritative `custom.material` metafield is used for pricing instead.
   const size = String(form.get('size') || '');
   const qty = Math.max(1, Math.trunc(Number(form.get('qty')) || 1));
   if (!variantId) return Response.json({error: 'Falta variantId.'}, {status: 400});
@@ -40,7 +62,28 @@ export async function action({request, context}) {
   // image so the quote/cart always shows something for variant products.
   const image = node.image?.url ?? node.product?.featuredImage?.url ?? null;
 
-  const priced = recomputeItemPricing({baseUnitPrice, technique, surface, size, qty});
+  // Authoritative decoration inputs from the product's own metafields. The
+  // client-supplied `surface` is ignored for pricing; `technique` is validated
+  // against what the product actually offers. A normal UI add always matches
+  // (its options come from these same metafields) — this only blocks forgeries.
+  const metafields = node.product?.metafields;
+  const authoritativeSurface = String(readMetafield(metafields, 'material') ?? '');
+  const offeredTechniques = getTechniques(readMetafield(metafields, 'tecnicas_de_impresion'));
+  const wantsDecoration = Boolean(technique) && technique !== 'Sin decorado';
+  if (wantsDecoration && !offeredTechniques.includes(technique)) {
+    return Response.json(
+      {error: 'Esa técnica de decorado no está disponible para este producto.'},
+      {status: 422},
+    );
+  }
+
+  const priced = recomputeItemPricing({
+    baseUnitPrice,
+    technique,
+    surface: authoritativeSurface,
+    size,
+    qty,
+  });
   if (priced.error) return Response.json({error: priced.error}, {status: 422});
 
   const quote = await getOrCreateDraftQuote(db, sessionUser.userId);
@@ -54,7 +97,7 @@ export async function action({request, context}) {
     image,
     baseUnitPrice: priced.baseUnitPrice,
     technique: technique || null,
-    surface: surface || null,
+    surface: wantsDecoration ? authoritativeSurface || null : null,
     size: size || null,
     decorationTotal: priced.decorationTotal,
     effectiveUnitPrice: priced.effectiveUnitPrice,

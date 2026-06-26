@@ -107,8 +107,8 @@ export function ContactScreen() {
 
           <div style={{marginTop: 40, display: 'flex', flexDirection: 'column', gap: 16}}>
             {[
-              {i: 'chat', l: 'WhatsApp', v: '+52 (55) 7098 8100'},
-              {i: 'receipt', l: 'Correo', v: 'marketing@generandoideas.com'},
+              {i: 'chat', l: 'WhatsApp', v: '+52 (55) 7098 8100', href: 'https://wa.me/525570988100'},
+              {i: 'receipt', l: 'Correo', v: 'marketing@generandoideas.com', href: 'mailto:marketing@generandoideas.com'},
               {i: 'truck', l: 'Oficinas', v: 'CDMX · Yucatán · Sonora · Baja California Sur'},
             ].map((c) => (
               <div key={c.l} style={{display: 'flex', gap: 14, alignItems: 'center'}}>
@@ -136,7 +136,15 @@ export function ContactScreen() {
                   >
                     {c.l}
                   </div>
-                  <div style={{fontWeight: 600, marginTop: 2}}>{c.v}</div>
+                  <div style={{fontWeight: 600, marginTop: 2}}>
+                    {c.href ? (
+                      <a href={c.href} style={{color: 'inherit', textDecoration: 'none'}}>
+                        {c.v}
+                      </a>
+                    ) : (
+                      c.v
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

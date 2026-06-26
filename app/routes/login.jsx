@@ -71,6 +71,18 @@ export default function Login() {
               required
               placeholder="••••••••"
             />
+            <a
+              href="/auth/forgot"
+              style={{
+                alignSelf: 'flex-end',
+                marginTop: 6,
+                fontSize: 13,
+                color: 'var(--ink-3)',
+                textDecoration: 'underline',
+              }}
+            >
+              ¿Olvidaste tu contraseña?
+            </a>
           </div>
 
           {actionData?.error && (

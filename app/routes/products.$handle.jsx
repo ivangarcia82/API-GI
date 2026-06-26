@@ -30,7 +30,7 @@ export const meta = ({data}) => {
   return [
     {title: `${p?.title ?? 'Producto'} · Generando Ideas`},
     {name: 'description', content: desc},
-    {rel: 'canonical', href: `/products/${p?.handle}`},
+    {tagName: 'link', rel: 'canonical', href: `/products/${p?.handle}`},
     {property: 'og:title', content: `${p?.title ?? 'Producto'} · Generando Ideas`},
     {property: 'og:description', content: desc},
     ...(img ? [{property: 'og:image', content: img}] : []),

@@ -81,7 +81,10 @@ export function AppProvider({
           body,
         });
         const data = await res.json().catch(() => null);
-        if (!data || data.ok === false) {
+        // The /api/quote/* routes signal failure with a non-2xx status + {error}
+        // (no `ok:false`). Checking res.ok is what makes those errors surface
+        // instead of being silently treated as success.
+        if (!res.ok || !data || data.ok === false) {
           throw new Error((data && data.error) || 'No se pudo actualizar la cotización');
         }
         // Phase 4 routes return the authoritative item list at the top level
@@ -176,10 +179,14 @@ export function AppProvider({
         return Promise.resolve();
       }
       // optimistic: patch qty locally, server reconciles effectiveUnitPrice
+      const prev = quote;
       setQuote((q) => q.map((i) => (i.id === itemId ? {...i, qty: nextQty} : i)));
-      return postQuote('update', {itemId, qty: nextQty});
+      return postQuote('update', {itemId, qty: nextQty}).catch((err) => {
+        setQuote(prev); // roll back the optimistic qty if the server rejected
+        throw err;
+      });
     },
-    [isLoggedIn, postQuote],
+    [isLoggedIn, postQuote, quote],
   );
   const removeFromQuote = useCallback(
     (itemId) => {
@@ -187,22 +194,28 @@ export function AppProvider({
         setQuote((q) => q.filter((i) => i.id !== itemId));
         return Promise.resolve();
       }
+      const prev = quote;
       setQuote((q) => q.filter((i) => i.id !== itemId)); // optimistic
-      return postQuote('remove', {itemId});
+      return postQuote('remove', {itemId}).catch((err) => {
+        setQuote(prev); // restore the item if the delete failed
+        throw err;
+      });
     },
-    [isLoggedIn, postQuote],
+    [isLoggedIn, postQuote, quote],
   );
   const clearQuote = useCallback(() => {
     if (!isLoggedIn) {
       setQuote([]);
       return Promise.resolve();
     }
-    const ids = quote.map((i) => i.id);
+    const prev = quote;
     setQuote([]); // optimistic
-    return Promise.all(ids.map((itemId) => postQuote('remove', {itemId}))).then(
-      () => undefined,
-    );
-  }, [isLoggedIn, quote, postQuote]);
+    // Single authoritative clear (clear=true) instead of N per-item removes.
+    return postQuote('remove', {clear: 'true'}).catch((err) => {
+      setQuote(prev);
+      throw err;
+    });
+  }, [isLoggedIn, postQuote, quote]);
 
   // ---- Favorites ----
   const toggleFav = useCallback(

@@ -110,6 +110,27 @@ describe('buildDraftOrderInput', () => {
     expect(withStub.purchasingEntity).toBeUndefined();
   });
 
+  it('folds the target deadline into the draft-order note alongside the buyer notes', () => {
+    const input = buildDraftOrderInput({
+      quote: {...QUOTE, notes: 'Necesito muestras', deadline: '2026-07-15'},
+      items: ITEMS,
+      customerGid: 'gid://shopify/Customer/1',
+      email: 'x@y.z',
+    });
+    expect(input.note).toContain('Fecha objetivo: 2026-07-15');
+    expect(input.note).toContain('Necesito muestras');
+  });
+
+  it('uses only the deadline when there are no notes', () => {
+    const input = buildDraftOrderInput({
+      quote: {...QUOTE, notes: null, deadline: '2026-08-01'},
+      items: ITEMS,
+      customerGid: 'gid://shopify/Customer/1',
+      email: 'x@y.z',
+    });
+    expect(input.note).toBe('Fecha objetivo: 2026-08-01');
+  });
+
   it('formats amount with exactly 2 decimals', () => {
     const input = buildDraftOrderInput({
       quote: QUOTE,

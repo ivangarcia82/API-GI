@@ -104,7 +104,7 @@ export async function action({request, context}) {
     if (advisor.email) {
       const message = buildAdvisorEmail({
         advisorEmail: advisor.email,
-        quote: {id: quote.id, notes: quote.notes},
+        quote: {id: quote.id, notes: quote.notes, deadline: quote.deadline},
         user,
         items,
         invoiceUrl, // raw url; advisor is internal staff, may see stub url in dev
