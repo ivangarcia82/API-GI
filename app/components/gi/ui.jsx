@@ -56,6 +56,12 @@ export function ScrollReveal({children, delay = 0, className = ''}) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
     if (!ref.current) return;
+    // jsdom (unit tests) doesn't implement IntersectionObserver — degrade
+    // gracefully by showing content immediately instead of crashing.
+    if (typeof IntersectionObserver === 'undefined') {
+      setInView(true);
+      return;
+    }
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -89,6 +95,10 @@ export function useInView(opts = {}) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
     if (!ref.current) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setInView(true);
+      return;
+    }
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
