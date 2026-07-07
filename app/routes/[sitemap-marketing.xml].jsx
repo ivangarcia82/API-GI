@@ -5,7 +5,15 @@
 // for marketing ids. Linked from `[sitemap.xml].jsx` via `customChildSitemaps`.
 import {BLOG_POSTS, JOBS, SERVICE_DETAIL_IDS} from '~/lib/site-content';
 
-const STATIC_PATHS = ['/', '/conocenos', '/servicios', '/blog', '/bolsa-de-trabajo', '/contacto'];
+const STATIC_PATHS = [
+  '/',
+  '/conocenos',
+  '/servicios',
+  '/blog',
+  '/bolsa-de-trabajo',
+  '/contacto',
+  '/catalogo',
+];
 
 /**
  * @param {Route.LoaderArgs}

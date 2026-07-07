@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import {useLocation} from 'react-router';
-import {initMotion} from '~/lib/motion';
+import {initMotion, destroyMotion} from '~/lib/motion';
 
 /** Port de la lógica isActive() de Nav.astro/MobileMenu.astro. */
 export function isNavActive(href, pathname) {
@@ -37,6 +37,7 @@ export function useMarketingReveal() {
 export default function MarketingLayout({children, className = ''}) {
   useEffect(() => {
     initMotion();
+    return () => destroyMotion();
   }, []);
   useMarketingReveal();
   return <div className={`gi-mkt ${className}`.trim()}>{children}</div>;

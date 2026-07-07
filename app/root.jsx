@@ -1,4 +1,3 @@
-import {useEffect} from 'react';
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
@@ -22,7 +21,6 @@ import {getSessionUser} from '~/lib/auth/session';
 import {getDb} from '~/lib/db/client';
 import {listWishlist} from '~/lib/wishlist/repo';
 import {getOrCreateDraftQuote, getQuoteWithItems} from '~/lib/quotes/repo';
-import {initMotion} from '~/lib/motion';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -262,10 +260,6 @@ export function Layout({children}) {
 export default function App() {
   /** @type {RootLoader} */
   const data = useRouteLoaderData('root');
-
-  useEffect(() => {
-    initMotion();
-  }, []);
 
   if (!data) {
     return <Outlet />;

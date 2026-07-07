@@ -26,6 +26,7 @@ const INITIAL_VALUES = {
   service: '',
   source: '',
   message: '',
+  company_website: '',
 };
 
 // Friendlier per-field copy from the source's inline <script>. `validateContact`
@@ -187,6 +188,16 @@ export default function Contacto() {
                 </div>
               ) : (
                 <form className="form-grid" noValidate onSubmit={onSubmit}>
+                  <input
+                    type="text"
+                    name="company_website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={values.company_website}
+                    onChange={handleChange('company_website')}
+                    style={{position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0}}
+                    aria-hidden="true"
+                  />
                   <div className={`field${errors.name ? ' error' : ''}`} data-field="name">
                     <label htmlFor="cf-name">Nombre completo *</label>
                     <input

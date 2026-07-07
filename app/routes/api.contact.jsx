@@ -18,6 +18,12 @@ export async function action({request, context}) {
   const body = await request.json().catch(() => null);
   if (!body) return data({ok: false, error: 'bad_request'}, {status: 400});
 
+  // Honeypot: real users never fill this hidden field. Bots that do get a
+  // fake success response so they don't learn to skip it.
+  if (String(body.company_website ?? '').trim()) {
+    return data({ok: true});
+  }
+
   const fields = {
     name: String(body.name ?? '').trim(),
     company: String(body.company ?? '').trim(),
