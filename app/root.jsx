@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
@@ -14,12 +15,14 @@ import resetStyles from '~/styles/reset.css?url';
 import giTokens from '~/styles/gi-tokens.css?url';
 import giScreens from '~/styles/gi-screens.css?url';
 import giSections from '~/styles/gi-sections.css?url';
+import giMarketing from '~/styles/gi-marketing.css?url';
 import {PageLayout} from './components/PageLayout';
 import {AppProvider} from '~/lib/AppContext';
 import {getSessionUser} from '~/lib/auth/session';
 import {getDb} from '~/lib/db/client';
 import {listWishlist} from '~/lib/wishlist/repo';
 import {getOrCreateDraftQuote, getQuoteWithItems} from '~/lib/quotes/repo';
+import {initMotion} from '~/lib/motion';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -224,11 +227,31 @@ export function Layout({children}) {
         <link rel="stylesheet" href={giTokens}></link>
         <link rel="stylesheet" href={giScreens}></link>
         <link rel="stylesheet" href={giSections}></link>
+        <link rel="stylesheet" href={giMarketing}></link>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-4Z8RFG1DT0"
+          nonce={nonce}
+        ></script>
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-4Z8RFG1DT0');",
+          }}
+        />
         <Meta />
         <Links />
       </head>
       <body>
         {children}
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(d,w,c){w.BrevoConversationsID='5e8cd971af0ac252357152dc';w[c]=w[c]||function(){(w[c].q=w[c].q||[]).push(arguments);};var s=d.createElement('script');s.async=true;s.src='https://conversations-widget.brevo.com/brevo-conversations.js';if(d.head)d.head.appendChild(s);})(document,window,'BrevoConversations');",
+          }}
+        />
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>
@@ -239,6 +262,10 @@ export function Layout({children}) {
 export default function App() {
   /** @type {RootLoader} */
   const data = useRouteLoaderData('root');
+
+  useEffect(() => {
+    initMotion();
+  }, []);
 
   if (!data) {
     return <Outlet />;

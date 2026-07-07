@@ -28,7 +28,35 @@ export default async function handleRequest(
     // img-src falls back to default-src (self + cdn.shopify.com), which blocks
     // the editorial/lifestyle imagery served from Unsplash (lookbook grid,
     // hero, reviews). Allow it explicitly while keeping Shopify product images.
-    imgSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://images.unsplash.com'],
+    // Also allow Google Analytics (tracking pixel) and Brevo (avatars/assets).
+    imgSrc: [
+      "'self'",
+      'data:',
+      'https://cdn.shopify.com',
+      'https://images.unsplash.com',
+      'https://www.google-analytics.com',
+      'https://www.googletagmanager.com',
+      'https://*.brevo.com',
+    ],
+    // Allow Google Tag Manager / Analytics and Brevo Conversations widget scripts.
+    scriptSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://www.googletagmanager.com',
+      'https://www.google-analytics.com',
+      'https://conversations-widget.brevo.com',
+    ],
+    // Allow GA beacon/config requests and the Brevo Conversations API/websocket.
+    connectSrc: [
+      "'self'",
+      'https://www.google-analytics.com',
+      'https://www.googletagmanager.com',
+      'https://conversations-widget.brevo.com',
+      'https://api.brevo.com',
+      'https://*.brevo.com',
+    ],
+    // Allow the Brevo Conversations widget iframe.
+    frameSrc: ["'self'", 'https://conversations-widget.brevo.com'],
   });
 
   const body = await renderToReadableStream(
