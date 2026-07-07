@@ -38,6 +38,7 @@ export function ServicesStrip() {
               href={`/servicios/${s.id}`}
               className="svc-strip-card"
               onClick={(e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                 e.preventDefault();
                 navigate(`/servicios/${s.id}`);
               }}
@@ -109,7 +110,7 @@ export function AboutTeaser() {
           con envíos a todo el país.
         </p>
         <Button
-          variant="primary"
+          variant="accent"
           size="lg"
           iconRight="arrow_right"
           onClick={() => navigate('/conocenos')}
