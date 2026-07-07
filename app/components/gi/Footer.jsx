@@ -1,85 +1,106 @@
-/* Generando Ideas — site footer */
+/* Generando Ideas — site footer (marketing 4-column design, ported from
+   gi-website-final/src/components/Footer.astro). Wrapped in `.gi-mkt` so it
+   inherits the marketing footer/social styles from app/styles/gi-marketing.css
+   regardless of which kind of page (marketing or commerce) renders it. */
 import {NavLink} from 'react-router';
-import {Icon} from './Icon';
-
-function Logo() {
-  return (
-    <img
-      className="footer-logo"
-      src="/brand/gi-logo-horizontal.svg"
-      alt="Generando Ideas"
-      width={180}
-      height={38}
-    />
-  );
-}
+import {BRAND, ROUTES, SERVICES} from '~/lib/site-content';
+import {SocialIcons} from '~/components/marketing/SocialIcons';
 
 export function GiFooter() {
   return (
-    <footer className="footer" data-screen-label="Footer">
-      <div className="container">
-        <div className="footer-grid">
-          <div>
-            <div style={{marginBottom: 20}}>
-              <Logo />
+    <div className="gi-mkt">
+      <footer className="footer" data-screen-label="Footer">
+        <div className="wrap">
+          <NavLink to={ROUTES.home} className="footer-logo" aria-label="Generando Ideas — inicio">
+            <img src="/brand/logo-horizontal-blanco.svg" alt="Generando Ideas" width={282} height={63} />
+          </NavLink>
+          <div className="footer-brand">
+            Vivimos de <em>promocionales.</em>
+          </div>
+          <div className="footer-grid">
+            <div>
+              <h3>Contáctanos</h3>
+              <p style={{color: 'var(--gray-300)', fontSize: 14, lineHeight: 1.6, margin: 0}}>
+                {BRAND.phone}
+                <br />
+                {BRAND.email}
+                <br />
+                CDMX · Sonora · Yucatán
+              </p>
+              <SocialIcons variant="footer" />
+              <p className="footer-slogan" aria-label="Your one stop solution">
+                Your one
+                <br />
+                stop
+                <br />
+                solution<span className="r">®</span>
+              </p>
             </div>
-            <p className="brand-slogan" style={{marginBottom: 20}}>
-              Your one<br />stop<br />solution<span className="accent">.</span>
-            </p>
-            <p style={{color: 'var(--ink-3)', maxWidth: 320, fontSize: 14, lineHeight: 1.55}}>
-              Empresa 100% mexicana líder en la industria promocional desde 2013.
-              Producción y proyectos especiales.
-            </p>
-            <div style={{display: 'flex', gap: 8, marginTop: 20}}>
-              {[
-                {name: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/generandoideasgi'},
-                {name: 'facebook', label: 'Facebook', href: 'https://www.facebook.com/generandoideasgi'},
-              ].map((it) => (
-                <a
-                  key={it.name}
-                  href={it.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={it.label}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 8,
-                    border: '1px solid var(--line)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: 'var(--ink-3)',
-                  }}
-                >
-                  <Icon name={it.name} size={16} />
-                </a>
-              ))}
+            <div>
+              <h3>Empresa</h3>
+              <ul>
+                <li>
+                  <NavLink to={ROUTES.about}>Conócenos</NavLink>
+                </li>
+                <li>
+                  <NavLink to={ROUTES.about}>Propósito</NavLink>
+                </li>
+                <li>
+                  <NavLink to={ROUTES.about}>Principios</NavLink>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3>Servicios</h3>
+              <ul>
+                {SERVICES.map((s) => (
+                  <li key={s.id}>
+                    <NavLink to={ROUTES.service(s.id)}>{s.title}</NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3>Recursos</h3>
+              <ul>
+                <li>
+                  <NavLink to={ROUTES.catalog}>Catálogos</NavLink>
+                </li>
+                <li>
+                  <NavLink to={ROUTES.blog}>Blog</NavLink>
+                </li>
+                <li>
+                  <NavLink to={ROUTES.careers}>Bolsa de trabajo</NavLink>
+                </li>
+                <li>
+                  <NavLink to={ROUTES.estore}>e-Store</NavLink>
+                </li>
+                <li>
+                  <a href={ROUTES.privacy} target="_blank" rel="noopener noreferrer">
+                    Aviso de privacidad
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
-          <div>
-            <h4>Productos</h4>
-            <ul>
-              <li><NavLink to="/catalogo">Catálogo completo</NavLink></li>
-              <li><NavLink to="/collections">Colecciones</NavLink></li>
-              <li><NavLink to="/collections/termos">Termos</NavLink></li>
-              <li><NavLink to="/collections/textil">Textil</NavLink></li>
-              <li><NavLink to="/collections/ecologicos">Ecológicos</NavLink></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Compañía</h4>
-            <ul>
-              <li><NavLink to="/contacto">Contacto</NavLink></li>
-              <li><NavLink to="/lookbook">Lookbook</NavLink></li>
-              <li><NavLink to="/policies">Avisos legales</NavLink></li>
-            </ul>
+          <div className="footer-bottom">
+            <span>© 2026 Generando Ideas. Todos los derechos reservados.</span>
+            <span>
+              100% Empresa Mexicana ·{' '}
+              <svg
+                width="7"
+                height="7"
+                viewBox="0 0 8 8"
+                aria-hidden="true"
+                style={{display: 'inline-block', verticalAlign: 'middle'}}
+              >
+                <circle cx="4" cy="4" r="4" fill="var(--orange-500)" />
+              </svg>{' '}
+              MX
+            </span>
           </div>
         </div>
-        <div className="footer-legal">
-          <span>©2026 Generando Ideas · México</span>
-          <span>Producción · Proyectos especiales</span>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </div>
   );
 }

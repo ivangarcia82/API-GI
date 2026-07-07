@@ -821,6 +821,28 @@
   font-style: italic;
   color: var(--orange-500);
 }
+.gi-mkt .footer-logo {
+  display: inline-block;
+  margin-bottom: 28px;
+}
+.gi-mkt .footer-logo img {
+  display: block;
+  width: clamp(160px, 17.6vw, 226px);
+  height: auto;
+}
+.gi-mkt .footer-slogan {
+  font-family: var(--font-slogan);
+  font-size: 34px;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--orange-500);
+  margin: 24px 0 0;
+}
+.gi-mkt .footer-slogan .r {
+  font-size: 0.35em;
+  vertical-align: super;
+}
 
 /* ===== Lightbox ===== */
 .gi-mkt .lightbox {
