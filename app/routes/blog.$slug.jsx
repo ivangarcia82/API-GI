@@ -144,7 +144,7 @@ export default function BlogArticle() {
                 width={1400}
                 height={700}
                 loading="eager"
-                fetchPriority="high"
+                fetchpriority="high" // eslint-disable-line react/no-unknown-property
                 decoding="async"
                 ref={imgRef}
                 data-figure-img

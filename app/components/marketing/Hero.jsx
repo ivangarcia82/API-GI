@@ -12,7 +12,7 @@ export function Hero() {
           width={1440}
           height={400}
           loading="eager"
-          fetchPriority="high"
+          fetchpriority="high" // eslint-disable-line react/no-unknown-property
           decoding="async"
         />
       </div>
