@@ -1,0 +1,3458 @@
+/* Estilos de marketing (gi-website-final) — AISLADOS bajo .gi-mkt para no
+   colisionar con los tokens/clases de comercio de API-GI (gi-tokens.css,
+   gi-sections.css, gi-screens.css, app.css).
+
+   Consolidado desde (Task 1.3):
+   - gi-website-final/src/styles/global.css
+   - gi-website-final/src/styles/motion.css
+   - <style> scoped de componentes: Hero, ServicesShowcase, ProcessSection,
+     ImpactBand, TestimonialsCarousel, ClosingCTA, Ticker, MobileMenu, Logo,
+     SocialIcons, MexicoMap.
+   - <style> scoped de páginas: conocenos, servicios/index, servicios/[id],
+     blog/index, blog/[slug], bolsa-de-trabajo/index, bolsa-de-trabajo/[id],
+     contacto.
+
+   Reglas de transformación aplicadas:
+   - :root { ... } -> .gi-mkt { ... } (tokens verbatim, mismos valores).
+   - Cada selector normal (clase/elemento/compuesto/atributo) se prefija con
+     ".gi-mkt " (descendant combinator).
+   - NO se copian los resets globales de global.css (*, html/body, body, img,
+     a, button) — API-GI ya tiene su propio reset. En su lugar se agregan las
+     reglas mínimas equivalentes sobre el contenedor .gi-mkt (ver abajo).
+   - @keyframes (float, bob, scroll, pulse, pageIn) se renombran con sufijo
+     "Mkt" (floatMkt, bobMkt, scrollMkt, pulseMkt, pageInMkt) para no chocar
+     con animaciones globales del sitio de comercio; sus usos (siempre dentro
+     de reglas ya prefijadas con .gi-mkt) se actualizan al nuevo nombre.
+   - @media (...) se conservan tal cual; los selectores internos se prefijan.
+   - :focus-visible -> .gi-mkt :focus-visible.
+   - Los selectores `:global(.svc)` de Astro (usados en servicios/index.astro
+     para alcanzar los tiles .svc renderizados por ServicesShowcase) se
+     traducen a `.svc` normal, ya prefijado con .gi-mkt (aquí todo vive en un
+     único espacio de nombres .gi-mkt, así que :global() ya no aplica).
+   - Las reglas de header/nav ligadas al Nav.astro original (.nav, .nav-inner,
+     .nav-links, .nav-link y el .logo de esa barra) se OMITEN a propósito: el
+     header se reemplaza por GiHeader en la Fase 2. Se conservan .drawer*
+     (menú móvil), .footer* / .footer-slogan, .social-icons* (incluida la
+     variante -nav) y todo lo demás. */
+
+.gi-mkt {
+  /* Brand — Manual de Identidad Corporativa Generando Ideas.
+     Primarios: Naranja Pantone 151 C (#ff8300), Gris Cool Gray 10 C (#636569),
+     blanco. Proporción 70-30: gris para textos/contenido, naranja para
+     destacados y formas específicas. Los tokens "blue-*" históricos se
+     re-mapean al gris de marca para propagar la paleta a todo el sitio. */
+  --blue-900: #43454a;
+  --blue-700: #636569;
+  --blue-500: #85878c;
+  --blue-100: #efeff0;
+  --orange-700: #d96f00;
+  --orange-500: #ff8300;
+  --orange-300: #ffa64d;
+  --orange-100: #ffe6cc;
+  --magenta: #ff8300;
+  --mint: #ffe6cc;
+
+  /* Neutrals (gris de marca) */
+  --ink: #43454a;
+  --ink-soft: #54565b;
+  --gray-700: #636569;
+  --gray-500: #8a8c91;
+  --gray-300: #d9dadc;
+  --gray-200: #e9eaeb;
+  --gray-100: #f4f4f5;
+  --paper: #fafafa;
+  --paper-2: #f1f1f2;
+  --white: #ffffff;
+
+  --radius-sm: 10px;
+  --radius: 18px;
+  --radius-lg: 28px;
+  --radius-xl: 40px;
+
+  --shadow-sm: 0 2px 8px rgba(67, 69, 74, 0.06);
+  --shadow-md: 0 12px 32px rgba(67, 69, 74, 0.10);
+  --shadow-lg: 0 28px 60px rgba(67, 69, 74, 0.14);
+
+  /* Tipografías del manual: Gantari (principal, títulos Semibold/Bold),
+     Open Sans (secundaria, textos), Bebas Neue (exclusiva del eslogan). */
+  --font-display: 'Gantari', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Gantari', ui-sans-serif, system-ui, sans-serif;
+  --font-slogan: 'Bebas Neue', 'Gantari', sans-serif;
+
+  --max: 1280px;
+
+  font-family: var(--font-body);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* Reemplazo mínimo de los resets globales de global.css (img/a/button),
+   aplicado solo dentro de .gi-mkt para no tocar el reset de comercio. */
+.gi-mkt img { max-width: 100%; display: block; }
+.gi-mkt a { color: inherit; text-decoration: none; }
+.gi-mkt button { font-family: inherit; cursor: pointer; }
+
+/* ==========================================================================
+   Fuente: gi-website-final/src/styles/global.css
+   ========================================================================== */
+
+.gi-mkt .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+/* Typography utilities */
+.gi-mkt .display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+}
+.gi-mkt .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--blue-700);
+  font-weight: 500;
+}
+
+.gi-mkt .btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 600; font-size: 14px;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.gi-mkt .btn-primary {
+  background: var(--ink);
+  color: white;
+}
+.gi-mkt .btn-primary:hover { background: var(--blue-700); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.gi-mkt .btn-accent {
+  background: var(--orange-500); color: #fff;
+}
+/* Se oscurece en hover (no se aclara) para mantener el texto blanco legible. */
+.gi-mkt .btn-accent:hover { background: var(--orange-700); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.gi-mkt .btn-ghost {
+  background: transparent; color: var(--ink);
+  border: 1.5px solid var(--gray-300);
+}
+.gi-mkt .btn-ghost:hover { border-color: var(--ink); background: white; }
+.gi-mkt .btn-lg { padding: 16px 28px; font-size: 15px; }
+
+/* ===== Hero (prototipo original de global.css) =====
+   Legacy: Hero.astro actual usa .hero-cine/.hero-stage (ver más abajo), no
+   estas clases. Se conservan porque global.css se consolida completo; al
+   vivir bajo .gi-mkt no colisionan con nada y quedan disponibles si algún
+   layout alterno vuelve a usarlas. */
+.gi-mkt .hero {
+  position: relative;
+  padding: 80px 0 120px;
+  overflow: hidden;
+}
+.gi-mkt .hero-bg {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.gi-mkt .blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: floatMkt 14s ease-in-out infinite;
+}
+.gi-mkt .blob-1 { width: 520px; height: 520px; background: var(--orange-300); top: -120px; right: -120px; }
+.gi-mkt .blob-2 { width: 420px; height: 420px; background: var(--blue-500); bottom: -140px; left: -80px; animation-delay: -4s; }
+.gi-mkt .blob-3 { width: 280px; height: 280px; background: var(--magenta); top: 30%; left: 40%; opacity: 0.25; animation-delay: -8s; }
+
+@keyframes floatMkt {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -40px) scale(1.06); }
+  66% { transform: translate(-20px, 30px) scale(0.96); }
+}
+
+.gi-mkt .hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.gi-mkt .hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 7vw, 108px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  margin: 20px 0 28px;
+  font-weight: 700;
+}
+.gi-mkt .hero h1 em {
+  /* Acento de marca: naranja sólido (el manual no contempla degradados). */
+  font-style: italic;
+  color: var(--orange-500);
+}
+.gi-mkt .hero-sub {
+  font-size: 20px;
+  color: var(--gray-700);
+  max-width: 560px;
+  line-height: 1.5;
+  margin-bottom: 36px;
+}
+.gi-mkt .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.gi-mkt .hero-stats {
+  display: flex; gap: 40px;
+  margin-top: 60px;
+  padding-top: 36px;
+  border-top: 1px solid var(--gray-200);
+}
+.gi-mkt .stat strong {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--blue-700);
+  letter-spacing: -0.02em;
+  display: block;
+}
+.gi-mkt .stat span {
+  font-size: 13px; color: var(--gray-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+/* Hero visual — animated product stack */
+.gi-mkt .hero-visual {
+  position: relative;
+  height: 560px;
+}
+.gi-mkt .h-card {
+  position: absolute;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+}
+.gi-mkt .h-card::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.35));
+  pointer-events: none;
+}
+.gi-mkt .h-card .tag {
+  position: absolute; bottom: 16px; left: 16px;
+  color: white; z-index: 1;
+  font-family: var(--font-mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.gi-mkt .h-card img { width: 100%; height: 100%; object-fit: cover; }
+
+.gi-mkt .hc-1 { width: 260px; height: 320px; top: 20px; right: 40px; transform: rotate(6deg); animation: bobMkt 6s ease-in-out infinite; }
+.gi-mkt .hc-2 { width: 220px; height: 260px; top: 180px; left: 0; transform: rotate(-8deg); animation: bobMkt 6s ease-in-out infinite -2s; }
+.gi-mkt .hc-3 { width: 200px; height: 240px; bottom: 20px; right: 80px; transform: rotate(3deg); animation: bobMkt 6s ease-in-out infinite -4s; }
+.gi-mkt .hc-4 {
+  width: 170px; height: 170px; bottom: 80px; left: 140px;
+  background: var(--orange-500);
+  display: grid; place-items: center;
+  transform: rotate(-4deg); animation: bobMkt 7s ease-in-out infinite -1s;
+}
+.gi-mkt .hc-4 span {
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 38px; color: var(--ink);
+  letter-spacing: -0.03em; line-height: 0.9; text-align: center;
+}
+
+@keyframes bobMkt {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-12px) rotate(var(--r, 0deg)); }
+}
+.gi-mkt .hc-1 { --r: 6deg; }
+.gi-mkt .hc-2 { --r: -8deg; }
+.gi-mkt .hc-3 { --r: 3deg; }
+.gi-mkt .hc-4 { --r: -4deg; }
+
+.gi-mkt .ticker {
+  position: relative;
+  background: var(--ink);
+  color: white;
+  padding: 20px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.gi-mkt .ticker-track {
+  display: inline-block;
+  animation: scrollMkt 40s linear infinite;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.gi-mkt .ticker-track span { margin: 0 32px; }
+.gi-mkt .ticker-track span.dot {
+  color: var(--orange-500);
+}
+@keyframes scrollMkt {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ===== Sections ===== */
+.gi-mkt .section { padding: 120px 0; position: relative; }
+.gi-mkt .section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 40px;
+  margin-bottom: 60px;
+}
+.gi-mkt .section-head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 12px 0 0;
+  font-weight: 700;
+  max-width: 720px;
+}
+.gi-mkt .section-head p {
+  max-width: 360px;
+  color: var(--gray-700);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gi-mkt .section-alt { background: var(--paper-2); }
+.gi-mkt .section-dark { background: var(--ink); color: white; }
+.gi-mkt .section-dark .eyebrow { color: var(--orange-500); }
+.gi-mkt .section-dark .section-head p { color: var(--gray-300); }
+
+/* ===== Service cards ===== */
+.gi-mkt .services-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+.gi-mkt .svc {
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.4s cubic-bezier(.2,.8,.2,1), box-shadow 0.3s;
+  cursor: pointer;
+}
+.gi-mkt .svc:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.gi-mkt .svc h3 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+.gi-mkt .svc p { color: var(--gray-700); font-size: 15px; line-height: 1.5; margin: 0; }
+.gi-mkt .svc-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+.gi-mkt .svc-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 14px;
+  margin-top: 24px;
+}
+.gi-mkt .svc-cta svg { transition: transform 0.25s; }
+.gi-mkt .svc:hover .svc-cta svg { transform: translateX(4px); }
+
+.gi-mkt .svc-hero { grid-column: span 7; background: var(--blue-700); color: white; min-height: 420px; }
+.gi-mkt .svc-hero h3 { font-size: 52px; max-width: 460px; }
+.gi-mkt .svc-hero p { color: rgba(255,255,255,0.8); max-width: 420px; }
+/* Texto en blanco sobre el fondo naranja (Print Shop). */
+.gi-mkt .svc-a { grid-column: span 5; background: var(--orange-500); color: #fff; }
+.gi-mkt .svc-a p { color: rgba(255,255,255,0.85); }
+.gi-mkt .svc-b { grid-column: span 4; background: var(--paper-2); }
+.gi-mkt .svc-c { grid-column: span 4; background: var(--ink); color: white; }
+.gi-mkt .svc-c p { color: rgba(255,255,255,0.7); }
+.gi-mkt .svc-d { grid-column: span 4; background: var(--mint); color: var(--ink); }
+
+.gi-mkt .svc-decoration {
+  position: absolute;
+  opacity: 0.25;
+  pointer-events: none;
+}
+/* Todos los bloques llevan el círculo decorativo, afinado a su fondo. */
+.gi-mkt .svc-hero .svc-decoration {
+  top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: var(--orange-500);
+  mix-blend-mode: screen;
+}
+.gi-mkt .svc-a .svc-decoration {
+  bottom: -80px; left: -40px;
+  width: 220px; height: 220px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.12;
+}
+.gi-mkt .svc-b .svc-decoration {
+  bottom: -70px; right: -50px;
+  width: 200px; height: 200px;
+  background: var(--orange-500);
+  border-radius: 50%;
+  opacity: 0.1;
+}
+.gi-mkt .svc-c .svc-decoration {
+  top: -60px; right: -50px;
+  width: 220px; height: 220px;
+  background: var(--orange-500);
+  border-radius: 50%;
+  opacity: 0.18;
+}
+.gi-mkt .svc-d .svc-decoration {
+  bottom: -70px; left: -50px;
+  width: 200px; height: 200px;
+  background: var(--orange-500);
+  border-radius: 50%;
+  opacity: 0.16;
+}
+
+/* Alt layout: list (tweakable) */
+.gi-mkt .services-list .svc-row {
+  border-top: 1px solid var(--gray-300);
+  padding: 36px 0;
+  display: grid;
+  grid-template-columns: 80px 1fr 2fr auto;
+  gap: 40px;
+  align-items: center;
+  transition: background 0.3s;
+  position: relative;
+}
+.gi-mkt .services-list .svc-row:last-child { border-bottom: 1px solid var(--gray-300); }
+.gi-mkt .services-list .svc-row:hover { background: linear-gradient(90deg, transparent, var(--blue-100) 40%, transparent); }
+.gi-mkt .services-list .svc-row h3 {
+  font-family: var(--font-display);
+  font-size: 40px; line-height: 1;
+  letter-spacing: -0.025em; margin: 0;
+  font-weight: 700;
+}
+.gi-mkt .services-list .svc-row .num {
+  font-family: var(--font-mono);
+  color: var(--blue-700);
+  font-size: 14px;
+}
+.gi-mkt .services-list .svc-row p {
+  color: var(--gray-700); margin: 0; font-size: 15px;
+}
+
+/* Alt layout: stacked (tweakable) */
+.gi-mkt .services-stacked .svc-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  padding: 60px 0;
+  border-top: 1px solid var(--gray-300);
+}
+.gi-mkt .services-stacked .svc-card:nth-child(even) .svc-card-text { order: 2; }
+.gi-mkt .services-stacked .svc-card h3 {
+  font-family: var(--font-display);
+  font-size: 48px; line-height: 1;
+  letter-spacing: -0.03em; margin: 16px 0;
+  font-weight: 700;
+}
+.gi-mkt .services-stacked .svc-card-img {
+  height: 320px;
+  border-radius: var(--radius-lg);
+  background: var(--paper-2);
+  position: relative; overflow: hidden;
+}
+.gi-mkt .services-stacked .svc-card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ===== Catalogs ===== */
+.gi-mkt .cat-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.gi-mkt .chip {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gray-300);
+  background: transparent;
+  font-weight: 500;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s;
+  color: var(--ink-soft);
+}
+.gi-mkt .chip:hover { border-color: var(--ink); }
+.gi-mkt .chip.active {
+  background: var(--ink);
+  color: white;
+  border-color: var(--ink);
+}
+
+.gi-mkt .carousel {
+  position: relative;
+}
+.gi-mkt .carousel-track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 4px 4px 20px;
+  scrollbar-width: none;
+}
+.gi-mkt .carousel-track::-webkit-scrollbar { display: none; }
+
+.gi-mkt .cat-card {
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: white;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+}
+.gi-mkt .cat-card:hover {
+  transform: translateY(-4px) rotate(-0.5deg);
+  box-shadow: var(--shadow-lg);
+}
+.gi-mkt .cat-card-img {
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  position: relative;
+}
+.gi-mkt .cat-card-img img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.6s cubic-bezier(.2,.8,.2,1);
+}
+.gi-mkt .cat-card:hover .cat-card-img img { transform: scale(1.08); }
+.gi-mkt .cat-card-img::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.4));
+}
+.gi-mkt .cat-card-body {
+  padding: 20px;
+}
+.gi-mkt .cat-card-body h3 {
+  font-family: var(--font-display);
+  font-size: 22px; margin: 0 0 4px;
+  letter-spacing: -0.02em; font-weight: 600;
+}
+.gi-mkt .cat-card-body span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray-700);
+}
+
+.gi-mkt .carousel-nav {
+  display: flex; gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.gi-mkt .carousel-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gray-300);
+  display: grid; place-items: center;
+  transition: all 0.2s;
+  background: white;
+}
+.gi-mkt .carousel-btn:hover { border-color: var(--ink); background: var(--ink); color: white; }
+.gi-mkt .carousel-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Product filter grid */
+.gi-mkt .product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.gi-mkt .product {
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 1;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.gi-mkt .product:hover { transform: scale(1.02); }
+.gi-mkt .product img { width: 100%; height: 100%; object-fit: cover; }
+.gi-mkt .product-meta {
+  position: absolute; inset: auto 0 0 0;
+  padding: 16px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent);
+  color: white;
+}
+.gi-mkt .product-meta h5 { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.gi-mkt .product-meta span { font-size: 12px; font-family: var(--font-mono); opacity: 0.8; }
+/* The catalog page renders these cards as <button> (lightbox triggers); strip the
+   browser's default button padding/centering so they render exactly like the
+   prototype's <div> cards. Harmless for the home page's <a> catalog cards. */
+.gi-mkt .cat-card, .gi-mkt .product { padding: 0; text-align: left; }
+
+/* ===== Testimonials ===== */
+.gi-mkt .testimonials {
+  position: relative;
+}
+.gi-mkt .testimonial-track {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 8px 4px 28px;
+  scrollbar-width: none;
+}
+.gi-mkt .testimonial-track::-webkit-scrollbar { display: none; }
+.gi-mkt .testimonial {
+  flex: 0 0 440px;
+  scroll-snap-align: start;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  background: white;
+  border: 1px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+.gi-mkt .testimonial blockquote {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 0 0 24px;
+  font-weight: 500;
+  flex: 1;
+}
+.gi-mkt .testimonial cite {
+  font-style: normal;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gi-mkt .avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--orange-500);
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 700;
+  display: grid; place-items: center;
+  font-size: 18px;
+}
+.gi-mkt .testimonial-meta strong {
+  display: block; font-weight: 600; font-size: 14px;
+}
+.gi-mkt .testimonial-meta span {
+  font-size: 12px; color: var(--gray-700);
+}
+
+/* ===== Map / Offices ===== */
+.gi-mkt .offices-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+.gi-mkt .map-container {
+  position: relative;
+  aspect-ratio: 8/5;
+  background: linear-gradient(180deg, var(--paper), var(--paper-2));
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 8px;
+}
+.gi-mkt .map-svg { width: 100%; height: 100%; display: block; }
+.gi-mkt .map-pin {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--orange-500);
+  border: 3px solid var(--ink);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: transform 0.25s;
+  z-index: 2;
+}
+.gi-mkt .map-pin::before {
+  content: ""; position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--orange-500);
+  animation: pulseMkt 2s ease-out infinite;
+}
+.gi-mkt .map-pin.active {
+  background: var(--orange-700);
+  transform: translate(-50%, -50%) scale(1.35);
+}
+.gi-mkt .map-pin:hover { transform: translate(-50%, -50%) scale(1.2); }
+@keyframes pulseMkt {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.gi-mkt .offices-list { display: flex; flex-direction: column; gap: 12px; }
+.gi-mkt .office {
+  border: 1px solid var(--gray-200);
+  background: white;
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.gi-mkt .office:hover, .gi-mkt .office.active {
+  border-color: var(--ink);
+  box-shadow: var(--shadow-md);
+}
+.gi-mkt .office.active {
+  background: var(--ink); color: white;
+}
+.gi-mkt .office h4 {
+  font-family: var(--font-display);
+  font-size: 24px; margin: 0 0 8px;
+  font-weight: 600; letter-spacing: -0.02em;
+}
+.gi-mkt .office p { margin: 4px 0; font-size: 14px; color: var(--gray-700); line-height: 1.5; }
+.gi-mkt .office.active p { color: var(--gray-300); }
+/* Phone line keeps full-contrast ink (white when active) per the prototype's inline styles. */
+.gi-mkt .office .office-phone { font-weight: 600; color: var(--ink); }
+.gi-mkt .office.active .office-phone { color: #fff; }
+
+/* ===== Forms ===== */
+.gi-mkt .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.gi-mkt .field { display: flex; flex-direction: column; gap: 6px; }
+.gi-mkt .field.full { grid-column: span 2; }
+.gi-mkt .field label {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray-700);
+}
+.gi-mkt .field input, .gi-mkt .field textarea, .gi-mkt .field select {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--gray-300);
+  background: white;
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  color: var(--ink);
+}
+.gi-mkt .field input:focus, .gi-mkt .field textarea:focus, .gi-mkt .field select:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 4px var(--blue-100);
+}
+.gi-mkt .field textarea { min-height: 120px; resize: vertical; }
+.gi-mkt .field.error input, .gi-mkt .field.error textarea, .gi-mkt .field.error select {
+  border-color: #e53935;
+}
+.gi-mkt .field .err-msg {
+  font-size: 12px;
+  color: #e53935;
+  font-weight: 500;
+}
+
+/* ===== Footer ===== */
+.gi-mkt .footer {
+  background: var(--ink);
+  color: white;
+  padding: 80px 0 40px;
+}
+.gi-mkt .footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px;
+  margin-bottom: 60px;
+}
+.gi-mkt .footer h3 {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  color: var(--orange-500);
+  margin: 0 0 20px;
+  font-weight: 500;
+}
+.gi-mkt .footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.gi-mkt .footer ul a {
+  color: var(--gray-300); font-size: 14px;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+.gi-mkt .footer ul a:hover { color: white; }
+.gi-mkt .footer-bottom {
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--gray-500);
+}
+.gi-mkt .footer-brand {
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0 0 16px;
+  font-weight: 700;
+}
+.gi-mkt .footer-brand em {
+  font-style: italic;
+  color: var(--orange-500);
+}
+
+/* ===== Lightbox ===== */
+.gi-mkt .lightbox {
+  position: fixed; inset: 0;
+  background: rgba(67, 69, 74, 0.92);
+  display: grid; place-items: center;
+  z-index: 100;
+  padding: 40px;
+  backdrop-filter: blur(8px);
+}
+.gi-mkt .lightbox-inner {
+  max-width: 900px; width: 100%;
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  max-height: 90vh;
+  box-shadow: var(--shadow-lg);
+}
+.gi-mkt .lightbox-img { background: var(--paper-2); overflow: hidden; }
+.gi-mkt .lightbox-img img { width: 100%; height: 100%; object-fit: cover; }
+.gi-mkt .lightbox-body { padding: 40px; display: flex; flex-direction: column; }
+.gi-mkt .lightbox-close {
+  position: absolute; top: 20px; right: 20px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: white; color: var(--ink);
+  display: grid; place-items: center; font-size: 22px;
+}
+
+/* ===== Tweaks panel ===== */
+.gi-mkt .tweaks-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  width: 280px;
+  z-index: 99;
+  border: 1px solid var(--gray-200);
+}
+.gi-mkt .tweaks-panel h6 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 0 0 12px;
+  color: var(--gray-500);
+}
+.gi-mkt .tweaks-panel .tweak-opts { display: flex; flex-direction: column; gap: 6px; }
+.gi-mkt .tweaks-panel .tweak-opts button {
+  text-align: left; padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-200);
+  font-family: inherit; font-size: 13px;
+  transition: all 0.15s;
+  background: white;
+}
+.gi-mkt .tweaks-panel .tweak-opts button:hover { border-color: var(--gray-500); }
+.gi-mkt .tweaks-panel .tweak-opts button.active {
+  background: var(--ink); color: white; border-color: var(--ink);
+}
+
+/* Reveal on scroll */
+.gi-mkt .reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(.2,.8,.2,1), transform 0.8s cubic-bezier(.2,.8,.2,1);
+}
+.gi-mkt .reveal.in {
+  opacity: 1; transform: none;
+}
+
+/* Process */
+.gi-mkt .process-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.gi-mkt .process-step {
+  padding: 40px 32px;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  transition: background 0.3s;
+}
+.gi-mkt .process-step:first-child { border-left: none; }
+.gi-mkt .process-step:hover { background: rgba(255,255,255,0.04); }
+.gi-mkt .process-step span.num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--orange-500);
+  letter-spacing: 0.1em;
+}
+.gi-mkt .process-step h3 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin: 12px 0 8px;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+.gi-mkt .process-step p { color: var(--gray-300); font-size: 14px; line-height: 1.5; margin: 0; }
+
+/* Values */
+.gi-mkt .values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.gi-mkt .value {
+  padding: 36px;
+  border-radius: var(--radius-lg);
+  background: white;
+  border: 1px solid var(--gray-200);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s;
+}
+.gi-mkt .value:hover { border-color: var(--ink); transform: translateY(-4px); }
+.gi-mkt .value .mark {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 700;
+}
+.gi-mkt .value h4 {
+  font-family: var(--font-display);
+  font-size: 26px; margin: 20px 0 8px;
+  letter-spacing: -0.02em; font-weight: 600;
+}
+.gi-mkt .value p { color: var(--gray-700); font-size: 14px; line-height: 1.5; margin: 0; }
+
+/* ===== Blog ===== */
+.gi-mkt .blog-feature {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 40px;
+  margin-bottom: 60px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: white;
+  border: 1px solid var(--gray-200);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  align-items: stretch;
+}
+.gi-mkt .blog-feature:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.gi-mkt .blog-feature-img {
+  overflow: hidden;
+  min-height: 400px;
+}
+.gi-mkt .blog-feature-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(.2,.8,.2,1); }
+.gi-mkt .blog-feature:hover .blog-feature-img img { transform: scale(1.05); }
+.gi-mkt .blog-feature-body { padding: 48px 48px 48px 0; display: flex; flex-direction: column; justify-content: center; }
+
+.gi-mkt .blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.gi-mkt .blog-card {
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+.gi-mkt .blog-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--ink); }
+.gi-mkt .blog-card-img {
+  aspect-ratio: 16/10;
+  overflow: hidden;
+}
+.gi-mkt .blog-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+.gi-mkt .blog-card:hover .blog-card-img img { transform: scale(1.06); }
+.gi-mkt .blog-card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+
+/* ===== Careers ===== */
+.gi-mkt .jobs-list { display: flex; flex-direction: column; }
+.gi-mkt .job-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 24px;
+  border-top: 1px solid var(--gray-200);
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 8px;
+}
+.gi-mkt .job-row:last-child { border-bottom: 1px solid var(--gray-200); }
+.gi-mkt .job-row:hover { background: var(--paper-2); padding-left: 32px; }
+
+.gi-mkt .svc-feature:hover {
+  border-color: var(--ink) !important;
+  transform: translateY(-2px);
+}
+.gi-mkt .other-svc:hover {
+  border-color: var(--ink) !important;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 900px) {
+  .gi-mkt .blog-grid { grid-template-columns: 1fr; }
+  .gi-mkt .blog-feature { grid-template-columns: 1fr; }
+  .gi-mkt .blog-feature-body { padding: 24px; }
+  .gi-mkt .blog-feature-img { min-height: 240px; }
+  .gi-mkt .job-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+.gi-mkt .page {
+  animation: pageInMkt 0.5s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes pageInMkt {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .gi-mkt .hero-grid, .gi-mkt .offices-wrap { grid-template-columns: 1fr; }
+  .gi-mkt .hero-visual { height: 380px; }
+  .gi-mkt .svc-hero, .gi-mkt .svc-a, .gi-mkt .svc-b, .gi-mkt .svc-c, .gi-mkt .svc-d { grid-column: span 12; }
+  .gi-mkt .services-list .svc-row { grid-template-columns: 40px 1fr; }
+  .gi-mkt .services-list .svc-row p, .gi-mkt .services-list .svc-row .btn-ghost { display: none; }
+  .gi-mkt .services-stacked .svc-card { grid-template-columns: 1fr; }
+  .gi-mkt .services-stacked .svc-card:nth-child(even) .svc-card-text { order: 0; }
+  .gi-mkt .footer-grid { grid-template-columns: 1fr 1fr; }
+  .gi-mkt .form-grid, .gi-mkt .values-grid { grid-template-columns: 1fr; }
+  .gi-mkt .field.full { grid-column: span 1; }
+  .gi-mkt .process-list { grid-template-columns: 1fr 1fr; }
+  .gi-mkt .section { padding: 80px 0; }
+  .gi-mkt .hero { padding: 60px 0 80px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .gi-mkt .blob, .gi-mkt .h-card, .gi-mkt .ticker-track, .gi-mkt .map-pin::before { animation: none !important; }
+  .gi-mkt .reveal { opacity: 1; transform: none; transition: none; }
+  .gi-mkt .page { animation: none; }
+  .gi-mkt * { scroll-behavior: auto !important; }
+}
+
+/* ===== Redesign utilities ===== */
+.gi-mkt .glass {
+  background: rgba(250, 250, 250, 0.72);
+  backdrop-filter: saturate(150%) blur(18px);
+  -webkit-backdrop-filter: saturate(150%) blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), var(--shadow-sm);
+}
+.gi-mkt .shadow-diffuse { box-shadow: 0 28px 60px -28px rgba(67, 69, 74, 0.22); }
+.gi-mkt .section-pad-lg { padding: clamp(96px, 14vh, 180px) 0; }
+.gi-mkt .text-grad-word {
+  color: var(--orange-500);
+  font-style: italic;
+}
+
+/* ===== Review-pass refinements ===== */
+
+/* Accent system: una sola palabra destacada en naranja de marca (#ff8300),
+   tanto en superficies claras como en las secciones oscuras. */
+.gi-mkt .text-accent { color: var(--orange-500); font-weight: inherit; }
+.gi-mkt .section-dark .text-accent { color: var(--orange-500); }
+
+/* Focus-visible rings (none existed before). Keyboard users get a clear ring;
+   mouse users (:focus:not(:focus-visible)) are unaffected. Orange on dark/tinted
+   surfaces for contrast. */
+.gi-mkt :focus-visible { outline: 2px solid var(--orange-700); outline-offset: 2px; }
+.gi-mkt .section-dark :focus-visible,
+.gi-mkt .closing :focus-visible,
+.gi-mkt .ticker :focus-visible,
+.gi-mkt .footer :focus-visible { outline-color: var(--orange-300); }
+
+/* Footer: fluid wordmark + true single-column collapse on phones (was a fixed
+   64px wordmark and a grid that never collapsed → horizontal overflow). */
+.gi-mkt .footer-brand { font-size: clamp(40px, 11vw, 64px); overflow-wrap: break-word; }
+.gi-mkt .footer-grid > * { min-width: 0; }
+.gi-mkt .footer ul a, .gi-mkt .footer-bottom { overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .gi-mkt .footer-grid { grid-template-columns: 1fr; }
+  .gi-mkt .footer-bottom { flex-direction: column; gap: 8px; align-items: flex-start; }
+}
+
+/* Stack section heads (eyebrow + title over the description) on mobile so they
+   read as a clean single column instead of cramped side-by-side. */
+@media (max-width: 860px) {
+  .gi-mkt .section-head { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .gi-mkt .section-head p { max-width: none; }
+}
+
+/* ==========================================================================
+   Fuente: gi-website-final/src/styles/motion.css
+   NOTA: .gi-mkt .reveal ya está definido arriba (desde global.css); el
+   IntersectionObserver del Layout agrega la clase .in. Esto añade solo
+   primitivas NUEVAS usadas por las "motion islands" del rediseño.
+   ========================================================================== */
+
+/* Pin wrapper used by the services horizontal pan. */
+.gi-mkt .pin-track { display: flex; will-change: transform; }
+
+/* Marquee base (GSAP drives x / xPercent). */
+.gi-mkt .marquee { display: inline-flex; white-space: nowrap; will-change: transform; }
+
+/* Magnetic button wrapper — GSAP writes x/y (px). */
+.gi-mkt .magnetic { display: inline-block; will-change: transform; }
+
+/* Single authoritative reduced-motion override for these primitives. */
+@media (prefers-reduced-motion: reduce) {
+  .gi-mkt .pin-track,
+  .gi-mkt .marquee,
+  .gi-mkt .magnetic {
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
+/* ==========================================================================
+   Componente: Hero.astro
+   ========================================================================== */
+.gi-mkt .hero-cine {
+  position: relative;
+  padding: clamp(12px, 2vh, 24px) 0 0;
+}
+
+/* Aspect-matched stage so `contain` shows the full banner without cropping or
+   upscaling past its native size (no pixelation). */
+.gi-mkt .hero-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1440 / 400;
+  max-height: 70vh;
+  background: var(--paper-2);
+  overflow: hidden;
+}
+.gi-mkt .hero-stage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ==========================================================================
+   Componente: ServicesShowcase.astro
+   ========================================================================== */
+.gi-mkt .svc-num-hero {
+  color: rgba(255, 255, 255, 0.7);
+}
+.gi-mkt .svc-pin { position: relative; }
+.gi-mkt .svc-pin .pin-viewport {
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.gi-mkt .svc-pin .pin-track {
+  gap: 28px;
+  padding: 0 max(32px, calc((100vw - var(--max)) / 2 + 32px));
+}
+.gi-mkt .svc-stage {
+  flex: 0 0 clamp(320px, 42vw, 560px);
+  min-height: 60vh;
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-lg);
+}
+.gi-mkt .svc-stage h3 {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  margin: 0;
+}
+.gi-mkt .svc-stage p {
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 42ch;
+  margin: 16px 0 0;
+}
+.gi-mkt .svc-stage .svc-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+}
+.gi-mkt .svc-stage .svc-cta-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 20px;
+}
+.gi-mkt .svc-tone-hero { background: var(--blue-700); color: #fff; }
+.gi-mkt .svc-tone-hero p { color: rgba(255, 255, 255, 0.82); }
+.gi-mkt .svc-tone-a { background: var(--orange-500); color: var(--ink); }
+.gi-mkt .svc-tone-b { background: var(--paper-2); color: var(--ink); }
+.gi-mkt .svc-tone-c { background: var(--ink); color: #fff; }
+.gi-mkt .svc-tone-c p { color: rgba(255, 255, 255, 0.72); }
+.gi-mkt .svc-tone-d { background: var(--mint); color: var(--ink); }
+
+@media (max-width: 860px) {
+  .gi-mkt .svc-pin .pin-viewport {
+    height: auto;
+    display: block;
+  }
+  .gi-mkt .svc-pin .pin-track {
+    flex-direction: column;
+    padding: 0 16px;
+    gap: 16px;
+  }
+  .gi-mkt .svc-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+/* ==========================================================================
+   Componente: ProcessSection.astro
+   ========================================================================== */
+.gi-mkt .proc-rail {
+  position: relative;
+  margin-top: clamp(40px, 6vh, 72px);
+}
+
+/* Connecting line sits behind the steps, aligned with the numbers row. */
+.gi-mkt .proc-path {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+.gi-mkt [data-proc-line] {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+/* Keep the steps above the connecting line. */
+.gi-mkt .proc-rail .process-list {
+  position: relative;
+  z-index: 1;
+}
+
+/* Base hidden state for the scroll stagger (transform/opacity only).
+   Guarded so reduced-motion users see fully-visible steps. */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt [data-proc-step] {
+    opacity: 0;
+    transform: translateY(26px);
+    will-change: transform, opacity;
+  }
+}
+
+/* Single-column, readable stack on mobile. Overrides the global 2-col rule
+   for this section only (Astro scopes this style). */
+@media (max-width: 860px) {
+  .gi-mkt .proc-rail .process-list {
+    grid-template-columns: 1fr;
+  }
+  .gi-mkt .proc-rail .process-step {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 28px 4px;
+  }
+  .gi-mkt .proc-rail .process-step:first-child {
+    border-top: none;
+  }
+  /* The horizontal connecting line has no meaning in a vertical stack. */
+  .gi-mkt .proc-path {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Componente: ImpactBand.astro
+   ========================================================================== */
+.gi-mkt .impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.gi-mkt .impact-cell {
+  padding: 40px 28px 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: 0;
+}
+.gi-mkt .impact-cell:first-child {
+  border-left: none;
+}
+.gi-mkt .impact-cell strong {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 5vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fff;
+  display: block;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.gi-mkt .impact-cell span {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-300);
+  display: block;
+  margin-top: 12px;
+}
+@media (max-width: 860px) {
+  .gi-mkt .impact-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  /* On a 2-column grid, every odd cell starts a new row, so it has no
+     left neighbor and should drop its divider. */
+  .gi-mkt .impact-cell:nth-child(odd) {
+    border-left: none;
+  }
+  .gi-mkt .impact-cell {
+    padding: 32px 20px 8px;
+  }
+}
+
+/* ==========================================================================
+   Componente: TestimonialsCarousel.astro
+   ========================================================================== */
+.gi-mkt .testi-progress {
+  height: 2px;
+  background: var(--gray-200);
+  border-radius: 2px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+.gi-mkt .testi-progress i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--ink);
+  will-change: transform;
+}
+
+/* ==========================================================================
+   Componente: ClosingCTA.astro
+   ========================================================================== */
+.gi-mkt .closing {
+  background: var(--blue-700);
+  color: #fff;
+  text-align: center;
+  overflow: hidden;
+}
+
+.gi-mkt .closing-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.gi-mkt .closing-h {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 5.5vw, 84px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  max-width: 16ch;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.gi-mkt .closing-sub {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 18px;
+  line-height: 1.5;
+  max-width: 52ch;
+  margin: 0;
+}
+
+/* Acento en el naranja sólido de marca (#ff8300), igual que el resto del sitio. */
+.gi-mkt .closing .text-grad-word {
+  color: var(--orange-500);
+}
+
+.gi-mkt .closing-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* The magnetic wrapper must be inline-block so its transform pulls the button
+   without affecting the surrounding flex layout. will-change is set only when
+   motion is allowed (see the no-preference guard below). */
+.gi-mkt .magnetic {
+  display: inline-block;
+}
+
+.gi-mkt .magnetic .btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tap target: btn-lg is already >= 44px tall, but enforce it explicitly so the
+   anchors never drop below the accessibility floor on any viewport. */
+.gi-mkt .closing .btn-lg {
+  min-height: 44px;
+}
+
+/* Ghost button recolored for the dark blue band (global .btn-ghost is tuned
+   for light surfaces). */
+.gi-mkt .closing .btn-ghost {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.gi-mkt .closing .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #fff;
+}
+
+/* Stagger the three revealed blocks for a touch of cadence. Guarded so
+   reduced-motion users get no delay (and the global reduced-motion rule keeps
+   them fully visible). */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .magnetic {
+    will-change: transform;
+  }
+  .gi-mkt .closing-sub {
+    transition-delay: 0.08s;
+  }
+  .gi-mkt .closing-cta {
+    transition-delay: 0.16s;
+  }
+}
+
+@media (max-width: 860px) {
+  .gi-mkt .closing-sub {
+    font-size: 16px;
+  }
+  .gi-mkt .closing-cta {
+    width: 100%;
+  }
+  /* Full-width, comfortably tappable buttons in the single-column layout. */
+  .gi-mkt .closing-cta .magnetic,
+  .gi-mkt .closing-cta > .btn {
+    width: 100%;
+  }
+  .gi-mkt .closing-cta .magnetic .btn-accent {
+    width: 100%;
+    justify-content: center;
+  }
+  .gi-mkt .closing-cta > .btn-ghost {
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   Componente: Ticker.astro
+   ========================================================================== */
+.gi-mkt .ticker {
+  position: relative;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 20px 24px;
+}
+
+/* Centered, wrapping row — static (no transform), so nothing is clipped. */
+.gi-mkt .ticker-marquee {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+.gi-mkt .ticker-item {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 4px 8px;
+  line-height: 1;
+}
+
+.gi-mkt .ticker-dot {
+  color: var(--orange-500);
+  font-weight: 700;
+  margin: 0 8px;
+}
+
+@media (max-width: 860px) {
+  .gi-mkt .ticker { padding: 16px 20px; }
+  .gi-mkt .ticker-item { font-size: 22px; }
+}
+
+/* ==========================================================================
+   Componente: MobileMenu.astro (drawer)
+   ========================================================================== */
+.gi-mkt .drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+}
+.gi-mkt .drawer.open {
+  display: block;
+}
+.gi-mkt .drawer-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(67, 69, 74, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.gi-mkt .drawer.open .drawer-scrim {
+  opacity: 1;
+}
+.gi-mkt .drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(86vw, 360px);
+  max-width: 100%;
+  background: var(--paper);
+  border-left: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-lg);
+  padding: 20px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.gi-mkt .drawer.open .drawer-panel {
+  transform: none;
+}
+.gi-mkt .drawer-close {
+  align-self: flex-end;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.gi-mkt .drawer-close:hover {
+  background: var(--gray-100);
+}
+.gi-mkt .drawer-link {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  transition: color 0.18s, background 0.18s;
+}
+.gi-mkt .drawer-link:hover {
+  background: var(--gray-100);
+}
+.gi-mkt .drawer-link.active {
+  color: var(--blue-700);
+}
+.gi-mkt .drawer-cta {
+  margin-top: 16px;
+  justify-content: center;
+  min-height: 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gi-mkt .drawer-scrim,
+  .gi-mkt .drawer-panel {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Componente: Logo.astro
+   ========================================================================== */
+/* Mínimo digital del manual: 282 × 60 px para la versión horizontal.
+   Reducido para dejar más aire (safe space) alrededor del logo en el header. */
+.gi-mkt .logo {
+  display: block;
+  width: clamp(140px, 16vw, 196px);
+  height: auto;
+}
+
+/* ==========================================================================
+   Componente: SocialIcons.astro
+   ========================================================================== */
+.gi-mkt .social-icons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.gi-mkt .social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.18s, transform 0.18s;
+}
+.gi-mkt .social-icon svg {
+  display: block;
+}
+
+/* Footer: muted on the dark band, brand orange on hover. */
+.gi-mkt .social-icons-footer {
+  margin-top: 16px;
+}
+.gi-mkt .social-icons-footer .social-icon {
+  color: var(--gray-300);
+}
+.gi-mkt .social-icons-footer .social-icon:hover {
+  color: var(--orange-500);
+}
+
+/* Nav: compact icons that sit before the CTA on desktop. */
+.gi-mkt .social-icons-nav {
+  gap: 10px;
+  padding-left: 8px;
+  margin-left: 2px;
+  border-left: 1px solid var(--gray-200);
+}
+.gi-mkt .social-icons-nav .social-icon {
+  color: var(--ink-soft);
+}
+.gi-mkt .social-icons-nav .social-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.gi-mkt .social-icons-nav .social-icon:hover {
+  color: var(--orange-500);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gi-mkt .social-icon {
+    transition: none;
+  }
+  .gi-mkt .social-icons-nav .social-icon:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Componente: MexicoMap.astro
+   ========================================================================== */
+.gi-mkt .map-pin-group {
+  cursor: pointer;
+}
+/* Only the active pin shows its expanding ripple. */
+.gi-mkt .map-pin-group .map-ripple {
+  display: none;
+}
+.gi-mkt .map-pin-group.active .map-ripple {
+  display: block;
+}
+.gi-mkt .map-pin-group.active .map-dot {
+  fill: #d96f00;
+}
+.gi-mkt .map-pin-group .map-dot {
+  transition: fill 0.2s ease;
+}
+
+/* ==========================================================================
+   Página: conocenos.astro
+   ========================================================================== */
+/* ===== About hero ===== */
+.gi-mkt .about-hero {
+  padding-bottom: 60px;
+}
+/* Mismo tamaño que el título de la página de Servicios (.svc-h1). */
+.gi-mkt .about-h1 {
+  font-size: clamp(48px, 8vw, 120px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  margin: 20px 0 0;
+  max-width: 1100px;
+}
+
+/* ===== Intro: ¿Quiénes somos? — editorial stacked layout ===== */
+.gi-mkt .about-intro {
+  padding-top: 40px;
+}
+.gi-mkt .about-head {
+  max-width: 900px;
+  margin: 0 0 clamp(28px, 4vw, 44px);
+}
+.gi-mkt .about-copy-h {
+  font-size: clamp(36px, 5vw, 60px);
+  margin: 14px 0 0;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+}
+.gi-mkt .about-figure {
+  position: relative;
+  margin: 0 0 clamp(32px, 4vw, 48px);
+}
+.gi-mkt .about-figure img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  object-position: center 42%;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 28px 60px -28px rgba(67, 69, 74, 0.22);
+}
+.gi-mkt .about-copy {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 4vw, 64px);
+  max-width: 1000px;
+}
+.gi-mkt .about-copy p {
+  font-size: 18px;
+  color: var(--gray-700);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ===== Misión / Visión — refined cards, collapses on mobile ===== */
+.gi-mkt .mv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.gi-mkt .mv-card {
+  padding: clamp(36px, 4vw, 52px);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+.gi-mkt .mv-h {
+  font-size: clamp(34px, 3.6vw, 40px);
+  margin: 12px 0 16px;
+  letter-spacing: -0.02em;
+}
+.gi-mkt .mv-card p {
+  line-height: 1.65;
+  font-size: 16px;
+  margin: 0;
+  max-width: 42ch;
+}
+/* Principios: a clean list with brand-orange dashes instead of a paragraph. */
+.gi-mkt .mv-principles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 42ch;
+}
+.gi-mkt .mv-principles li {
+  position: relative;
+  padding-left: 24px;
+  line-height: 1.6;
+  font-size: 16px;
+  color: var(--gray-300);
+}
+.gi-mkt .mv-principles li + li {
+  margin-top: 12px;
+}
+.gi-mkt .mv-principles li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 12px;
+  height: 2px;
+  background: var(--orange-500);
+}
+/* Propósito: light material with a hairline border and tinted brand shadow. */
+.gi-mkt .mv-light {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 28px 60px -28px rgba(67, 69, 74, 0.16);
+}
+.gi-mkt .mv-light p {
+  color: var(--gray-700);
+}
+/* Eyebrow "Propósito" en naranja de marca. */
+.gi-mkt .mv-light .eyebrow {
+  color: var(--orange-500);
+}
+/* Mismo círculo de acento que el bloque de Principios. */
+.gi-mkt .mv-light::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  bottom: -90px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 131, 0, 0.16), transparent 62%);
+  pointer-events: none;
+}
+/* Visión: ink material; eyebrow shifts to orange for contrast on dark. */
+.gi-mkt .mv-ink {
+  background: var(--ink);
+  color: #fff;
+}
+.gi-mkt .mv-ink .eyebrow {
+  color: var(--orange-500);
+}
+.gi-mkt .mv-ink p {
+  color: var(--gray-300);
+}
+/* A whisper-soft accent corner so the ink card reads as a deliberate material,
+   not a flat block. Transform-free, decorative only. */
+.gi-mkt .mv-ink::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  bottom: -90px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 131, 0, 0.22), transparent 62%);
+  pointer-events: none;
+}
+
+.gi-mkt .diff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+.gi-mkt .diff-card {
+  padding: 28px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: #fff;
+  min-width: 0;
+}
+.gi-mkt .diff-card p {
+  color: var(--gray-700);
+  line-height: 1.6;
+  margin: 0;
+  font-size: 16px;
+}
+
+/* ===== Values ===== */
+.gi-mkt .values-h {
+  font-size: clamp(40px, 5.4vw, 64px);
+  margin: 12px 0 0;
+  letter-spacing: -0.03em;
+}
+
+/* ===== Certificaciones ===== */
+.gi-mkt .certs-h {
+  font-size: clamp(40px, 5.4vw, 64px);
+  margin: 12px 0 0;
+  letter-spacing: -0.03em;
+}
+.gi-mkt .certs-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+.gi-mkt .cert-card {
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+/* Acento de marca: filete naranja superior. */
+.gi-mkt .cert-card .cert-name {
+  position: relative;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+  padding-top: 16px;
+  color: var(--ink);
+}
+.gi-mkt .cert-card .cert-name::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--orange-500);
+}
+.gi-mkt .cert-card p {
+  color: var(--gray-700);
+  line-height: 1.6;
+  margin: 0;
+  font-size: 15px;
+}
+/* The values title is now an h3 (heading order h2 to h3); the global rule
+   targets `.value h4`, so restate the display type here for the <h3>. */
+.gi-mkt .value-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  margin: 20px 0 8px;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+/* ===== Dark closing CTA — magnetic button ===== */
+.gi-mkt .about-cta-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.gi-mkt .about-cta-h {
+  font-size: clamp(40px, 6vw, 88px);
+  letter-spacing: -0.03em;
+  margin: 0 auto 32px;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+/* Inline-block so the magnetic transform pulls the button without disturbing
+   the centered flex layout. will-change only when motion is allowed. */
+.gi-mkt .magnetic {
+  display: inline-block;
+}
+.gi-mkt .magnetic .btn-lg {
+  min-height: 44px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .magnetic {
+    will-change: transform;
+  }
+}
+
+/* ===== Mobile collapse (no horizontal overflow < 861px) ===== */
+@media (max-width: 860px) {
+  .gi-mkt .about-copy {
+    grid-template-columns: 1fr;
+  }
+  .gi-mkt .about-figure img {
+    aspect-ratio: 4 / 3;
+  }
+  .gi-mkt .about-copy p {
+    font-size: 16px;
+  }
+  .gi-mkt .mv-grid {
+    grid-template-columns: 1fr;
+  }
+  .gi-mkt .diff-grid {
+    grid-template-columns: 1fr;
+  }
+  .gi-mkt .certs-grid {
+    grid-template-columns: 1fr;
+  }
+  .gi-mkt .about-cta .btn-lg {
+    width: 100%;
+    justify-content: center;
+  }
+  .gi-mkt .magnetic {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Página: servicios/index.astro
+   ========================================================================== */
+/* ===== Hero ===== */
+.gi-mkt .svc-hero-sec {
+  padding-bottom: clamp(48px, 7vh, 88px);
+}
+.gi-mkt .svc-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 8vw, 120px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  max-width: 1100px;
+  margin: 18px 0 0;
+  text-wrap: balance;
+}
+
+.gi-mkt .svc-hero-foot {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 360px);
+  gap: clamp(32px, 6vw, 80px);
+  align-items: start;
+  margin-top: clamp(36px, 6vh, 64px);
+  padding-top: clamp(28px, 4vh, 44px);
+  border-top: 1px solid var(--gray-200);
+}
+.gi-mkt .svc-lede {
+  font-size: clamp(18px, 2.4vw, 22px);
+  color: var(--gray-700);
+  line-height: 1.5;
+  max-width: 36ch;
+}
+.gi-mkt .svc-lede p {
+  margin: 0;
+}
+.gi-mkt .svc-lede p + p {
+  margin-top: 1em;
+}
+
+/* Editorial service index — hairline list, no card boxes */
+.gi-mkt .svc-index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--gray-200);
+}
+.gi-mkt .svc-index-list li {
+  border-bottom: 1px solid var(--gray-200);
+}
+.gi-mkt .svc-index-list a {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 52px;
+  padding: 6px 6px 6px 2px;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.gi-mkt .svc-index-list a:hover {
+  color: var(--blue-700);
+}
+.gi-mkt .svc-index-list .n {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--gray-700);
+  min-width: 24px;
+}
+.gi-mkt .svc-index-list a:hover .n {
+  color: var(--blue-700);
+}
+.gi-mkt .svc-index-list .t {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(15px, 1.6vw, 17px);
+  letter-spacing: -0.01em;
+}
+.gi-mkt .svc-index-list .ar {
+  color: var(--gray-300);
+  transform: translateX(-4px);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1), opacity 0.25s;
+}
+.gi-mkt .svc-index-list a:hover .ar {
+  color: var(--orange-500);
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* ===== Mosaic section ===== */
+.gi-mkt .svc-mosaic-head {
+  margin-bottom: clamp(40px, 6vh, 60px);
+}
+.gi-mkt .svc-mosaic-head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  max-width: 760px;
+  margin: 12px 0 0;
+  text-wrap: balance;
+}
+
+/* ===== Calm reveal (transform/opacity only, motion-guarded below) ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .svc-rev {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 0.7s cubic-bezier(.2,.8,.2,1),
+      transform 0.7s cubic-bezier(.2,.8,.2,1);
+    will-change: transform, opacity;
+  }
+  .gi-mkt .svc-rev.in {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+  /* Soft cadence on the hero stack */
+  .gi-mkt .svc-h1.svc-rev { transition-delay: 0.05s; }
+  .gi-mkt .svc-hero-foot .svc-lede.svc-rev { transition-delay: 0.1s; }
+  .gi-mkt .svc-hero-foot .svc-index-list.svc-rev { transition-delay: 0.16s; }
+  .gi-mkt .svc-mosaic-head h2.svc-rev { transition-delay: 0.06s; }
+
+  /* Mosaic tiles enter with a gentle stagger; index set per tile in script.
+     (Astro's `:global(.svc)` scope-escape is translated to a plain
+     descendant selector — everything already lives under .gi-mkt.) */
+  .gi-mkt .svc-mosaic-mount .svc {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.7s cubic-bezier(.2,.8,.2,1),
+      transform 0.7s cubic-bezier(.2,.8,.2,1);
+    transition-delay: calc(var(--svc-i, 0) * 0.07s);
+    will-change: transform, opacity;
+  }
+  .gi-mkt .svc-mosaic-mount.in .svc {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 860px) {
+  .gi-mkt .svc-hero-foot {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 32px;
+  }
+  .gi-mkt .svc-lede { max-width: none; }
+  .gi-mkt .svc-index-list a {
+    min-height: 56px;
+    padding: 10px 4px 10px 2px;
+  }
+  .gi-mkt .svc-index-list .ar {
+    opacity: 1;
+    transform: none;
+    color: var(--gray-700);
+  }
+}
+
+/* ==========================================================================
+   Página: servicios/[id].astro
+   ========================================================================== */
+/* ---- Intro ------------------------------------------------------------ */
+.gi-mkt .svc-intro {
+  padding-bottom: 40px;
+}
+.gi-mkt .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  min-height: 44px;
+}
+.gi-mkt .back-link svg {
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .back-link:hover svg {
+    transform: translateX(-3px);
+  }
+}
+.gi-mkt .svc-h1 {
+  font-size: clamp(56px, 8vw, 128px);
+  margin: 20px 0 24px;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  max-width: 1100px;
+}
+.gi-mkt .svc-tagline {
+  font-size: clamp(22px, 3vw, 26px);
+  font-family: var(--font-display);
+  font-style: italic;
+  margin: 0;
+  letter-spacing: -0.01em;
+  max-width: 720px;
+  /* Keep the service hue identity but darken it enough to pass AA on paper. */
+  color: var(--ink-soft);
+  color: color-mix(in srgb, var(--svc-color, var(--blue-700)), var(--ink) 40%);
+}
+
+/* ---- Hero image (zoom-parallax) -------------------------------------- */
+.gi-mkt .svc-hero-wrap {
+  padding: 8px 0 60px;
+}
+.gi-mkt .svc-hero-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 28px 60px -28px rgba(67, 69, 74, 0.22);
+}
+.gi-mkt .svc-hero-stage img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.04);
+  will-change: transform;
+}
+.gi-mkt .svc-hero-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(67, 69, 74, 0.06) 0%,
+    transparent 30%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ---- Lo que incluye --------------------------------------------------- */
+.gi-mkt .svc-includes {
+  padding-top: 0;
+}
+.gi-mkt .svc-includes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+  align-items: start;
+}
+.gi-mkt .svc-h2 {
+  font-size: clamp(34px, 4.5vw, 48px);
+  margin: 12px 0 24px;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+.gi-mkt .svc-intro-copy {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--gray-700);
+  margin: 0 0 32px;
+  max-width: 46ch;
+}
+.gi-mkt .svc-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gi-mkt .svc-chip {
+  padding: 8px 14px;
+  background: var(--paper-2);
+  border: 1px solid var(--gray-200);
+  border-radius: 999px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--ink-soft);
+}
+
+.gi-mkt .svc-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+.gi-mkt .svc-feature {
+  position: relative;
+  padding: 28px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: #fff;
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1),
+              box-shadow 0.25s cubic-bezier(.2,.8,.2,1),
+              border-color 0.25s ease;
+}
+/* Subtle hover tint + lift (transform/opacity-safe). */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .svc-feature:hover {
+    transform: translateY(-3px);
+  }
+}
+.gi-mkt .svc-feature:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0 18px 40px -24px rgba(67, 69, 74, 0.20);
+}
+.gi-mkt .svc-feature::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(99, 101, 105, 0.05), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.gi-mkt .svc-feature:hover::before {
+  opacity: 1;
+}
+.gi-mkt .svc-feature-num {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  color: color-mix(in srgb, var(--svc-color, var(--blue-700)), var(--ink) 52%);
+}
+.gi-mkt .svc-feature-t {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 8px 0;
+  letter-spacing: -0.015em;
+}
+.gi-mkt .svc-feature-d {
+  position: relative;
+  color: var(--gray-700);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ---- Cómo trabajamos (proceso) --------------------------------------- */
+.gi-mkt .svc-process-head {
+  max-width: 720px;
+  margin-bottom: 40px;
+}
+.gi-mkt .svc-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.gi-mkt .svc-step {
+  position: relative;
+  padding: 28px 24px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: #fff;
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1),
+              box-shadow 0.25s cubic-bezier(.2,.8,.2,1),
+              border-color 0.25s ease;
+}
+.gi-mkt .svc-step::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  width: 28px;
+  height: 3px;
+  background: var(--orange-500);
+  border-radius: 0 0 3px 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .svc-step:hover {
+    transform: translateY(-3px);
+  }
+}
+.gi-mkt .svc-step:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0 18px 40px -24px rgba(67, 69, 74, 0.20);
+}
+.gi-mkt .svc-step-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--orange-700);
+}
+.gi-mkt .svc-step-t {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 10px 0 8px;
+  letter-spacing: -0.015em;
+}
+.gi-mkt .svc-step-d {
+  color: var(--gray-700);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ---- Dark CTA --------------------------------------------------------- */
+.gi-mkt .svc-cta-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.gi-mkt .svc-cta-h {
+  font-size: clamp(40px, 6vw, 80px);
+  letter-spacing: -0.03em;
+  margin: 0 auto 24px;
+  max-width: 900px;
+  line-height: 0.98;
+}
+.gi-mkt .svc-cta-sub {
+  color: var(--gray-300);
+  font-size: 18px;
+  max-width: 600px;
+  margin: 0 auto 32px;
+  line-height: 1.5;
+}
+.gi-mkt .svc-cta-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+.gi-mkt .magnetic {
+  display: inline-block;
+}
+.gi-mkt .svc-end-cta .btn-lg {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.gi-mkt .btn-ghost-light {
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.32);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.gi-mkt .btn-ghost-light:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .magnetic {
+    will-change: transform;
+  }
+}
+
+/* ---- Más servicios ---------------------------------------------------- */
+.gi-mkt .svc-more-h {
+  margin-bottom: 32px;
+}
+.gi-mkt .svc-more-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.gi-mkt .svc-more-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 24px;
+  min-height: 132px;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1),
+              box-shadow 0.25s cubic-bezier(.2,.8,.2,1),
+              border-color 0.25s ease;
+}
+/* Hover tint keyed to each service's own brand color (low alpha). */
+.gi-mkt .svc-more-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--svc-tint);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.gi-mkt .svc-more-card:hover::before {
+  opacity: 0.05;
+}
+.gi-mkt .svc-more-card:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0 18px 40px -24px rgba(67, 69, 74, 0.20);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .svc-more-card:hover {
+    transform: translateY(-3px);
+  }
+}
+.gi-mkt .svc-more-num {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  color: color-mix(in srgb, var(--svc-tint, var(--blue-700)), var(--ink) 52%);
+}
+.gi-mkt .svc-more-t {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 8px 0 0;
+  letter-spacing: -0.02em;
+}
+.gi-mkt .svc-more-arrow {
+  position: relative;
+  margin-top: auto;
+  padding-top: 16px;
+  color: var(--gray-300);
+  transition: color 0.25s ease, transform 0.25s cubic-bezier(.2,.8,.2,1);
+}
+.gi-mkt .svc-more-card:hover .svc-more-arrow {
+  color: var(--ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .svc-more-card:hover .svc-more-arrow {
+    transform: translateX(3px);
+  }
+}
+
+/* ---- Mobile collapse -------------------------------------------------- */
+@media (max-width: 860px) {
+  .gi-mkt .svc-includes-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .gi-mkt .svc-more-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .gi-mkt .svc-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+  .gi-mkt .svc-hero-stage {
+    aspect-ratio: 4 / 3;
+  }
+}
+@media (max-width: 560px) {
+  .gi-mkt .svc-more-grid {
+    grid-template-columns: 1fr;
+  }
+  .gi-mkt .svc-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reduced motion: hold the hero at its base scale, no parallax. */
+@media (prefers-reduced-motion: reduce) {
+  .gi-mkt .svc-hero-stage img {
+    transform: scale(1.04);
+    will-change: auto;
+  }
+}
+
+/* ==========================================================================
+   Página: blog/index.astro
+   ========================================================================== */
+/* ----- Hero ----- */
+.gi-mkt .blog-hero { padding-bottom: 40px; }
+.gi-mkt .blog-h1 {
+  font-size: clamp(52px, 8vw, 116px);
+  margin: 20px 0 28px;
+  max-width: 16ch;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+.gi-mkt .blog-lead {
+  font-size: clamp(18px, 2.2vw, 21px);
+  color: var(--gray-700);
+  line-height: 1.5;
+  max-width: 56ch;
+  margin: 0;
+}
+
+/* ----- Body / filter ----- */
+.gi-mkt .blog-body { padding-top: 0; }
+.gi-mkt .blog-filter { margin-bottom: 40px; }
+/* Tap-target floor: the global .chip is ~40px tall; bring it to >= 44px. */
+.gi-mkt .blog-filter .chip { min-height: 44px; display: inline-flex; align-items: center; }
+
+/* ----- Featured ----- */
+.gi-mkt .blog-feature-title {
+  font-size: clamp(34px, 4.5vw, 56px);
+  margin: 12px 0 16px;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  text-wrap: balance;
+}
+.gi-mkt .blog-feature-excerpt {
+  color: var(--gray-700);
+  font-size: 17px;
+  line-height: 1.55;
+  margin: 0 0 22px;
+  max-width: 52ch;
+}
+.gi-mkt .blog-meta,
+.gi-mkt .blog-card-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gray-700);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Soften the global featured-image hover so inner pages stay calmer. */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .blog-feature:hover .blog-feature-img img { transform: scale(1.04); }
+}
+
+/* ----- Cards ----- */
+.gi-mkt .blog-card-cat {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--blue-700);
+}
+.gi-mkt .blog-card-title {
+  font-family: var(--font-display);
+  font-size: 23px;
+  margin: 8px 0 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  font-weight: 600;
+}
+.gi-mkt .blog-card-excerpt {
+  color: var(--gray-700);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 18px;
+  flex: 1;
+}
+.gi-mkt .blog-card-meta { font-size: 12px; }
+
+/* Empty state (used when a category has no posts after filtering). */
+.gi-mkt .blog-empty {
+  color: var(--gray-700);
+  font-size: 16px;
+  line-height: 1.5;
+  padding: 40px 0;
+  margin: 0;
+}
+
+/* Per-card stagger for the GSAP grid reveal. Purely transform/opacity and
+   only consumed when motion is allowed (see the script guard). The custom
+   property is set inline (--i) so re-rendered nodes inherit it too. */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .blog-grid .blog-card {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .gi-mkt .blog-grid.in .blog-card {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.6s cubic-bezier(.2, .8, .2, 1),
+      transform 0.6s cubic-bezier(.2, .8, .2, 1);
+    transition-delay: calc(var(--i, 0) * 0.06s);
+  }
+}
+
+@media (max-width: 860px) {
+  .gi-mkt .blog-h1 { max-width: none; }
+  .gi-mkt .blog-feature-excerpt { max-width: none; }
+}
+
+/* Reduced-motion: no offsets, no transitions — fully visible immediately.
+   (Backs up the global .reveal reduced-motion reset for the staggered grid.) */
+@media (prefers-reduced-motion: reduce) {
+  .gi-mkt .blog-grid .blog-card { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   Página: blog/[slug].astro (article)
+   ========================================================================== */
+/* ---- Header ---------------------------------------------------------- */
+.gi-mkt .article-head {
+  padding-bottom: 28px;
+}
+
+.gi-mkt .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 28px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .back-link svg {
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .gi-mkt .back-link:hover svg {
+    transform: translateX(-3px);
+  }
+}
+
+.gi-mkt .article-meta {
+  display: block;
+}
+
+.gi-mkt .article-title {
+  font-size: clamp(38px, 5.5vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 18px 0 0;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+/* Slight reveal cadence between the eyebrow and the title. */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .article-title {
+    transition-delay: 0.08s;
+  }
+}
+
+/* ---- Hero figure (zoom-parallax) ------------------------------------- */
+.gi-mkt .article-figure-wrap {
+  padding: 0 0 clamp(48px, 6vw, 72px);
+}
+
+.gi-mkt .article-figure {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 16 / 8;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: var(--paper-2);
+}
+.gi-mkt .article-figure img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.04);
+  will-change: transform;
+}
+
+/* ---- Long-form prose ------------------------------------------------- */
+.gi-mkt .article-body-section {
+  padding-top: 0;
+}
+
+.gi-mkt .prose {
+  max-width: 70ch;
+}
+
+.gi-mkt .prose > * {
+  margin: 0;
+}
+.gi-mkt .prose > * + * {
+  margin-top: 1.5em;
+}
+
+.gi-mkt .prose-lead {
+  font-family: var(--font-display);
+  font-size: clamp(21px, 2.4vw, 26px);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.gi-mkt .prose p {
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--gray-700);
+}
+
+.gi-mkt .prose-h2 {
+  font-size: clamp(28px, 3.4vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-top: 2.2em;
+}
+
+.gi-mkt .prose-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.gi-mkt .prose-list li {
+  position: relative;
+  padding-left: 30px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--gray-700);
+}
+.gi-mkt .prose-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--orange-500);
+}
+
+.gi-mkt .prose-quote {
+  position: relative;
+  padding: 8px 0 8px 32px;
+  border-left: 4px solid var(--orange-500);
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.8vw, 30px);
+  line-height: 1.32;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.gi-mkt .prose-quote::before {
+  content: "\201C";
+}
+.gi-mkt .prose-quote::after {
+  content: "\201D";
+}
+
+@media (max-width: 860px) {
+  .gi-mkt .prose-lead {
+    font-size: 20px;
+  }
+  .gi-mkt .prose p,
+  .gi-mkt .prose-list li {
+    font-size: 17px;
+  }
+  .gi-mkt .prose-quote {
+    padding-left: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gi-mkt .article-figure img {
+    transform: scale(1.04);
+    will-change: auto;
+  }
+}
+
+/* ==========================================================================
+   Página: bolsa-de-trabajo/index.astro
+   ========================================================================== */
+/* ===== Hero ===== */
+.gi-mkt .careers-hero {
+  padding-bottom: 40px;
+}
+.gi-mkt .careers-h1 {
+  font-size: clamp(52px, 8vw, 120px);
+  margin: 20px 0 24px;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+  max-width: 1100px;
+  text-wrap: balance;
+}
+.gi-mkt .careers-lede {
+  font-size: clamp(17px, 2.2vw, 20px);
+  color: var(--gray-700);
+  line-height: 1.55;
+  max-width: 720px;
+}
+
+/* ===== Hairline stat band (no boxes) — Impact-style ===== */
+.gi-mkt .careers-stats-sec {
+  padding-top: 0;
+  padding-bottom: clamp(56px, 8vw, 88px);
+}
+.gi-mkt .stat-band {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--gray-200);
+}
+.gi-mkt .stat-cell {
+  padding: 36px 28px 4px;
+  border-left: 1px solid var(--gray-200);
+  min-width: 0;
+}
+.gi-mkt .stat-cell:first-child {
+  border-left: none;
+}
+.gi-mkt .stat-n {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 5vw, 68px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--blue-700);
+  display: block;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+.gi-mkt .stat-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-700);
+  display: block;
+  margin-top: 14px;
+}
+
+/* ===== Vacantes ===== */
+.gi-mkt .careers-jobs-sec {
+  padding-top: 0;
+}
+.gi-mkt .careers-h2 {
+  font-size: clamp(30px, 4.5vw, 40px);
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+}
+
+/* Refined job rows. The global .job-row supplies layout + the slide-right
+   hover; these scoped rules tune the inner type, the pill, and an arrow that
+   eases forward on hover/focus (transform only). */
+.gi-mkt .careers-job {
+  text-decoration: none;
+  color: inherit;
+}
+.gi-mkt .job-main {
+  min-width: 0;
+}
+.gi-mkt .job-title {
+  font-family: var(--font-display);
+  font-size: clamp(21px, 3vw, 26px);
+  font-weight: 600;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  transition: color 0.2s ease;
+}
+.gi-mkt .job-meta {
+  font-size: 14px;
+  color: var(--gray-700);
+}
+.gi-mkt .job-tail {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.gi-mkt .job-type {
+  padding: 7px 13px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+  border-radius: 999px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.gi-mkt .job-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: var(--blue-700);
+  flex-shrink: 0;
+}
+.gi-mkt .careers-job:hover .job-title,
+.gi-mkt .careers-job:focus-visible .job-title {
+  color: var(--blue-700);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .job-arrow {
+    transition: transform 0.25s cubic-bezier(.2,.8,.2,1);
+  }
+  .gi-mkt .careers-job:hover .job-arrow,
+  .gi-mkt .careers-job:focus-visible .job-arrow {
+    transform: translateX(4px);
+  }
+}
+
+/* ===== Open-CV CTA (dark, kept) ===== */
+.gi-mkt .careers-cta-sec {
+  padding-top: clamp(40px, 6vw, 60px);
+}
+.gi-mkt .open-cv {
+  padding: clamp(40px, 6vw, 56px);
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+.gi-mkt .open-cv-h {
+  font-size: clamp(28px, 4vw, 36px);
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.gi-mkt .open-cv-p {
+  color: var(--gray-300);
+  margin: 0 auto 24px;
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 52ch;
+}
+/* Magnetic wrapper: inline-block so its transform doesn't disturb the centered
+   layout (mirrors ClosingCTA). */
+.gi-mkt .magnetic {
+  display: inline-block;
+}
+.gi-mkt .open-cv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .magnetic {
+    will-change: transform;
+  }
+}
+
+/* ===== Mobile (< 861px): collapse the inline stat grid; no overflow ===== */
+@media (max-width: 860px) {
+  .gi-mkt .stat-band {
+    grid-template-columns: 1fr;
+  }
+  .gi-mkt .stat-cell {
+    border-left: none;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 28px 0 24px;
+  }
+  .gi-mkt .stat-cell:last-child {
+    border-bottom: none;
+  }
+}
+@media (max-width: 560px) {
+  .gi-mkt .open-cv-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .gi-mkt .magnetic {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Página: bolsa-de-trabajo/[id].astro (job detail)
+   ========================================================================== */
+/* ===== Hero ===== */
+.gi-mkt .job-hero {
+  padding-bottom: clamp(32px, 5vw, 48px);
+}
+.gi-mkt .back-link {
+  margin-bottom: clamp(20px, 3vw, 28px);
+  min-height: 44px;
+}
+/* The back arrow eases left on hover/focus (transform only). */
+.gi-mkt .back-link svg {
+  flex-shrink: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .back-link svg {
+    transition: transform 0.25s cubic-bezier(.2, .8, .2, 1);
+  }
+  .gi-mkt .back-link:hover svg,
+  .gi-mkt .back-link:focus-visible svg {
+    transform: translateX(-3px);
+  }
+}
+.gi-mkt .job-h1 {
+  /* Plain H1 (no gradient word) per the playbook. */
+  font-size: clamp(40px, 6.5vw, 88px);
+  margin: clamp(16px, 2.4vw, 22px) 0 clamp(20px, 3vw, 28px);
+  letter-spacing: -0.03em;
+  line-height: 0.96;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+.gi-mkt .job-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+/* chips inherit .chip from global; keep them comfortably tappable */
+.gi-mkt .job-chips .chip {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ===== Body layout: prose + sticky apply aside ===== */
+.gi-mkt .job-body-sec {
+  padding-top: 0;
+}
+.gi-mkt .job-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: clamp(40px, 6vw, 80px);
+  align-items: start;
+}
+
+/* ===== Prose ===== */
+.gi-mkt .job-prose {
+  min-width: 0;
+  max-width: 68ch;
+}
+.gi-mkt .prose-block + .prose-block {
+  margin-top: clamp(36px, 5vw, 52px);
+}
+.gi-mkt .prose-h {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3.2vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0 0 18px;
+  color: var(--ink);
+  position: relative;
+  padding-left: 22px;
+}
+/* A short brand-blue tick before each section title — quiet rhythm marker. */
+.gi-mkt .prose-h::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  bottom: 0.12em;
+  width: 4px;
+  border-radius: 999px;
+  background: var(--blue-700);
+}
+.gi-mkt .prose-lede {
+  font-size: clamp(17px, 2vw, 19px);
+  line-height: 1.7;
+  color: var(--gray-700);
+  max-width: 62ch;
+  margin: 0;
+}
+
+.gi-mkt .prose-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 62ch;
+}
+.gi-mkt .prose-list li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: clamp(15.5px, 1.8vw, 17px);
+  line-height: 1.65;
+  color: var(--gray-700);
+}
+.gi-mkt .li-mark {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  margin-top: 0.18em;
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+.gi-mkt .li-mark-good {
+  background: var(--orange-100);
+  color: var(--orange-700);
+}
+
+/* ===== Apply box (kept) ===== */
+.gi-mkt .job-aside {
+  position: relative;
+}
+.gi-mkt .apply-box {
+  padding: clamp(28px, 3.5vw, 36px);
+  background: var(--paper-2);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 28px 60px -34px rgba(67, 69, 74, 0.22);
+}
+@media (min-width: 861px) {
+  .gi-mkt .apply-box {
+    position: sticky;
+    top: 100px;
+  }
+}
+.gi-mkt .apply-h {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.6vw, 26px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
+.gi-mkt .apply-p {
+  color: var(--gray-700);
+  margin: 0 0 22px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.gi-mkt .apply-mail {
+  color: var(--blue-700);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.gi-mkt .apply-mail:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.gi-mkt .apply-alt {
+  margin: 16px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--gray-700);
+}
+.gi-mkt .apply-alt a {
+  color: var(--blue-700);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.gi-mkt .apply-alt a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.gi-mkt .apply-note {
+  margin: 20px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--gray-300);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--gray-700);
+}
+/* Magnetic wrapper: inline-block so its transform doesn't disturb the layout
+   (mirrors ClosingCTA / the careers index CTA). */
+.gi-mkt .magnetic {
+  display: inline-block;
+  width: 100%;
+}
+.gi-mkt .apply-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+}
+.gi-mkt .apply-btn svg {
+  flex-shrink: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .magnetic {
+    will-change: transform;
+  }
+  .gi-mkt .apply-btn svg {
+    transition: transform 0.25s cubic-bezier(.2, .8, .2, 1);
+  }
+  .gi-mkt .apply-btn:hover svg,
+  .gi-mkt .apply-btn:focus-visible svg {
+    transform: translateX(3px);
+  }
+}
+
+.gi-mkt .apply-meta {
+  margin: 26px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--gray-300);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.gi-mkt .apply-meta div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.gi-mkt .apply-meta dt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray-700);
+}
+.gi-mkt .apply-meta dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* ===== Mobile (< 861px): collapse to one column, no overflow ===== */
+@media (max-width: 860px) {
+  .gi-mkt .job-layout {
+    grid-template-columns: 1fr;
+    gap: clamp(36px, 8vw, 48px);
+  }
+  .gi-mkt .apply-btn {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Página: contacto.astro
+   ========================================================================== */
+.gi-mkt .contacto .contact-h1 {
+  font-size: clamp(56px, 8vw, 120px);
+  margin: 20px 0 32px;
+  max-width: 1100px;
+}
+.gi-mkt .contacto .contact-lead {
+  font-size: 20px;
+  color: var(--gray-700);
+  line-height: 1.5;
+  max-width: 720px;
+}
+
+/* Two-column form/offices layout. Inline grid moved here so it can collapse
+   to one column < 861px with no horizontal overflow. */
+.gi-mkt .contacto .contact-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  align-items: start;
+}
+.gi-mkt .contacto .contact-col {
+  min-width: 0;
+}
+
+.gi-mkt .contacto .contact-h2 {
+  font-size: 32px;
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+}
+
+/* Success card — uses an inline SVG check instead of a bare glyph. */
+.gi-mkt .contacto .form-success {
+  padding: 40px;
+  background: var(--blue-100);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--blue-700);
+}
+.gi-mkt .contacto .success-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--blue-700);
+  color: #fff;
+  margin-bottom: 18px;
+}
+.gi-mkt .contacto .success-title {
+  font-size: 28px;
+  margin: 0 0 8px;
+}
+.gi-mkt .contacto .success-copy {
+  margin: 0;
+  color: var(--gray-700);
+  line-height: 1.55;
+}
+
+/* Office name keeps the global ".office h4" look now that it is an h3
+   (heading order h1 to h2 to h3, no skips). */
+.gi-mkt .contacto .office-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin: 0 0 8px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Comfortable tap targets on the form controls (>= 44px). */
+.gi-mkt .contacto .field input,
+.gi-mkt .contacto .field select,
+.gi-mkt .contacto .field .btn {
+  min-height: 48px;
+}
+.gi-mkt .contacto .form-error {
+  margin: 16px 0 0;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #8a1c1c;
+  background: #fdeaea;
+  border: 1px solid #f3c2c2;
+  border-radius: var(--radius-sm);
+  max-width: 48ch;
+}
+.gi-mkt .contacto .form-error a {
+  color: #8a1c1c;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.gi-mkt .contacto .form-privacy {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.5;
+  max-width: 48ch;
+}
+.gi-mkt .contacto .form-privacy a {
+  color: var(--blue-700);
+  font-weight: 600;
+}
+.gi-mkt .contacto .contact-hours {
+  margin: -12px 0 20px;
+  font-size: 14px;
+  color: var(--gray-700);
+}
+
+@media (max-width: 860px) {
+  .gi-mkt .contacto .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+}
+
+/* Reduced-motion users get no stagger delay; the global reduced-motion rule
+   keeps .reveal fully visible. */
+@media (prefers-reduced-motion: no-preference) {
+  .gi-mkt .contacto .contact-h1 { transition-delay: 0.06s; }
+  .gi-mkt .contacto .contact-lead { transition-delay: 0.12s; }
+}
