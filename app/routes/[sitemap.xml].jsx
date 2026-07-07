@@ -10,6 +10,10 @@ export async function loader({request, context: {storefront}}) {
     // This store has no /pages or /blogs routes (the child sitemap 404s for them),
     // so keep the index to the resource types that actually resolve.
     types: ['products', 'collections'],
+    // Static Astro-ported marketing routes (home, about, services, blog,
+    // careers, contact) aren't Shopify resources, so they're listed in a
+    // hand-built child sitemap instead of a `types` entry.
+    customChildSitemaps: ['sitemap-marketing.xml'],
   });
 
   response.headers.set('Cache-Control', `max-age=${60 * 60 * 24}`);
