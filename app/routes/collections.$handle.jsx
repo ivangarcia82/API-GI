@@ -22,12 +22,31 @@ const paginationLinkStyle = {
 
 export const meta = ({data}) => {
   const c = data?.collection;
+  const origin = data?.origin ?? '';
   const desc =
     c?.description ||
     `Productos de la colección ${c?.title ?? ''} para campañas y regalos corporativos. Cotiza en línea.`;
+  const url = `${origin}/collections/${c?.handle}`;
   return [
     {title: `${c?.title ?? 'Colección'} · Generando Ideas`},
     {name: 'description', content: desc},
+    {tagName: 'link', rel: 'canonical', href: url},
+    {property: 'og:title', content: `${c?.title ?? 'Colección'} · Generando Ideas`},
+    {property: 'og:description', content: desc},
+    {property: 'og:type', content: 'website'},
+    {property: 'og:url', content: url},
+    ...(c?.image?.url ? [{property: 'og:image', content: c.image.url}] : []),
+    {
+      'script:ld+json': {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {'@type': 'ListItem', position: 1, name: 'Inicio', item: `${origin}/`},
+          {'@type': 'ListItem', position: 2, name: 'Colecciones', item: `${origin}/collections`},
+          {'@type': 'ListItem', position: 3, name: c?.title, item: url},
+        ],
+      },
+    },
   ];
 };
 
@@ -45,7 +64,7 @@ export async function loader(args) {
     throw new Response(`Collection ${handle} not found`, {status: 404});
   }
 
-  return {collection};
+  return {collection, origin: new URL(request.url).origin};
 }
 
 export default function Collection() {

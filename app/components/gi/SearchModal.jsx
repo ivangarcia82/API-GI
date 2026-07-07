@@ -23,6 +23,7 @@ export function GiSearchModal() {
   const navigate = useNavigate();
   const fetcher = useFetcher({key: 'gi-search'});
   const inputRef = useRef(null);
+  const debounceRef = useRef(null);
   const [term, setTerm] = useState('');
 
   const items = fetcher.data?.result?.items ?? EMPTY_ITEMS;
@@ -43,6 +44,7 @@ export function GiSearchModal() {
   useEffect(() => {
     if (!searchOpen) {
       setTerm('');
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       return undefined;
     }
     const focus = setTimeout(() => inputRef.current?.focus(), 60);
@@ -59,11 +61,15 @@ export function GiSearchModal() {
   function runSearch(value) {
     setTerm(value);
     const q = value.trim();
+    // Debounce so we don't fire a /search request on every keystroke.
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!q) return;
-    fetcher.submit(
-      {q, limit: 6, predictive: true},
-      {method: 'GET', action: '/search'},
-    );
+    debounceRef.current = setTimeout(() => {
+      fetcher.submit(
+        {q, limit: 6, predictive: true},
+        {method: 'GET', action: '/search'},
+      );
+    }, 220);
   }
 
   function goToResults() {

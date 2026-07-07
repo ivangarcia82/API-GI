@@ -7,6 +7,9 @@ export async function loader({request, context: {storefront}}) {
   const response = await getSitemapIndex({
     storefront,
     request,
+    // This store has no /pages or /blogs routes (the child sitemap 404s for them),
+    // so keep the index to the resource types that actually resolve.
+    types: ['products', 'collections'],
   });
 
   response.headers.set('Cache-Control', `max-age=${60 * 60 * 24}`);

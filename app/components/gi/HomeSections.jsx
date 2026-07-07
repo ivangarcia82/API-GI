@@ -320,11 +320,14 @@ function LookbookCard({lb, index, onClick}) {
 /* ---- animated stats band ---- */
 export function StatsBand() {
   const [ref, inView] = useInView();
+  // Honest, verifiable facts only — no fabricated social proof. Grounded in the
+  // site itself: 4 estados con oficinas (CDMX/Yucatán/Sonora/BCS), el SLA de 24h,
+  // catálogo 100% personalizable y las técnicas reales del motor de decoración.
   const stats = [
-    {to: 1847, label: 'Productos en catálogo', suffix: ''},
-    {to: 49, label: 'Colecciones curadas', suffix: ''},
-    {to: 420, label: 'Clientes corporativos', suffix: '+'},
-    {to: 98, label: 'Satisfacción del cliente', suffix: '%'},
+    {to: 4, label: 'Estados con presencia', suffix: ''},
+    {to: 24, label: 'Respuesta del asesor', suffix: 'h'},
+    {to: 100, label: 'Productos personalizables', suffix: '%'},
+    {to: 9, label: 'Técnicas de decoración', suffix: ''},
   ];
   return (
     <section className="stats-band" ref={ref}>

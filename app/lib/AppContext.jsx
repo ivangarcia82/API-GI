@@ -217,6 +217,13 @@ export function AppProvider({
     });
   }, [isLoggedIn, postQuote, quote]);
 
+  // Copy a past (submitted) quote's items back into the active draft. The server
+  // recomputes pricing and returns the authoritative draft item list.
+  const reorderQuote = useCallback(
+    (sourceQuoteId) => postQuote('reorder', {sourceQuoteId}),
+    [postQuote],
+  );
+
   // ---- Favorites ----
   const toggleFav = useCallback(
     (id) => {
@@ -265,6 +272,7 @@ export function AppProvider({
     updateQuoteQty,
     removeFromQuote,
     clearQuote,
+    reorderQuote,
     quoteDrawerOpen,
     openQuoteDrawer,
     closeQuoteDrawer,

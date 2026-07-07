@@ -33,16 +33,26 @@ export const GI_PRODUCTS_QUERY = `#graphql
   ${GI_PRODUCT_CARD_FRAGMENT}
   query GiProducts(
     $first: Int
-    $after: String
+    $last: Int
+    $startCursor: String
+    $endCursor: String
     $query: String
     $sortKey: ProductSortKeys
     $reverse: Boolean
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    products(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
+    products(
+      first: $first
+      last: $last
+      before: $startCursor
+      after: $endCursor
+      query: $query
+      sortKey: $sortKey
+      reverse: $reverse
+    ) {
       nodes { ...GiProductCard }
-      pageInfo { hasNextPage endCursor }
+      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
     }
   }
 `;
@@ -53,7 +63,9 @@ export const GI_COLLECTION_PRODUCTS_QUERY = `#graphql
   query GiCollectionProducts(
     $handle: String!
     $first: Int
-    $after: String
+    $last: Int
+    $startCursor: String
+    $endCursor: String
     $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
     $country: CountryCode
@@ -65,9 +77,16 @@ export const GI_COLLECTION_PRODUCTS_QUERY = `#graphql
       title
       description
       image { url altText }
-      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {
+      products(
+        first: $first
+        last: $last
+        before: $startCursor
+        after: $endCursor
+        sortKey: $sortKey
+        reverse: $reverse
+      ) {
         nodes { ...GiProductCard }
-        pageInfo { hasNextPage endCursor }
+        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
       }
     }
   }

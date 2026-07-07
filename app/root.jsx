@@ -55,14 +55,35 @@ export const shouldRevalidate = ({formMethod, currentUrl, nextUrl}) => {
  * applies as a fallback to routes that don't export their own meta.
  * @type {Route.MetaFunction}
  */
-export const meta = () => [
-  {title: 'Generando Ideas · Artículos promocionales y regalos corporativos B2B'},
-  {
-    name: 'description',
-    content:
-      'Catálogo B2B de artículos promocionales y regalos corporativos personalizados en México. Cotiza en línea con precios por proyecto.',
-  },
-];
+export const meta = ({data}) => {
+  const origin = data?.origin ?? '';
+  return [
+    {title: 'Generando Ideas · Artículos promocionales y regalos corporativos B2B'},
+    {
+      name: 'description',
+      content:
+        'Catálogo B2B de artículos promocionales y regalos corporativos personalizados en México. Cotiza en línea con precios por proyecto.',
+    },
+    {
+      'script:ld+json': {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Generando Ideas',
+        description:
+          'Catálogo B2B de artículos promocionales y regalos corporativos personalizados en México.',
+        ...(origin ? {url: origin, logo: `${origin}/brand/gi-logo-horizontal.svg`} : {}),
+        areaServed: 'MX',
+        contactPoint: {
+          '@type': 'ContactPoint',
+          contactType: 'sales',
+          email: 'marketing@generandoideas.com',
+          telephone: '+525570988100',
+          availableLanguage: 'Spanish',
+        },
+      },
+    },
+  ];
+};
 
 export function links() {
   return [
@@ -93,6 +114,7 @@ export async function loader(args) {
   return {
     ...deferredData,
     ...criticalData,
+    origin: new URL(args.request.url).origin,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     shop: getShopAnalytics({
       storefront,

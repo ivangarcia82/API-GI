@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import {useLoaderData, Link, data} from 'react-router';
 import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
@@ -5,6 +6,8 @@ import {getQuoteWithItems} from '~/lib/quotes/repo';
 import {findById} from '~/lib/auth/users';
 import {getCustomerAdvisor} from '~/lib/admin/operations';
 import {formatPrice} from '~/lib/gi';
+import {useApp, useToast} from '~/lib/AppContext';
+import {Button} from '~/components/gi/ui';
 
 export const meta = () => [{title: 'Cotización · Generando Ideas'}];
 
@@ -36,8 +39,25 @@ const STATUS_LABEL = {
 
 export default function CotizacionDetail() {
   const {quote, items, advisor} = useLoaderData();
+  const {reorderQuote, openQuoteDrawer} = useApp();
+  const toast = useToast();
+  const [reordering, setReordering] = useState(false);
   const total = items.reduce((s, i) => s + i.effectiveUnitPrice * i.qty, 0);
   const totalPieces = items.reduce((n, i) => n + i.qty, 0);
+
+  const handleReorder = async () => {
+    setReordering(true);
+    try {
+      await reorderQuote(quote.id);
+      openQuoteDrawer();
+      toast('Productos añadidos a tu cotización', {icon: 'check', accent: true});
+    } catch (e) {
+      toast(e?.message || 'No se pudo re-cotizar', {icon: 'alert'});
+    } finally {
+      setReordering(false);
+    }
+  };
+
   return (
     <>
       <Link to="/account/cotizaciones" className="acct-back">
@@ -55,6 +75,39 @@ export default function CotizacionDetail() {
           {STATUS_LABEL[quote.status] || quote.status}
         </span>
       </div>
+
+      {items.length > 0 && (
+        <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', margin: '4px 0 20px'}}>
+          <Button
+            variant="accent"
+            iconRight="arrow_right"
+            disabled={reordering}
+            onClick={handleReorder}
+          >
+            {reordering ? 'Añadiendo…' : 'Volver a cotizar'}
+          </Button>
+          <a
+            href={`/print/cotizacion/${quote.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-ghost"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0 18px',
+              borderRadius: 999,
+              border: '1px solid var(--line-strong)',
+              fontWeight: 600,
+              fontSize: 14,
+              textDecoration: 'none',
+              color: 'var(--ink)',
+            }}
+          >
+            Descargar PDF
+          </a>
+        </div>
+      )}
 
       {advisor.email && (
         <div className="quote-card quote-advisor">

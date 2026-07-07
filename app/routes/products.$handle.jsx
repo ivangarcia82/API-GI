@@ -22,18 +22,37 @@ import {getVariantInventory} from '~/lib/admin/operations';
 
 export const meta = ({data}) => {
   const p = data?.product;
+  const origin = data?.origin ?? '';
   const desc =
     p?.seo?.description ||
     p?.description ||
     'Artículo promocional personalizable. Cotiza en línea con precios por proyecto.';
   const img = p?.featuredImage?.url;
+  const title = `${p?.title ?? 'Producto'} · Generando Ideas`;
+  const url = `${origin}/products/${p?.handle}`;
   return [
-    {title: `${p?.title ?? 'Producto'} · Generando Ideas`},
+    {title},
     {name: 'description', content: desc},
-    {tagName: 'link', rel: 'canonical', href: `/products/${p?.handle}`},
-    {property: 'og:title', content: `${p?.title ?? 'Producto'} · Generando Ideas`},
+    {tagName: 'link', rel: 'canonical', href: url},
+    {property: 'og:title', content: title},
     {property: 'og:description', content: desc},
+    {property: 'og:type', content: 'product'},
+    {property: 'og:url', content: url},
     ...(img ? [{property: 'og:image', content: img}] : []),
+    {
+      // Product JSON-LD. Price is intentionally OMITTED — this storefront hides
+      // prices from anonymous visitors ("precio para clientes"), so exposing a
+      // concrete price publicly would contradict that gating.
+      'script:ld+json': {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: p?.title,
+        description: desc,
+        ...(img ? {image: [img]} : {}),
+        brand: {'@type': 'Brand', name: 'Generando Ideas'},
+        url,
+      },
+    },
   ];
 };
 
@@ -72,7 +91,7 @@ async function loadCriticalData({context, params, request}) {
       .catch(() => []),
   ]);
 
-  return {product, stock, recommendations};
+  return {product, stock, recommendations, origin: new URL(request.url).origin};
 }
 
 export default function Product() {

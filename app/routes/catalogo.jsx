@@ -1,5 +1,6 @@
 import {useLoaderData, useSearchParams, useNavigate} from 'react-router';
-import {useState, useMemo} from 'react';
+import {useState} from 'react';
+import {getPaginationVariables, Pagination} from '@shopify/hydrogen';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
@@ -26,6 +27,8 @@ const SORTS = {
   'price-desc': {global: ['PRICE', true], collection: ['PRICE', true]},
 };
 
+const EMPTY_CONNECTION = {nodes: [], pageInfo: {hasNextPage: false, hasPreviousPage: false}};
+
 export async function loader({context, request}) {
   const {storefront} = context;
   const url = new URL(request.url);
@@ -33,35 +36,50 @@ export async function loader({context, request}) {
   const q = url.searchParams.get('q') || '';
   const sort = url.searchParams.get('sort') || 'relevance';
   const sortDef = SORTS[sort] || SORTS.relevance;
+  const paginationVariables = getPaginationVariables(request, {pageBy: 24});
 
-  let products = [];
+  let products = EMPTY_CONNECTION;
   let title = 'Todos los productos';
 
   if (cat) {
     const [sortKey, reverse] = sortDef.collection;
     const res = await storefront
       .query(GI_COLLECTION_PRODUCTS_QUERY, {
-        variables: {handle: cat, first: 24, sortKey, reverse},
+        variables: {handle: cat, sortKey, reverse, ...paginationVariables},
       })
       .catch(() => null);
     const coll = res?.collection;
     title = coll?.title || cat;
-    products = (coll?.products?.nodes || []).map(normalizeProduct).filter(Boolean);
+    products = coll?.products || EMPTY_CONNECTION;
   } else {
     const [sortKeyRel, reverse] = sortDef.global;
     // RELEVANCE only valid with a query; fall back to BEST_SELLING otherwise
     const sortKey = sortKeyRel === 'RELEVANCE' && !q ? 'BEST_SELLING' : sortKeyRel;
     const res = await storefront
       .query(GI_PRODUCTS_QUERY, {
-        variables: {first: 24, query: q || undefined, sortKey, reverse},
+        variables: {query: q || undefined, sortKey, reverse, ...paginationVariables},
       })
       .catch(() => null);
-    products = (res?.products?.nodes || []).map(normalizeProduct).filter(Boolean);
+    products = res?.products || EMPTY_CONNECTION;
     title = q ? `Resultados · “${q}”` : 'Todos los productos';
   }
 
   return {products, title, cat, q, sort};
 }
+
+const paginationLinkStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '12px 24px',
+  borderRadius: 999,
+  border: '1px solid var(--line)',
+  background: 'var(--bg-soft)',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 13,
+  letterSpacing: '0.02em',
+  color: 'var(--ink)',
+};
 
 export default function Catalogo() {
   const data = useLoaderData();
@@ -87,16 +105,9 @@ export default function Catalogo() {
     setParams(next, {preventScrollReset: true});
   };
 
-  // Client-side price refinement over the loaded page
-  const visible = useMemo(
-    () =>
-      data.products.filter(
-        (p) =>
-          p.price == null ||
-          (p.price >= priceRange[0] && p.price <= priceRange[1]),
-      ),
-    [data.products, priceRange],
-  );
+  // Client-side price refinement runs over the accumulated paginated nodes.
+  const priceFilter = (p) =>
+    p.price == null || (p.price >= priceRange[0] && p.price <= priceRange[1]);
 
   return (
     <div className="container" data-screen-label="04 Catalog">
@@ -225,70 +236,98 @@ export default function Catalogo() {
         </aside>
 
         <div>
-          <div className="cat-toolbar">
-            <form className="cat-search" onSubmit={submitSearch}>
-              <Icon name="search" size={14} />
-              <input
-                placeholder="Buscar producto, SKU o categoría…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </form>
-            <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
-              <span className="cat-results-meta">{visible.length} productos</span>
-              <select
-                className="input"
-                value={data.sort}
-                onChange={(e) => setParam('sort', e.target.value)}
-                style={{padding: '10px 14px', fontSize: 13, borderRadius: 999, fontWeight: 500}}
-              >
-                <option value="relevance">Relevancia</option>
-                <option value="bestseller">Más vendidos</option>
-                <option value="new">Nuevos primero</option>
-                <option value="price-asc">Precio: menor a mayor</option>
-                <option value="price-desc">Precio: mayor a menor</option>
-              </select>
-              <div className="cat-view-toggle">
-                <button
-                  className={view === 'grid' ? 'active' : ''}
-                  onClick={() => setView('grid')}
-                  aria-label="Vista cuadrícula"
-                >
-                  <Icon name="grid" size={14} />
-                </button>
-                <button
-                  className={view === 'list' ? 'active' : ''}
-                  onClick={() => setView('list')}
-                  aria-label="Vista lista"
-                >
-                  <Icon name="list" size={14} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <Pagination connection={data.products}>
+            {({nodes, isLoading, PreviousLink, NextLink, hasNextPage, hasPreviousPage}) => {
+              const visible = nodes
+                .map(normalizeProduct)
+                .filter(Boolean)
+                .filter(priceFilter);
+              return (
+                <>
+                  <div className="cat-toolbar">
+                    <form className="cat-search" onSubmit={submitSearch}>
+                      <Icon name="search" size={14} />
+                      <input
+                        placeholder="Buscar producto, SKU o categoría…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+                    </form>
+                    <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
+                      <span className="cat-results-meta">{visible.length} productos</span>
+                      <select
+                        className="input"
+                        value={data.sort}
+                        onChange={(e) => setParam('sort', e.target.value)}
+                        style={{padding: '10px 14px', fontSize: 13, borderRadius: 999, fontWeight: 500}}
+                      >
+                        <option value="relevance">Relevancia</option>
+                        <option value="bestseller">Más vendidos</option>
+                        <option value="new">Nuevos primero</option>
+                        <option value="price-asc">Precio: menor a mayor</option>
+                        <option value="price-desc">Precio: mayor a menor</option>
+                      </select>
+                      <div className="cat-view-toggle">
+                        <button
+                          className={view === 'grid' ? 'active' : ''}
+                          onClick={() => setView('grid')}
+                          aria-label="Vista cuadrícula"
+                        >
+                          <Icon name="grid" size={14} />
+                        </button>
+                        <button
+                          className={view === 'list' ? 'active' : ''}
+                          onClick={() => setView('list')}
+                          aria-label="Vista lista"
+                        >
+                          <Icon name="list" size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
 
-          {visible.length === 0 ? (
-            <div className="empty">
-              <Icon name="search" size={32} className="muted-2" />
-              <h3>Sin resultados</h3>
-              <p>Intenta con otros filtros o palabras de búsqueda.</p>
-              <Button variant="ghost" onClick={() => navigate('/catalogo')}>
-                Limpiar filtros
-              </Button>
-            </div>
-          ) : view === 'grid' ? (
-            <div className="product-grid stagger" key={`${data.cat}-${data.sort}`}>
-              {visible.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          ) : (
-            <div className="product-list stagger" key={`list-${data.cat}-${data.sort}`}>
-              {visible.map((p) => (
-                <ProductCard key={p.id} product={p} view="list" />
-              ))}
-            </div>
-          )}
+                  {hasPreviousPage && (
+                    <div style={{display: 'flex', justifyContent: 'center', marginBottom: 24}}>
+                      <PreviousLink style={paginationLinkStyle}>
+                        {isLoading ? 'Cargando…' : '↑ Cargar anteriores'}
+                      </PreviousLink>
+                    </div>
+                  )}
+
+                  {visible.length === 0 ? (
+                    <div className="empty">
+                      <Icon name="search" size={32} className="muted-2" />
+                      <h3>Sin resultados</h3>
+                      <p>Intenta con otros filtros o palabras de búsqueda.</p>
+                      <Button variant="ghost" onClick={() => navigate('/catalogo')}>
+                        Limpiar filtros
+                      </Button>
+                    </div>
+                  ) : view === 'grid' ? (
+                    <div className="product-grid stagger">
+                      {visible.map((p) => (
+                        <ProductCard key={p.id} product={p} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="product-list stagger">
+                      {visible.map((p) => (
+                        <ProductCard key={p.id} product={p} view="list" />
+                      ))}
+                    </div>
+                  )}
+
+                  {hasNextPage && (
+                    <div style={{display: 'flex', justifyContent: 'center', marginTop: 40}}>
+                      <NextLink style={paginationLinkStyle}>
+                        {isLoading ? 'Cargando…' : 'Cargar más productos ↓'}
+                      </NextLink>
+                    </div>
+                  )}
+                </>
+              );
+            }}
+          </Pagination>
         </div>
       </div>
     </div>

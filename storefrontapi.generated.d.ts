@@ -686,6 +686,11 @@ export type QuoteVariantQuery = {
       image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'url'>>;
       product: Pick<StorefrontAPI.Product, 'handle' | 'title'> & {
         featuredImage?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'url'>>;
+        metafields: Array<
+          StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Metafield, 'namespace' | 'key' | 'value'>
+          >
+        >;
       };
     }
   >;
@@ -1364,7 +1369,7 @@ interface GeneratedQueryTypes {
     return: FavoritosNodesQuery;
     variables: FavoritosNodesQueryVariables;
   };
-  '#graphql\n  query QuoteVariant($id: ID!) {\n    node(id: $id) {\n      ... on ProductVariant {\n        id\n        title\n        price { amount }\n        image { url }\n        product { handle title featuredImage { url } }\n      }\n    }\n  }\n': {
+  '#graphql\n  query QuoteVariant($id: ID!) {\n    node(id: $id) {\n      ... on ProductVariant {\n        id\n        title\n        price { amount }\n        image { url }\n        product {\n          handle\n          title\n          featuredImage { url }\n          metafields(identifiers: [\n            {namespace: "custom", key: "material"},\n            {namespace: "custom", key: "tecnicas_de_impresion"}\n          ]) { namespace key value }\n        }\n      }\n    }\n  }\n': {
     return: QuoteVariantQuery;
     variables: QuoteVariantQueryVariables;
   };
