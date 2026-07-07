@@ -6,9 +6,11 @@ import {Button} from './ui';
 import {useApp} from '~/lib/AppContext';
 
 const NAV = [
+  {to: '/', label: 'Inicio'},
+  {to: '/conocenos', label: 'Conócenos'},
+  {to: '/servicios', label: 'Servicios'},
   {to: '/catalogo', label: 'Catálogo'},
-  {to: '/collections', label: 'Colecciones'},
-  {to: '/lookbook', label: 'Lookbook'},
+  {to: '/blog', label: 'Blog'},
   {to: '/contacto', label: 'Contacto'},
 ];
 
@@ -40,7 +42,7 @@ export function GiHeader({isLoggedIn}) {
 
           <nav className="appbar-nav">
             {NAV.map((n) => (
-              <NavLink key={n.to} to={n.to} prefetch="intent">
+              <NavLink key={n.to} to={n.to} prefetch="intent" end={n.to === '/'}>
                 {n.label}
               </NavLink>
             ))}
@@ -178,7 +180,12 @@ export function GiHeader({isLoggedIn}) {
       {mobile && (
         <div className="mobile-menu">
           {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} onClick={() => setMobile(false)}>
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.to === '/'}
+              onClick={() => setMobile(false)}
+            >
               {n.label}
             </NavLink>
           ))}
