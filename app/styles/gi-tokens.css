@@ -411,9 +411,7 @@ img, svg {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(246, 247, 248, 0.85);
-  backdrop-filter: saturate(160%) blur(12px);
-  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  background: var(--bg-elev);
   border-bottom: 1px solid var(--line);
 }
 .appbar-inner {
@@ -448,7 +446,7 @@ img, svg {
 /* Logotipo horizontal de marca (versión operativa primaria) */
 .brand-logo {
   display: block;
-  height: 34px;
+  height: 42px;
   width: auto;
 }
 .footer-logo { height: 38px; width: auto; display: block; }
@@ -479,7 +477,12 @@ img, svg {
   transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 .appbar-nav a:hover { background: var(--bg-soft); color: var(--ink); }
-.appbar-nav a.active { background: var(--ink); color: var(--bg-elev); }
+.appbar-nav a.active {
+  background: var(--bg-soft);
+  color: var(--ink);
+  border-bottom: 2px solid var(--accent);
+  border-radius: 6px 6px 0 0;
+}
 .appbar-actions {
   display: flex;
   align-items: center;

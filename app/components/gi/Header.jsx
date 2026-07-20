@@ -3,6 +3,7 @@ import {useState} from 'react';
 import {Form, NavLink, useNavigate} from 'react-router';
 import {Icon} from './Icon';
 import {Button} from './ui';
+import {SocialIcons} from '~/components/marketing/SocialIcons';
 import {useApp} from '~/lib/AppContext';
 
 const NAV = [
@@ -20,8 +21,8 @@ function Logo() {
       className="brand-logo"
       src="/brand/gi-logo-horizontal.svg"
       alt="Generando Ideas"
-      width={160}
-      height={34}
+      width={200}
+      height={42}
     />
   );
 }
@@ -49,6 +50,10 @@ export function GiHeader({isLoggedIn}) {
           </nav>
 
           <div className="appbar-actions">
+            <div className="gi-mkt">
+              <SocialIcons variant="nav" />
+            </div>
+
             <button
               className="appbar-iconbtn"
               aria-label="Buscar"
