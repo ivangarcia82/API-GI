@@ -50,7 +50,7 @@ export function GiHeader({isLoggedIn}) {
           </nav>
 
           <div className="appbar-actions">
-            <div className="gi-mkt">
+            <div className="gi-mkt gi-mkt-header-icons">
               <SocialIcons variant="nav" />
             </div>
 

@@ -1710,6 +1710,21 @@
   transform: translateY(-1px);
 }
 
+/* Header.jsx envuelve SocialIcons en un `.gi-mkt` propio y ajustado (solo
+   los iconos, a diferencia de las páginas de marketing donde `.gi-mkt`
+   envuelve la página entera). `.gi-mkt` fija `overflow-x: hidden` (línea 87)
+   y, por la resolución de valores de CSS Overflow Module Level 3, cuando un
+   eje es distinto de `visible` y el otro no se especifica, el navegador
+   recalcula ese otro eje (`overflow-y`) a `auto`. Con un wrapper tan ajustado
+   ese `auto` recorta el `translateY(-1px)` del hover de arriba contra el
+   borde superior del propio wrapper. Se restaura `overflow: visible` solo
+   para ese wrapper puntual del header (clase adicional, no se toca
+   `.gi-mkt` en general: las páginas de marketing sí necesitan
+   `overflow-x: hidden` para blobs/animaciones que se salen del viewport). */
+.gi-mkt.gi-mkt-header-icons {
+  overflow: visible;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gi-mkt .social-icon {
     transition: none;
