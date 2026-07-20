@@ -293,6 +293,10 @@
   line-height: 1;
   font-size: clamp(32px, 4.2vw, 64px);
   max-width: 720px;
+  /* Darkest non-pure-black neutral in the token set. --ink-3 (#636569) is
+     reserved for auth panels and too light for a title; --ink is explicit
+     here so this doesn't silently depend on inherited body color. */
+  color: var(--ink);
 }
 .section-head p { color: var(--ink-3); max-width: 380px; margin: 0; font-size: 15px; }
 

@@ -160,13 +160,13 @@ export function normalizeProduct(node) {
 // 8 hero categories shown on the home grid (handle + display label)
 export const HOME_CATEGORIES = [
   {handle: 'bebidas', name: 'Bebidas', icon: 'drink'},
+  {handle: 'salud-y-bienestar', name: 'Bienestar', icon: 'heart'},
   {handle: 'ecologicos', name: 'Ecológicos', icon: 'leaf'},
   {handle: 'hogar', name: 'Hogar', icon: 'home'},
-  {handle: 'tecnologia', name: 'Tecnología', icon: 'tech'},
-  {handle: 'oficina', name: 'Oficina', icon: 'office'},
-  {handle: 'textil', name: 'Textil', icon: 'shirt'},
   {handle: 'mochilas-y-maletas', name: 'Mochilas y maletas', icon: 'bag'},
-  {handle: 'salud-y-bienestar', name: 'Bienestar', icon: 'heart'},
+  {handle: 'oficina', name: 'Oficina', icon: 'office'},
+  {handle: 'tecnologia', name: 'Tecnología', icon: 'tech'},
+  {handle: 'textil', name: 'Textil', icon: 'shirt'},
 ];
 
 // Curated "featured collections" row on home + which to spotlight

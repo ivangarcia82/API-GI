@@ -99,10 +99,11 @@ export default function Homepage() {
 
               <div className="home-hero-actions fade-up" style={{animationDelay: '220ms'}}>
                 <Button
-                  variant="primary"
+                  as="a"
+                  href="#categorias"
+                  variant="soft"
                   size="lg"
                   iconRight="arrow_right"
-                  onClick={() => navigate('/catalogo')}
                 >
                   Explorar catálogo
                 </Button>
@@ -127,11 +128,13 @@ export default function Homepage() {
       </div>
 
       {/* CATEGORIES */}
-      <section className="section container" style={{paddingTop: 60}}>
+      <section id="categorias" className="section container" style={{paddingTop: 60}}>
         <div className="section-head">
           <div>
             <div className="eyebrow">// Catálogo · 01</div>
-            <h2>Encuentra por categoría.</h2>
+            <h2>
+              Encuentra por <span className="text-accent">categoría.</span>
+            </h2>
           </div>
           <p>
             Productos curados en grandes familias, todas con opciones de
@@ -140,7 +143,7 @@ export default function Homepage() {
         </div>
         <ScrollReveal>
           <div className="cat-grid">
-            {categoryCards.map((c) => (
+            {categoryCards.slice(0, 6).map((c) => (
               <a
                 key={c.handle}
                 href={`/collections/${c.handle}`}
@@ -169,6 +172,18 @@ export default function Homepage() {
             ))}
           </div>
         </ScrollReveal>
+        {categoryCards.length > 6 && (
+          <div style={{display: 'flex', justifyContent: 'center', marginTop: 32}}>
+            <Button
+              variant="ghost"
+              size="lg"
+              iconRight="arrow_right"
+              onClick={() => navigate('/catalogo')}
+            >
+              Ver más categorías
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* SERVICES */}
