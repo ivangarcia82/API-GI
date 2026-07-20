@@ -50,4 +50,28 @@ describe('home: secciones de marketing', () => {
     const label = await screen.findByText('Clientes activos');
     expect(label.closest('.gi-mkt')).not.toBeNull();
   });
+
+  it('envuelve ProcessSection en un ancestro .gi-mkt', async () => {
+    const Stub = createRoutesStub([
+      {path: '/', Component: Homepage, loader: () => datosLoader},
+    ]);
+    render(<Stub initialEntries={['/']} />);
+
+    // "Briefing" es el primer paso de STEPS en ProcessSection.jsx: texto
+    // real y estable, único en el árbol renderizado del home.
+    const step = await screen.findByText('Briefing');
+    expect(step.closest('.gi-mkt')).not.toBeNull();
+  });
+
+  it('envuelve ClosingCTA en un ancestro .gi-mkt', async () => {
+    const Stub = createRoutesStub([
+      {path: '/', Component: Homepage, loader: () => datosLoader},
+    ]);
+    render(<Stub initialEntries={['/']} />);
+
+    // "Cotizar" es el texto del CTA final en ClosingCTA.jsx: texto real y
+    // estable, único en el árbol renderizado del home.
+    const cta = await screen.findByText('Cotizar');
+    expect(cta.closest('.gi-mkt')).not.toBeNull();
+  });
 });
