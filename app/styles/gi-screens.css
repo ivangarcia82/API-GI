@@ -717,7 +717,10 @@
   line-height: 1.15;
   margin: 20px 0 8px;
 }
-.svc-strip-desc { color: rgba(244,242,236,0.82); font-size: 14px; line-height: 1.5; margin: 0; }
+/* Alpha raised from 0.82 to 0.92 to clear WCAG AA (4.5:1) for 14px text on
+   the --ink-3 card background: 0.82 composited to ~4.12:1 (fail), 0.92
+   composited to ~4.71:1 (pass with margin). */
+.svc-strip-desc { color: rgba(244,242,236,0.92); font-size: 14px; line-height: 1.5; margin: 0; }
 .svc-strip-card:hover .svc-strip-desc { color: rgba(244,242,236,0.7); }
 
 /* ============== Testimonials (home) ============== */
