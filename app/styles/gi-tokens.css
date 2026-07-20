@@ -159,6 +159,10 @@ img, svg {
 .mono { font-family: var(--font-mono); }
 .muted { color: var(--ink-3); }
 .muted-2 { color: var(--ink-4); }
+/* Unscoped accent-text utility: `.gi-mkt .text-accent` (gi-marketing.css) only
+   applies inside marketing pages. Non-marketing sections (e.g. HomeGiSections)
+   need the same utility without that namespace. */
+.text-accent { color: var(--accent); }
 
 /* ============================================================
    Buttons

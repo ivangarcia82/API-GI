@@ -22,7 +22,7 @@ export function ServicesStrip() {
     <section className="section container">
       <div className="section-head">
         <div>
-          <div className="eyebrow">// Servicios · Todo lo que hacemos</div>
+          <div className="eyebrow">// Servicios</div>
           <h2>Cinco servicios, una sola relación.</h2>
         </div>
         <p>
@@ -66,8 +66,10 @@ export function ClientTestimonials() {
     <section className="section container">
       <div className="section-head">
         <div>
-          <div className="eyebrow">// Clientes · Relaciones que duran años</div>
-          <h2>La confianza se construye entrega tras entrega.</h2>
+          <div className="eyebrow">Lo que dicen nuestros clientes</div>
+          <h2>
+            Relaciones que <span className="text-accent">duran años.</span>
+          </h2>
         </div>
         <p>
           Marcas de todos los tamaños confían en nosotros para sus campañas,
