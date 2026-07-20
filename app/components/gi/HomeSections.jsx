@@ -33,7 +33,7 @@ function useParallax(strength = 0.1) {
 }
 
 /* ---- rotating hero collage ---- */
-export function HeroCollage({images = [], featured, isLoggedIn}) {
+export function HeroCollage({images = []}) {
   const [idx, setIdx] = useState(0);
   const pool = images.length ? images : [null];
   useEffect(() => {
@@ -59,37 +59,6 @@ export function HeroCollage({images = [], featured, isLoggedIn}) {
             }}
           />
         ))}
-        {featured && (
-          <div className="hc-main-meta">
-            <div>
-              <div className="hc-sku">{featured.sku}</div>
-              <div className="hc-name">{featured.title}</div>
-            </div>
-            <div className="hc-pr">
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                  opacity: 0.6,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {isLoggedIn ? 'Desde' : 'Cliente'}
-              </span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 20,
-                  fontWeight: 700,
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {isLoggedIn ? formatPrice(featured.price, featured.currency) : '— —'}
-              </span>
-            </div>
-          </div>
-        )}
         <div className="hc-main-dots">
           {pool.map((src, i) => (
             <button
