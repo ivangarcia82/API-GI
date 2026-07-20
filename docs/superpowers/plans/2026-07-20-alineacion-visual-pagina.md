@@ -37,26 +37,36 @@ Es la tarea de mayor riesgo y va primero: si el wrapper falla, las secciones ren
 
 - [ ] **Step 1: Escribir el test que falla**
 
-Crear `app/routes/_index.giMkt.test.jsx`. El test verifica lo que específicamente puede romperse: que las secciones estén **dentro** de un ancestro `.gi-mkt`, porque sin él el CSS no aplica.
+Crear `app/routes/_index.giMkt.test.jsx`. El test debe montar el **componente real** de `_index.jsx`, no un árbol construido dentro del propio test: lo que se quiere atrapar es que el home olvide el wrapper, y un stub local siempre pasaría.
 
 ```jsx
 // @vitest-environment jsdom
-import {describe, it, expect} from 'vitest';
+import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {createRoutesStub} from 'react-router';
-import {ImpactBand} from '~/components/marketing/ImpactBand';
 
-describe('secciones de marketing en el home', () => {
-  it('renderiza ImpactBand dentro de un ancestro .gi-mkt', () => {
+vi.mock('~/lib/AppContext', () => ({
+  useApp: () => ({
+    isLoggedIn: false,
+    openQuoteDrawer: () => {},
+    openSearch: () => {},
+    quoteCount: 0,
+  }),
+}));
+
+import Homepage from './_index.jsx';
+
+const datosLoader = {
+  isShopLinked: true,
+  categoryCards: [],
+  featuredCollections: [],
+  products: [],
+};
+
+describe('home: secciones de marketing', () => {
+  it('envuelve ImpactBand en un ancestro .gi-mkt', () => {
     const Stub = createRoutesStub([
-      {
-        path: '/',
-        Component: () => (
-          <div className="gi-mkt">
-            <ImpactBand />
-          </div>
-        ),
-      },
+      {path: '/', Component: Homepage, loader: () => datosLoader},
     ]);
     render(<Stub initialEntries={['/']} />);
 
@@ -66,22 +76,21 @@ describe('secciones de marketing en el home', () => {
 });
 ```
 
+Este test **debe fallar** si se quita el `<div className="gi-mkt">` de `_index.jsx`. Compruébalo a propósito en el Step 7.
+
+Nota: montar el home real arrastra sus dependencias. `ProcessSection` importa gsap/ScrollTrigger y `ImpactBand` usa IntersectionObserver. Si alguna revienta bajo jsdom, añade el `vi.mock` que haga falta para esa dependencia — es trabajo esperado de esta tarea, no un bloqueo. Lo que no se vale es debilitar la afirmación para que pase.
+
 - [ ] **Step 2: Correr el test para verificar que falla**
 
 Run: `npx vitest run app/routes/_index.giMkt.test.jsx`
-Expected: FAIL. Si `ImpactBand` no exporta con ese nombre, el error será de import — corregir el import al nombre real antes de seguir.
+Expected: FAIL con "Unable to find an element with the text: Clientes activos" — `ImpactBand` todavía no está en el home. Ese es el fallo correcto.
 
 - [ ] **Step 3: Verificar el nombre real de los exports**
 
 Run: `grep -n "^export" app/components/marketing/ImpactBand.jsx app/components/marketing/ProcessSection.jsx app/components/marketing/ClosingCTA.jsx app/components/marketing/MarketingLayout.jsx`
-Ajustar los imports del test y de `_index.jsx` a lo que devuelva este comando. No asumir named vs default.
+Usar exactamente lo que devuelva este comando en los imports de `_index.jsx`. No asumir named vs default.
 
-- [ ] **Step 4: Correr el test y verificar que pasa**
-
-Run: `npx vitest run app/routes/_index.giMkt.test.jsx`
-Expected: PASS
-
-- [ ] **Step 5: Añadir los imports y el hook en `_index.jsx`**
+- [ ] **Step 4: Añadir los imports y el hook en `_index.jsx`**
 
 Agregar junto a los imports existentes:
 
@@ -98,7 +107,7 @@ Dentro de `export default function Homepage()`, después de los hooks existentes
 useMarketingReveal();
 ```
 
-- [ ] **Step 6: Sustituir el bloque de cifras del hero**
+- [ ] **Step 5: Sustituir el bloque de cifras del hero**
 
 En `_index.jsx`, borrar el bloque de tres `<CountUp>` (aprox. líneas 128-140: `1847`, `12 años`, `420+`) y colocar `<ImpactBand />` como sección propia después del hero, envuelta:
 
@@ -110,9 +119,17 @@ En `_index.jsx`, borrar el bloque de tres `<CountUp>` (aprox. líneas 128-140: `
 
 Si tras borrar los `CountUp` el import de `CountUp` en la línea 4 queda sin uso, quitarlo de la lista de imports.
 
-- [ ] **Step 7: Sustituir proceso y cierre**
+- [ ] **Step 6: Sustituir proceso y cierre**
 
 Reemplazar la sección de proceso (la que abre en la línea ~299) por `<ProcessSection />` y la de cierre (~345) por `<ClosingCTA />`, ambas dentro de un `<div className="gi-mkt">`. Se pueden agrupar en un solo wrapper si quedan contiguas.
+
+- [ ] **Step 7: Correr el test y comprobar que de verdad protege**
+
+Run: `npx vitest run app/routes/_index.giMkt.test.jsx`
+Expected: PASS
+
+Ahora la comprobación que da valor al test: quita temporalmente el `className="gi-mkt"` del wrapper y vuelve a correrlo.
+Expected: FAIL. Si pasa igual, el test no sirve — arréglalo antes de continuar. Restaura el `className` al terminar.
 
 - [ ] **Step 8: Ajustar los botones de `ClosingCTA`**
 
@@ -391,14 +408,13 @@ git commit -m "feat(home): orden alfabético de categorías, acentos naranja y C
 - Modify: `app/routes/registro.jsx:247-275`
 - Modify: `app/lib/gi.js:206-210` (borrar `REVIEWS`)
 - Modify: `app/styles/` (regla `.auth-side`)
-- Test: `app/routes/login.testimonio.test.jsx` (crear)
+- Test: `app/routes/login.testimonio.test.js` (crear)
 
 - [ ] **Step 1: Escribir el test que impide que el testimonio falso regrese**
 
-Crear `app/routes/login.testimonio.test.jsx`:
+Crear `app/routes/login.testimonio.test.js`. Es a propósito un guard sobre el código fuente, no un test de render: lo que se protege es una regla de contenido — que no vuelva a aparecer un testimonio fabricado — y eso incluye el borrado del array `REVIEWS`, que ningún render alcanzaría. No lleva `jsdom` porque no toca el DOM.
 
-```jsx
-// @vitest-environment jsdom
+```js
 import {describe, it, expect} from 'vitest';
 import {readFileSync} from 'node:fs';
 
@@ -418,7 +434,7 @@ describe('panel de login', () => {
 
 - [ ] **Step 2: Correr el test para verificar que falla**
 
-Run: `npx vitest run app/routes/login.testimonio.test.jsx`
+Run: `npx vitest run app/routes/login.testimonio.test.js`
 Expected: FAIL en ambos casos.
 
 - [ ] **Step 3: Borrar el testimonio y los datos demo**
@@ -428,7 +444,7 @@ En `app/lib/gi.js`, eliminar el arreglo `REVIEWS` (líneas 206-210). Ya se confi
 
 - [ ] **Step 4: Correr el test y verificar que pasa**
 
-Run: `npx vitest run app/routes/login.testimonio.test.jsx`
+Run: `npx vitest run app/routes/login.testimonio.test.js`
 Expected: PASS
 
 - [ ] **Step 5: Cambiar los títulos de los paneles**
@@ -471,7 +487,7 @@ Expected: paneles en gris, títulos nuevos con la palabra en naranja, sin los bu
 - [ ] **Step 10: Commit**
 
 ```bash
-git add app/routes/login.jsx app/routes/registro.jsx app/lib/gi.js app/styles/ app/routes/login.testimonio.test.jsx
+git add app/routes/login.jsx app/routes/registro.jsx app/lib/gi.js app/styles/ app/routes/login.testimonio.test.js
 git commit -m "feat(auth): paneles en gris de marca y eliminación del testimonio fabricado"
 ```
 
