@@ -19,7 +19,7 @@ export function ClosingCTA() {
         </p>
         <div className="closing-cta reveal">
           <MagneticButton>
-            <Link to={ROUTES.contact} className="btn btn-accent btn-lg">
+            <Link to={ROUTES.catalog} className="btn btn-accent btn-lg">
               Cotizar
               <svg
                 width="16"
@@ -36,9 +36,6 @@ export function ClosingCTA() {
               </svg>
             </Link>
           </MagneticButton>
-          <Link to={ROUTES.estore} className="btn btn-ghost btn-lg">
-            Ver e-store
-          </Link>
         </div>
       </div>
     </section>

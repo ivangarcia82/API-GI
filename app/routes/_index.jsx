@@ -1,7 +1,7 @@
 import {useLoaderData, useNavigate} from 'react-router';
 import {MockShopNotice} from '~/components/MockShopNotice';
 import {ProductCard} from '~/components/gi/ProductCard';
-import {Button, CountUp, ScrollReveal, PH} from '~/components/gi/ui';
+import {Button, ScrollReveal, PH} from '~/components/gi/ui';
 import {Icon} from '~/components/gi/Icon';
 import {HeroCollage, LookbookGrid} from '~/components/gi/HomeSections';
 import {
@@ -9,13 +9,16 @@ import {
   ClientTestimonials,
   AboutTeaser,
 } from '~/components/gi/HomeGiSections';
+import {ImpactBand} from '~/components/marketing/ImpactBand';
+import {ProcessSection} from '~/components/marketing/ProcessSection';
+import {ClosingCTA} from '~/components/marketing/ClosingCTA';
+import {useMarketingReveal} from '~/components/marketing/MarketingLayout';
 import {useApp} from '~/lib/AppContext';
 import {GI_PRODUCTS_QUERY, fetchCollectionCards} from '~/lib/giFragments';
 import {
   normalizeProduct,
   HOME_CATEGORIES,
   FEATURED_COLLECTIONS,
-  LIFESTYLE,
 } from '~/lib/gi';
 
 export const meta = () => [
@@ -67,6 +70,7 @@ export default function Homepage() {
   const navigate = useNavigate();
   const {isLoggedIn, openQuoteDrawer} = useApp();
   const {categoryCards, featuredCollections, products} = data;
+  useMarketingReveal();
 
   const heroImages = products.map((p) => p.image).filter(Boolean).slice(0, 8);
   const featured = products[0];
@@ -124,31 +128,16 @@ export default function Homepage() {
                   {isLoggedIn ? 'Solicitar cotización' : 'Crear cuenta gratis'}
                 </Button>
               </div>
-
-              <div className="home-hero-meta fade-up stagger" style={{animationDelay: '280ms'}}>
-                <div>
-                  <span className="n ticker"><CountUp to={1847} /></span>
-                  <span className="l">Productos en catálogo</span>
-                </div>
-                <div>
-                  <span className="n ticker"><CountUp to={12} suffix=" años" /></span>
-                  <span className="l">En la industria</span>
-                </div>
-                <div>
-                  <span className="n ticker"><CountUp to={420} suffix="+" /></span>
-                  <span className="l">Clientes corporativos</span>
-                </div>
-                <div>
-                  <span className="n ticker">8–15d</span>
-                  <span className="l">Producción promedio</span>
-                </div>
-              </div>
             </div>
 
             <HeroCollage images={heroImages} featured={featured} isLoggedIn={isLoggedIn} />
           </div>
         </div>
       </section>
+
+      <div className="gi-mkt">
+        <ImpactBand />
+      </div>
 
       {/* CATEGORIES */}
       <section className="section container" style={{paddingTop: 60}}>
@@ -295,34 +284,10 @@ export default function Homepage() {
       {/* ABOUT TEASER */}
       <AboutTeaser />
 
-      {/* HOW IT WORKS */}
-      <section className="section container">
-        <div className="how">
-          <div className="how-bg">
-            <img src={LIFESTYLE.team} alt="" />
-          </div>
-          <div className="how-head">
-            <div className="eyebrow">// Proceso · 04</div>
-            <h2>
-              De la idea al inventario,<br />en una plataforma.
-            </h2>
-          </div>
-          <div className="how-steps">
-            {[
-              {num: '01', title: 'Explora el catálogo', desc: '1,800+ productos visibles. Crea favoritos y compara sin registro previo.'},
-              {num: '02', title: 'Solicita tu cotización', desc: 'Agrega productos a tu lista y envíala a un asesor con un clic. Te respondemos con precios por proyecto.'},
-              {num: '03', title: 'Aprueba arte', desc: 'Subes tu logo, preparamos dummies digitales para tu validación en 24h.'},
-              {num: '04', title: 'Recibe y rastrea', desc: 'Coordinamos la producción y el envío de tu pedido con seguimiento en cada etapa.'},
-            ].map((s) => (
-              <div key={s.num} className="how-step">
-                <div className="num">{s.num}</div>
-                <h3>{s.title}</h3>
-                <p>{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* PROCESS */}
+      <div className="gi-mkt">
+        <ProcessSection />
+      </div>
 
       {/* CLIENT TESTIMONIALS */}
       <ClientTestimonials />
@@ -341,52 +306,10 @@ export default function Homepage() {
         <LookbookGrid limit={6} />
       </section>
 
-      {/* BIG CTA */}
-      <section className="container">
-        <div className="big-cta-photo">
-          <div className="big-cta-bg">
-            <img src={LIFESTYLE.unboxing} alt="" />
-          </div>
-          <div className="big-cta-overlay" />
-          <div style={{position: 'relative'}}>
-            <div className="eyebrow" style={{color: 'var(--accent)'}}>
-              // Empieza hoy
-            </div>
-            <h2 style={{marginTop: 16}}>
-              Tu próxima campaña<br />
-              empieza con un{' '}
-              <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent)'}}>
-                clic
-              </em>
-              .
-            </h2>
-            <div className="actions" style={{position: 'relative'}}>
-              <Button
-                variant="accent"
-                size="lg"
-                iconRight="arrow_right"
-                onClick={() => navigate(isLoggedIn ? '/catalogo' : '/registro')}
-              >
-                {isLoggedIn ? 'Ver catálogo' : 'Crear cuenta gratis'}
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                icon="chat"
-                onClick={() => navigate('/contacto')}
-                style={{
-                  color: 'var(--bg-elev)',
-                  borderColor: 'rgba(244,242,236,0.3)',
-                  background: 'rgba(255,255,255,0.05)',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                Agendar demo
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* CLOSING CTA */}
+      <div className="gi-mkt">
+        <ClosingCTA />
+      </div>
     </div>
   );
 }
