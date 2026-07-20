@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import {describe, it, expect, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {describe, it, expect, vi, afterEach} from 'vitest';
+import {render, screen, cleanup} from '@testing-library/react';
 import {createRoutesStub} from 'react-router';
 
 // jsdom no implementa window.matchMedia. `~/lib/motion` (importado
@@ -35,6 +35,14 @@ const datosLoader = {
   featuredCollections: [],
   products: [],
 };
+
+// `vitest.config.js` corre con `globals: false`, así que el auto-cleanup de
+// Testing Library (que depende de encontrar un `afterEach` global) nunca se
+// activa. Sin este `afterEach(cleanup)` explícito, los 3 `render()` de este
+// archivo se acumulan en `document.body` entre tests y `findByText` puede
+// toparse con nodos de un test anterior — no determinista según cuánto tarde
+// el árbol en asentarse.
+afterEach(cleanup);
 
 describe('home: secciones de marketing', () => {
   it('envuelve ImpactBand en un ancestro .gi-mkt', async () => {

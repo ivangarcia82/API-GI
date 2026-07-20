@@ -1,13 +1,11 @@
 import {useLoaderData, useNavigate} from 'react-router';
 import {MockShopNotice} from '~/components/MockShopNotice';
-import {ProductCard} from '~/components/gi/ProductCard';
 import {Button, ScrollReveal, PH} from '~/components/gi/ui';
 import {Icon} from '~/components/gi/Icon';
-import {HeroCollage, LookbookGrid} from '~/components/gi/HomeSections';
+import {HeroCollage} from '~/components/gi/HomeSections';
 import {
   ServicesStrip,
   ClientTestimonials,
-  AboutTeaser,
 } from '~/components/gi/HomeGiSections';
 import {ImpactBand} from '~/components/marketing/ImpactBand';
 import {ProcessSection} from '~/components/marketing/ProcessSection';
@@ -73,7 +71,6 @@ export default function Homepage() {
   useMarketingReveal();
 
   const heroImages = products.map((p) => p.image).filter(Boolean).slice(0, 8);
-  const featured = products[0];
 
   return (
     <div data-screen-label="01 Home">
@@ -88,16 +85,6 @@ export default function Homepage() {
         <div className="container">
           <div className="home-hero-grid">
             <div>
-              <div className="fade-up">
-                <div className="home-hero-eyebrow">
-                  <span className="tag-ink tag">v2.0</span>
-                  <span style={{fontSize: 13, color: 'var(--ink-3)'}}>
-                    Catálogo 2026 disponible
-                  </span>
-                  <Icon name="arrow_right" size={14} className="muted-2" />
-                </div>
-              </div>
-
               <h1 className="fade-up" style={{animationDelay: '80ms'}}>
                 Promocionales<br />
                 que <em>generan</em><br />
@@ -130,7 +117,7 @@ export default function Homepage() {
               </div>
             </div>
 
-            <HeroCollage images={heroImages} featured={featured} isLoggedIn={isLoggedIn} />
+            <HeroCollage images={heroImages} isLoggedIn={isLoggedIn} />
           </div>
         </div>
       </section>
@@ -186,26 +173,6 @@ export default function Homepage() {
 
       {/* SERVICES */}
       <ServicesStrip />
-
-      {/* FEATURED PRODUCTS */}
-      <section className="section container" style={{paddingTop: 40}}>
-        <div className="section-head">
-          <div>
-            <div className="eyebrow">// Destacados · 02</div>
-            <h2>Lo más cotizado este mes.</h2>
-          </div>
-          <Button variant="ghost" iconRight="arrow_right" onClick={() => navigate('/catalogo')}>
-            Ver todos los productos
-          </Button>
-        </div>
-        <ScrollReveal>
-          <div className="product-grid">
-            {products.slice(0, 4).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </ScrollReveal>
-      </section>
 
       {/* FEATURED COLLECTIONS */}
       <section className="section container" style={{paddingTop: 40}}>
@@ -281,9 +248,6 @@ export default function Homepage() {
         </div>
       </section>
 
-      {/* ABOUT TEASER */}
-      <AboutTeaser />
-
       {/* PROCESS */}
       <div className="gi-mkt">
         <ProcessSection />
@@ -291,20 +255,6 @@ export default function Homepage() {
 
       {/* CLIENT TESTIMONIALS */}
       <ClientTestimonials />
-
-      {/* LOOKBOOK */}
-      <section className="section container" style={{paddingTop: 40}}>
-        <div className="section-head">
-          <div>
-            <div className="eyebrow">// Lookbook · 05</div>
-            <h2>Ediciones curadas por temporada.</h2>
-          </div>
-          <Button variant="ghost" iconRight="arrow_right" onClick={() => navigate('/lookbook')}>
-            Ver lookbook completo
-          </Button>
-        </div>
-        <LookbookGrid limit={6} />
-      </section>
 
       {/* CLOSING CTA */}
       <div className="gi-mkt">
