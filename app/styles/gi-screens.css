@@ -26,6 +26,9 @@
   letter-spacing: -0.04em;
   line-height: 0.9;
   font-size: clamp(48px, 7.5vw, 124px);
+  /* Same client-requested dark-grey as .section-head h2 (see below); the
+     hero h1 otherwise inherits --ink (near-black) from html,body. */
+  color: var(--ink-title);
 }
 .home-hero h1 em {
   font-style: italic;
@@ -293,10 +296,12 @@
   line-height: 1;
   font-size: clamp(32px, 4.2vw, 64px);
   max-width: 720px;
-  /* Darkest non-pure-black neutral in the token set. --ink-3 (#636569) is
-     reserved for auth panels and too light for a title; --ink is explicit
-     here so this doesn't silently depend on inherited body color. */
-  color: var(--ink);
+  /* Client feedback: home titles should read as dark grey, not near-black.
+     --ink (#2e3033) is the storefront body color and was a no-op here since
+     h2 already inherited it from html,body — --ink-title (#43454a) is the
+     softer tone the marketing site uses for the same purpose, applied
+     explicitly so the title doesn't silently depend on inherited color. */
+  color: var(--ink-title);
 }
 .section-head p { color: var(--ink-3); max-width: 380px; margin: 0; font-size: 15px; }
 

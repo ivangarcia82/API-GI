@@ -16,6 +16,12 @@
   --ink-3: #636569;
   --ink-4: #8d8f93;
   --ink-5: #b6b8bc;
+  /* Section/hero titles on the home screen: client feedback said the default
+     --ink (#2e3033) reads as near-black. This is the same softer dark-grey
+     the marketing site (.gi-mkt) already uses for its --ink token, applied
+     here as a dedicated token so it doesn't touch --ink itself (which drives
+     body text, .btn-primary, borders, etc. across the whole storefront). */
+  --ink-title: #43454a;
 
   /* Brand accent — Generando Ideas naranja (Pantone 151C #ff8300).
      Reservado para isotipo, destacados y formas específicas (regla 70-30). */
