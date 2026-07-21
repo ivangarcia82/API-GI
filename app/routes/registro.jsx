@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {Form, useActionData} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
+import {validateStep} from './registro.validation.js';
 
 export {action} from './auth.signup.jsx';
 
@@ -22,7 +23,35 @@ export default function Registro() {
     volume: '',
     terms: false,
   });
+  const [errores, setErrores] = useState({});
+  const [revisandoEmail, setRevisandoEmail] = useState(false);
   const setField = (k, v) => setForm((f) => ({...f, [k]: v}));
+
+  async function continuar() {
+    const errs = validateStep(step, form);
+    if (Object.keys(errs).length > 0) {
+      setErrores(errs);
+      return;
+    }
+    if (step === 1) {
+      setRevisandoEmail(true);
+      try {
+        const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(form.email)}`);
+        const {disponible} = await res.json();
+        if (!disponible) {
+          setErrores({email: 'Ese correo ya está registrado.'});
+          return;
+        }
+      } catch {
+        // Si el chequeo falla por red, dejamos avanzar: el servidor vuelve a
+        // validar al enviar, así que no bloqueamos el registro por eso.
+      } finally {
+        setRevisandoEmail(false);
+      }
+    }
+    setErrores({});
+    setStep(step + 1);
+  }
 
   return (
     <div className="auth-wrap" data-screen-label="03 Register">
@@ -71,6 +100,11 @@ export default function Registro() {
                     required
                     placeholder="Mariana"
                   />
+                  {errores.name && (
+                    <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                      {errores.name}
+                    </span>
+                  )}
                 </div>
                 <div className="field">
                   <label htmlFor="reg-last">Apellido</label>
@@ -82,6 +116,11 @@ export default function Registro() {
                     required
                     placeholder="Ruiz"
                   />
+                  {errores.lastName && (
+                    <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                      {errores.lastName}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="field">
@@ -98,6 +137,11 @@ export default function Registro() {
                 <span className="help-msg">
                   Usa el correo de la empresa para acelerar la aprobación.
                 </span>
+                {errores.email && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                    {errores.email}
+                  </span>
+                )}
               </div>
               <div className="field">
                 <label htmlFor="reg-password">Contraseña</label>
@@ -111,6 +155,11 @@ export default function Registro() {
                   onChange={(e) => setField('password', e.target.value)}
                   placeholder="Mínimo 8 caracteres"
                 />
+                {errores.password && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                    {errores.password}
+                  </span>
+                )}
               </div>
               <div className="field">
                 <label htmlFor="reg-phone">Teléfono</label>
@@ -138,6 +187,11 @@ export default function Registro() {
                   required
                   placeholder="Acme Corp"
                 />
+                {errores.company && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                    {errores.company}
+                  </span>
+                )}
               </div>
               <div className="field">
                 <label htmlFor="reg-razon-social">Razón social (opcional)</label>
@@ -167,6 +221,11 @@ export default function Registro() {
                   <option>$200,000 – $500,000 MXN</option>
                   <option>Más de $500,000 MXN</option>
                 </select>
+                {errores.volume && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                    {errores.volume}
+                  </span>
+                )}
               </div>
             </>
           )}
@@ -228,10 +287,11 @@ export default function Registro() {
               variant="primary"
               className="grow"
               iconRight={step === 3 ? 'check' : 'arrow_right'}
-              onClick={step === 3 ? undefined : () => setStep(step + 1)}
+              onClick={step === 3 ? undefined : continuar}
+              disabled={revisandoEmail}
               style={{flex: 1, justifyContent: 'center'}}
             >
-              {step === 3 ? 'Crear cuenta' : 'Continuar'}
+              {step === 3 ? 'Crear cuenta' : revisandoEmail ? 'Verificando…' : 'Continuar'}
             </Button>
           </div>
         </Form>
