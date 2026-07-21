@@ -118,7 +118,7 @@ export default function Homepage() {
               </div>
             </div>
 
-            <HeroCollage images={heroImages} isLoggedIn={isLoggedIn} />
+            <HeroCollage images={heroImages} />
           </div>
         </div>
       </section>

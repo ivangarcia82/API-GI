@@ -328,6 +328,11 @@
 .gi-mkt .section-dark { background: var(--ink); color: white; }
 .gi-mkt .section-dark .eyebrow { color: var(--orange-500); }
 .gi-mkt .section-dark .section-head p { color: var(--gray-300); }
+/* Fix: gi-screens.css's `.section-head h2 { color: var(--ink-title) }` (0,1,1)
+   otherwise wins over the inherited `color: white` from .section-dark, making
+   titles invisible (#43454a on #43454a). This selector (0,3,1) restores the
+   inherited white by explicitly resetting color on dark-section titles only. */
+.gi-mkt .section-dark .section-head h2 { color: inherit; }
 
 /* ===== Service cards ===== */
 .gi-mkt .services-grid {
@@ -1763,7 +1768,7 @@
 }
 /* Mismo tamaño que el título de la página de Servicios (.svc-h1). */
 .gi-mkt .about-h1 {
-  font-size: clamp(48px, 8vw, 120px);
+  font-size: clamp(38px, 5.5vw, 80px);
   line-height: 0.92;
   letter-spacing: -0.035em;
   margin: 20px 0 0;
