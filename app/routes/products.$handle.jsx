@@ -608,8 +608,7 @@ export default function Product() {
             <table>
               <tbody>
                 <tr><td>Tiempo de producción</td><td>Según técnica y volumen</td></tr>
-                <tr><td>Envío nacional</td><td>Paquetería seleccionada</td></tr>
-                <tr><td>Cobertura</td><td>Toda la República Mexicana</td></tr>
+                <tr><td>Flete</td><td>CDMX y Zona Metropolitana</td></tr>
                 <tr><td>Devoluciones</td><td>Reposición sin costo en defectos de fabricación</td></tr>
               </tbody>
             </table>
