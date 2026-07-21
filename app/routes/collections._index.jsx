@@ -48,7 +48,7 @@ export default function Collections() {
         >
           {collections.length > 0 ? (
             <>
-              {collections.length} colecciones curadas<br />
+              {collections.length} colecciones<br />
               para campañas{' '}
               <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent-deep)'}}>
                 precisas
@@ -104,7 +104,7 @@ export default function Collections() {
               <div>
                 <div className="coll-card-name">{c.title}</div>
                 <div className="coll-card-meta">
-                  {c.description?.slice(0, 48) || 'Colección curada'}
+                  {c.description?.slice(0, 48) || 'Colección destacada'}
                 </div>
               </div>
               <div

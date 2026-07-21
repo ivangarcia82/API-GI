@@ -137,7 +137,7 @@ export default function Homepage() {
             </h2>
           </div>
           <p>
-            Productos curados en grandes familias, todas con opciones de
+            Productos organizados en grandes familias, todas con opciones de
             personalización.
           </p>
         </div>
@@ -194,7 +194,7 @@ export default function Homepage() {
         <div className="section-head">
           <div>
             <div className="eyebrow">// Colecciones · 03</div>
-            <h2>Líneas curadas para campañas precisas.</h2>
+            <h2>Líneas para campañas precisas.</h2>
           </div>
           <p>
             Cada colección une calidad, oferta y propósito. Diseñadas por nuestro
@@ -230,7 +230,7 @@ export default function Homepage() {
                   <div>
                     <div className="coll-card-name">{c.title}</div>
                     <div className="coll-card-meta">
-                      {c.description?.slice(0, 60) || 'Colección curada'}
+                      {c.description?.slice(0, 60) || 'Colección destacada'}
                     </div>
                   </div>
                   <div

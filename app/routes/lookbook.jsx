@@ -32,7 +32,7 @@ export default function Lookbook() {
             <em>ven</em> y se sienten.
           </h1>
           <p className="fade-up" style={{animationDelay: '120ms'}}>
-            Ediciones curadas para inspirar tu próxima campaña. Cada look reúne productos que
+            Ediciones para inspirar tu próxima campaña. Cada look reúne productos que
             cuentan una historia de marca coherente.
           </p>
           <div
@@ -98,7 +98,7 @@ export default function Lookbook() {
             </p>
             <ul className="le-list">
               {[
-                'Curaduría temática por temporada',
+                'Selección temática por temporada',
                 'Empaque y kitting personalizado',
                 'Dummies digitales antes de producir',
                 'Envíos individuales personalizados',
