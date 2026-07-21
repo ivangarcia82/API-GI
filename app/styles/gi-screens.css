@@ -853,7 +853,7 @@
 .auth-form { display: flex; flex-direction: column; gap: 16px; }
 .auth-form .row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .auth-side {
-  background: var(--ink);
+  background: var(--ink-3);
   color: var(--bg-elev);
   padding: 56px;
   display: flex;
@@ -885,14 +885,6 @@
   font-weight: 400;
   color: var(--accent);
 }
-.auth-quote {
-  border-left: 2px solid var(--accent);
-  padding-left: 20px;
-  font-size: 15px;
-  line-height: 1.55;
-  color: rgba(244,242,236,0.8);
-  position: relative;
-}
 .auth-perks {
   display: flex;
   flex-direction: column;
@@ -905,7 +897,7 @@
   align-items: center;
   gap: 12px;
   font-size: 14px;
-  color: rgba(244,242,236,0.85);
+  color: rgba(244,242,236,0.92);
 }
 .auth-perks .p svg { color: var(--accent); flex-shrink: 0; }
 

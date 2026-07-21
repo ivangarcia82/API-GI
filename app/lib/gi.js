@@ -203,12 +203,6 @@ export const LIFESTYLE = {
   printing: unsplash('1572044162444-ad60f128bdea', 1200),
 };
 
-export const REVIEWS = [
-  {name: 'Mariana Ruiz', company: 'HR Lead · Banorte', avatar: unsplash('1573496359142-b8d87734a5a2', 200), quote: 'Pedimos 1,200 kits de bienvenida personalizados. Llegaron impecables, justo como los pedimos.'},
-  {name: 'Luis Treviño', company: 'Marketing · Heineken', avatar: unsplash('1507003211169-0a1dd7228f2d', 200), quote: 'Cotizar y aprobar arte en una sola plataforma cambió completamente nuestro flujo de campañas.'},
-  {name: 'Andrea Solís', company: 'Agencia · Mass', avatar: unsplash('1494790108377-be9c29b29330', 200), quote: 'Trabajamos varias marcas desde un solo dashboard. El soporte responde en menos de 2 horas.'},
-];
-
 export const FAQ = [
   {q: '¿Cuánto tarda la producción?', a: 'El tiempo de producción depende de la técnica de personalización y el volumen. Tu asesor te confirma la fecha estimada al cotizar.'},
   {q: '¿Cuál es la cantidad mínima?', a: 'La mayoría de productos parten en 50 unidades. Algunas líneas premium desde 25 piezas.'},

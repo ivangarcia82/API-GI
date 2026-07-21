@@ -249,19 +249,13 @@ export default function Registro() {
           <div className="eyebrow" style={{color: 'var(--accent)'}}>
             // Únete
           </div>
-          <h2>
-            Empieza<br />
-            <em>gratis</em><br />
-            en 2 minutos.
-          </h2>
+          <h2>Estás a un clic de tus <em>beneficios</em>.</h2>
         </div>
         <div className="auth-perks">
           {[
             'Sin costo de apertura ni mensualidad',
             'Catálogo completo con precios visibles',
-            'Asesor asignado en 24 hrs',
             'Línea de crédito disponible*',
-            'Soporte humano por WhatsApp',
           ].map((p) => (
             <div key={p} className="p">
               <Icon name="check" size={16} />
@@ -269,7 +263,7 @@ export default function Registro() {
             </div>
           ))}
         </div>
-        <div style={{fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(244,242,236,0.5)', marginTop: 24}}>
+        <div style={{fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(244,242,236,0.9)', marginTop: 24}}>
           * SUJETA A APROBACIÓN COMERCIAL
         </div>
       </aside>

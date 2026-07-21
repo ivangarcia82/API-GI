@@ -93,7 +93,7 @@ export default function Login() {
 
           <Button
             type="submit"
-            variant="primary"
+            variant="accent"
             size="lg"
             iconRight="arrow_right"
             disabled={busy}
@@ -132,18 +132,13 @@ export default function Login() {
           <div className="eyebrow" style={{color: 'var(--accent)'}}>
             // Acceso autorizado
           </div>
-          <h2>
-            Tu cuenta<br />
-            <em>desbloquea</em><br />
-            precios reales.
-          </h2>
+          <h2>Accede a información <em>exclusiva</em>.</h2>
         </div>
         <div className="auth-perks">
           {[
             'Precios netos por proyecto',
             'Lista de cotización ilimitada',
             'Historial completo de cotizaciones',
-            'Asesor de cuenta dedicado',
             'Re-cotizaciones con un solo clic',
           ].map((p) => (
             <div key={p} className="p">
@@ -151,12 +146,6 @@ export default function Login() {
               {p}
             </div>
           ))}
-        </div>
-        <div className="auth-quote">
-          “Pedimos 1,200 kits de bienvenida personalizados. Llegaron impecables, justo como los pedimos.”
-          <div style={{marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent)'}}>
-            MARIANA RUIZ · HR LEAD · BANORTE
-          </div>
         </div>
       </aside>
     </div>
