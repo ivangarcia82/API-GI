@@ -106,16 +106,6 @@ export default function Collection() {
             {collection.description ||
               'Una línea cuidadosamente seleccionada por nuestro equipo creativo para maximizar impacto y minimizar desperdicio.'}
           </p>
-          <div className="coll-hero-meta">
-            <div>
-              <div className="n ticker">{products.length}+</div>
-              <div className="l">Productos</div>
-            </div>
-            <div>
-              <div className="n ticker">8–12d</div>
-              <div className="l">Producción</div>
-            </div>
-          </div>
         </div>
         <div style={{borderRadius: 16, overflow: 'hidden', border: '1px solid var(--line)'}}>
           <PH src={heroImage} alt={collection.title} aspect="ph-square" zoom />
