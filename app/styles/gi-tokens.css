@@ -22,6 +22,15 @@
      here as a dedicated token so it doesn't touch --ink itself (which drives
      body text, .btn-primary, borders, etc. across the whole storefront). */
   --ink-title: #43454a;
+  /* Auth panel background (login/registro .auth-side): client feedback said
+     the manual grey --ink-3 (#636569) left the orange accent text (--accent,
+     #ff8300) too washed out (~2.36:1 contrast). Decision was to darken the
+     panel a bit while keeping it clearly grey, not black (--ink/#2e3033 is
+     the near-black and is NOT used here). Same value as --ink-title, but
+     kept as its own token since --ink-title is a text-color token elsewhere
+     and this one drives a background, not text. Do not repoint this at
+     --ink-3 or --ink. */
+  --auth-panel-bg: #43454a;
 
   /* Brand accent — Generando Ideas naranja (Pantone 151C #ff8300).
      Reservado para isotipo, destacados y formas específicas (regla 70-30). */

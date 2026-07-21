@@ -853,7 +853,11 @@
 .auth-form { display: flex; flex-direction: column; gap: 16px; }
 .auth-form .row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .auth-side {
-  background: var(--ink-3);
+  /* Darkened from --ink-3 (#636569) per client decision: that grey left the
+     orange accent text at ~2.36:1 contrast. --auth-panel-bg (#43454a) keeps
+     the panel grey (not black) while lifting the orange to ~3.9:1. See
+     gi-tokens.css for the full rationale; --ink-3 itself is untouched. */
+  background: var(--auth-panel-bg);
   color: var(--bg-elev);
   padding: 56px;
   display: flex;
