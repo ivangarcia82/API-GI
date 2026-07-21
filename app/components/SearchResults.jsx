@@ -97,14 +97,23 @@ function SearchResultsProducts({term, products}) {
       <h2>Productos</h2>
       <Pagination connection={products}>
         {({nodes, isLoading, NextLink, PreviousLink}) => {
-          const ItemsMarkup = nodes.map((product) => {
+          // Client requirement: hide products with no image everywhere,
+          // including search results (see normalizeProduct in ~/lib/gi.js).
+          const visibleNodes = nodes.filter(
+            (product) =>
+              product?.featuredImage?.url ||
+              product?.selectedOrFirstAvailableVariant?.image?.url,
+          );
+          const ItemsMarkup = visibleNodes.map((product) => {
             const productUrl = urlWithTrackingParams({
               baseUrl: `/products/${product.handle}`,
               trackingParams: product.trackingParameters,
               term,
             });
 
-            const image = product?.selectedOrFirstAvailableVariant?.image;
+            const image =
+              product?.featuredImage ||
+              product?.selectedOrFirstAvailableVariant?.image;
 
             return (
               <div className="search-results-item" key={product.id}>

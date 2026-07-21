@@ -167,13 +167,22 @@ function SearchResultsPredictivePages({term, pages, closeSearch}) {
  * @param {PartialPredictiveSearchResult<'products'>}
  */
 function SearchResultsPredictiveProducts({term, products, closeSearch}) {
-  if (!products.length) return null;
+  // Client requirement: hide products with no image everywhere, including
+  // predictive search results (see normalizeProduct in ~/lib/gi.js). Note:
+  // this component isn't wired into PageLayout today (GiSearchModal is the
+  // live predictive UI) but is fixed for parity in case it's ever reused.
+  const visibleProducts = products.filter(
+    (product) =>
+      product?.featuredImage?.url ||
+      product?.selectedOrFirstAvailableVariant?.image?.url,
+  );
+  if (!visibleProducts.length) return null;
 
   return (
     <div className="predictive-search-result" key="products">
       <h5>Products</h5>
       <ul>
-        {products.map((product) => {
+        {visibleProducts.map((product) => {
           const productUrl = urlWithTrackingParams({
             baseUrl: `/products/${product.handle}`,
             trackingParams: product.trackingParameters,
@@ -181,7 +190,9 @@ function SearchResultsPredictiveProducts({term, products, closeSearch}) {
           });
 
           const price = product?.selectedOrFirstAvailableVariant?.price;
-          const image = product?.selectedOrFirstAvailableVariant?.image;
+          const image =
+            product?.featuredImage ||
+            product?.selectedOrFirstAvailableVariant?.image;
           return (
             <li className="predictive-search-result-item" key={product.id}>
               <Link to={productUrl} onClick={closeSearch}>

@@ -16,7 +16,14 @@ export function RecentlyViewed({current, max = 4}) {
 
   useEffect(() => {
     if (current?.id) pushRecentlyViewed(current);
-    setItems(getRecentlyViewed(current?.id).slice(0, max));
+    // Client requirement: hide products with no image everywhere, including
+    // this history strip (it builds its own snapshot shape in
+    // products.$handle.jsx, bypassing normalizeProduct — see recentSnapshot).
+    setItems(
+      getRecentlyViewed(current?.id)
+        .filter((p) => p?.image)
+        .slice(0, max),
+    );
     // Re-run only when the viewed product changes (not on variant tweaks).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.id, max]);

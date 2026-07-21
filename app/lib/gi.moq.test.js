@@ -21,6 +21,9 @@ describe('normalizeProduct keeps moq as a number', () => {
     handle: 'taza-promo',
     title: 'Taza Promo',
     description: 'La compra mínima es de 72 piezas.',
+    // normalizeProduct now hides image-less products from listings, so every
+    // fixture here needs a featuredImage to keep exercising the normal path.
+    featuredImage: {url: 'https://x/taza-promo.jpg', altText: 'Taza Promo'},
     priceRange: {minVariantPrice: {amount: '25.50', currencyCode: 'MXN'}},
     tags: [],
     options: [],

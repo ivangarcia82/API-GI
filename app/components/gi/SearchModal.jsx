@@ -79,7 +79,12 @@ export function GiSearchModal() {
     navigate(`/search?q=${encodeURIComponent(q)}`);
   }
 
-  const products = items.products || [];
+  // Client requirement: hide products with no image everywhere, including
+  // predictive search results (see normalizeProduct in ~/lib/gi.js). This
+  // panel renders raw Storefront nodes (not normalizeProduct), so filter here.
+  const products = (items.products || []).filter(
+    (p) => p?.featuredImage?.url || p?.selectedOrFirstAvailableVariant?.image?.url,
+  );
   const collections = items.collections || [];
   const queries = (items.queries || []).filter((q) => q && q.text);
 
@@ -193,7 +198,7 @@ export function GiSearchModal() {
               <div className="gis-rows">
                 {products.map((p) => {
                   const variant = p.selectedOrFirstAvailableVariant;
-                  const image = variant?.image;
+                  const image = p.featuredImage || variant?.image;
                   const price = variant?.price;
                   return (
                     <Link

@@ -116,12 +116,30 @@ export const GI_COLLECTION_CARD_QUERY = `#graphql
       title
       description
       image { url altText }
-      products(first: 1) {
+      products(first: 10) {
         nodes { featuredImage { url altText } }
       }
     }
   }
 `;
+
+/**
+ * Pick the best-effort image URL for a collection card: the collection's own
+ * image if set, otherwise the featuredImage of the first sampled product that
+ * actually has one (this store has collections with no image set, and the
+ * very first product in a collection isn't guaranteed to have an image
+ * either — see the "hide products with no image" rule in normalizeProduct).
+ * Pure/no network — shared by fetchCollectionCards and collections._index.jsx.
+ * @param {{image?: {url?: string|null}|null, products?: {nodes?: Array<{featuredImage?: {url?: string|null}|null}>}}} collection
+ * @returns {string|null}
+ */
+export function pickCollectionImage(collection) {
+  if (!collection) return null;
+  if (collection.image?.url) return collection.image.url;
+  const nodes = collection.products?.nodes || [];
+  const withImage = nodes.find((n) => n?.featuredImage?.url);
+  return withImage?.featuredImage?.url || null;
+}
 
 /**
  * Fetch several collection cards in parallel. Returns one entry per handle
@@ -142,6 +160,6 @@ export async function fetchCollectionCards(storefront, handles) {
     handle: c.handle,
     title: c.title,
     description: c.description,
-    image: c.image?.url || c.products?.nodes?.[0]?.featuredImage?.url || null,
+    image: pickCollectionImage(c),
   }));
 }

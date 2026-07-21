@@ -119,6 +119,11 @@ export function normalizeProduct(node) {
   const price = node.priceRange?.minVariantPrice;
   const variants = node.variants?.nodes || node.variants?.edges?.map((e) => e.node) || [];
   const first = node.selectedOrFirstAvailableVariant || variants[0];
+  const image = node.featuredImage?.url || first?.image?.url || null;
+  // Client requirement: a product with no photo looks broken in every
+  // listing (home, catalog, collections, favorites, search), so hide it
+  // there entirely. Its PDP still works by direct URL — see products.$handle.jsx.
+  if (!image) return null;
   const tags = node.tags || [];
   // Color swatches come from a "Color" option's variant values
   const colorOption = (node.options || []).find((o) =>
@@ -135,7 +140,7 @@ export function normalizeProduct(node) {
     title: node.title,
     sku: first?.sku || node.handle?.toUpperCase() || '',
     description: node.description || '',
-    image: node.featuredImage?.url || first?.image?.url || null,
+    image,
     imageAlt: node.featuredImage?.altText || node.title,
     images: (node.images?.nodes || []).map((i) => i.url),
     price: price ? parseFloat(price.amount) : null,

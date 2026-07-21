@@ -1,6 +1,7 @@
 import {useLoaderData, useNavigate} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {PH} from '~/components/gi/ui';
+import {pickCollectionImage} from '~/lib/giFragments';
 
 export const meta = () => [
   {title: 'Colecciones · Generando Ideas'},
@@ -22,7 +23,7 @@ export async function loader({context}) {
     handle: c.handle,
     title: c.title,
     description: c.description,
-    image: c.image?.url || c.products?.nodes?.[0]?.featuredImage?.url || null,
+    image: pickCollectionImage(c),
   }));
   return {collections: items};
 }
@@ -139,7 +140,7 @@ const COLLECTIONS_QUERY = `#graphql
         handle
         description
         image { url altText }
-        products(first: 1) { nodes { featuredImage { url altText } } }
+        products(first: 10) { nodes { featuredImage { url altText } } }
       }
     }
   }

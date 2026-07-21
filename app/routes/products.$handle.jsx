@@ -160,6 +160,19 @@ export default function Product() {
   const isOffer = (product.tags || []).includes('oferta');
   const mainImage = images[activeImg]?.url || selectedVariant?.image?.url;
 
+  // Storefront-side inventory for the selected variant. `quantityAvailable`
+  // is null when the store hasn't granted the Storefront API the
+  // unauthenticated_read_product_inventory scope — in that case we fall back
+  // to availableForSale instead of showing a misleading "0" or "null".
+  const quantityAvailable =
+    typeof selectedVariant?.quantityAvailable === 'number'
+      ? selectedVariant.quantityAvailable
+      : null;
+  const isOutOfStock =
+    quantityAvailable != null
+      ? quantityAvailable === 0
+      : selectedVariant?.availableForSale === false;
+
   // Compact snapshot for the "Vistos recientemente" history (ProductCard shape).
   const colorOption = (product.options || []).find((o) => /color/i.test(o.name));
   const recentSnapshot = {
@@ -185,6 +198,10 @@ export default function Product() {
   };
 
   const handleQuote = async () => {
+    // Defense in depth: the button is disabled while out of stock, but guard
+    // the action itself too in case the disabled state is ever bypassed
+    // (e.g. a stale click queued before a variant change re-renders it).
+    if (!selectedVariant?.id || isOutOfStock) return;
     try {
       await addToQuote({
         variantId: selectedVariant.id,
@@ -416,6 +433,24 @@ export default function Product() {
           {/* QUANTITY */}
           <div className="pdp-section">
             <h3>Cantidad</h3>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 12,
+                color: isOutOfStock ? 'var(--err)' : 'var(--ink-3)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                marginBottom: 12,
+              }}
+            >
+              {quantityAvailable != null
+                ? quantityAvailable > 0
+                  ? `Inventario: ${quantityAvailable} piezas`
+                  : 'Agotado'
+                : selectedVariant?.availableForSale
+                  ? 'Disponible'
+                  : 'Agotado'}
+            </div>
             <div style={{display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap'}}>
               <div className="pdp-qty">
                 <button onClick={() => setQty(Math.max(1, qtyNum - 1))} aria-label="Disminuir cantidad">
@@ -463,9 +498,9 @@ export default function Product() {
                   size="lg"
                   icon="quote"
                   onClick={handleQuote}
-                  disabled={Boolean(decoError) || !selectedVariant?.id}
+                  disabled={Boolean(decoError) || !selectedVariant?.id || isOutOfStock}
                 >
-                  Añadir a cotización
+                  {isOutOfStock ? 'Agotado' : 'Añadir a cotización'}
                 </Button>
                 <button
                   className="appbar-iconbtn"
@@ -640,6 +675,7 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
     sku
     title
     unitPrice { amount currencyCode }
+    quantityAvailable
   }
 `;
 

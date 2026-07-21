@@ -1398,7 +1398,12 @@
   gap: 8px;
   margin-top: 16px;
 }
-.pdp-printtech button {
+/* .pdp-printtech wraps DecorationSelector's real <button> options AND the
+   PDP's non-color variant-option <Link> (renders as <a>) options — both need
+   the same look, including the .active state, or the currently-selected
+   option renders invisibly for the latter (see products.$handle.jsx). */
+.pdp-printtech button,
+.pdp-printtech a {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -1410,9 +1415,11 @@
   flex-direction: column;
   gap: 2px;
 }
-.pdp-printtech button.active { border-color: var(--ink); background: var(--ink); color: var(--bg-elev); }
+.pdp-printtech button.active,
+.pdp-printtech a.active { border-color: var(--ink); background: var(--ink); color: var(--bg-elev); }
 .pdp-printtech .pt-cost { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); }
-.pdp-printtech button.active .pt-cost { color: rgba(244,242,236,0.6); }
+.pdp-printtech button.active .pt-cost,
+.pdp-printtech a.active .pt-cost { color: rgba(244,242,236,0.6); }
 
 .pdp-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 .pdp-actions .btn { flex: 1; min-width: 180px; justify-content: center; }

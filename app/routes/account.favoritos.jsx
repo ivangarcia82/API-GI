@@ -45,7 +45,9 @@ export async function loader({context}) {
   const {nodes} = await context.storefront.query(FAVORITOS_QUERY, {
     variables: {ids},
   });
-  const products = keepProducts(nodes).map((node) => normalizeProduct(node));
+  const products = keepProducts(nodes)
+    .map((node) => normalizeProduct(node))
+    .filter(Boolean);
   return {products};
 }
 
