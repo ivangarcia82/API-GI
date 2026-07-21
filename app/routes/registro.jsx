@@ -37,14 +37,20 @@ export default function Registro() {
       setRevisandoEmail(true);
       try {
         const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(form.email)}`);
-        const {disponible} = await res.json();
-        if (!disponible) {
-          setErrores({email: 'Ese correo ya está registrado.'});
-          return;
+        // Fail-open y explícito: solo bloqueamos cuando la respuesta fue
+        // exitosa Y el cuerpo dice disponible === false. Cualquier otra cosa
+        // (res no ok, JSON sin la clave, shape inesperado, error de red) deja
+        // avanzar; el servidor vuelve a validar al enviar, así que no
+        // bloqueamos el registro por un fallo del chequeo en sí.
+        if (res.ok) {
+          const body = await res.json();
+          if (body?.disponible === false) {
+            setErrores({email: 'Ese correo ya está registrado.'});
+            return;
+          }
         }
       } catch {
-        // Si el chequeo falla por red, dejamos avanzar: el servidor vuelve a
-        // validar al enviar, así que no bloqueamos el registro por eso.
+        // Ver comentario arriba: red caída, JSON malformado, etc. -> avanzar.
       } finally {
         setRevisandoEmail(false);
       }
