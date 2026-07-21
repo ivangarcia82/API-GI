@@ -97,7 +97,7 @@ export default function Login() {
             size="lg"
             iconRight="arrow_right"
             disabled={busy}
-            style={{width: '100%', justifyContent: 'center', marginTop: 8}}
+            style={{width: '100%', justifyContent: 'center', marginTop: 8, color: '#fff'}}
           >
             {busy ? 'Entrando…' : 'Iniciar sesión'}
           </Button>
