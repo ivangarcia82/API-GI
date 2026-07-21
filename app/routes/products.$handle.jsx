@@ -170,7 +170,7 @@ export default function Product() {
       : null;
   const isOutOfStock =
     quantityAvailable != null
-      ? quantityAvailable === 0
+      ? quantityAvailable <= 0
       : selectedVariant?.availableForSale === false;
 
   // Compact snapshot for the "Vistos recientemente" history (ProductCard shape).
