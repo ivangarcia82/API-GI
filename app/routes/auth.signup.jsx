@@ -17,7 +17,7 @@ export async function action({request, context}) {
   const firstName = String(form.get('firstName') ?? '') || null;
   const lastName = String(form.get('lastName') ?? '') || null;
   const company = String(form.get('company') ?? '') || null;
-  const rfc = String(form.get('rfc') ?? '') || null;
+  const razonSocial = String(form.get('razonSocial') ?? '') || null;
   const phone = String(form.get('phone') ?? '') || null;
   const volume = String(form.get('volume') ?? '') || null;
   const needs = String(form.get('needs') ?? '') || null;
@@ -36,7 +36,7 @@ export async function action({request, context}) {
       firstName,
       lastName,
       company,
-      rfc,
+      razonSocial,
       phone,
       volume,
       needs,

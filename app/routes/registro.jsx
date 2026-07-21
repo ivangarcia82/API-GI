@@ -17,7 +17,7 @@ export default function Registro() {
     password: '',
     company: '',
     phone: '',
-    rfc: '',
+    razonSocial: '',
     needs: '',
     volume: '',
     terms: false,
@@ -53,7 +53,7 @@ export default function Registro() {
           <input type="hidden" name="email" value={form.email} />
           <input type="hidden" name="password" value={form.password} />
           <input type="hidden" name="company" value={form.company} />
-          <input type="hidden" name="rfc" value={form.rfc} />
+          <input type="hidden" name="razonSocial" value={form.razonSocial} />
           <input type="hidden" name="phone" value={form.phone} />
           <input type="hidden" name="volume" value={form.volume} />
           <input type="hidden" name="needs" value={form.needs} />
@@ -140,16 +140,16 @@ export default function Registro() {
                 />
               </div>
               <div className="field">
-                <label htmlFor="reg-rfc">RFC (opcional)</label>
+                <label htmlFor="reg-razon-social">Razón social (opcional)</label>
                 <input
-                  id="reg-rfc"
+                  id="reg-razon-social"
                   className="input"
-                  value={form.rfc}
-                  onChange={(e) => setField('rfc', e.target.value)}
-                  placeholder="ACM010203XXX"
+                  value={form.razonSocial}
+                  onChange={(e) => setField('razonSocial', e.target.value)}
+                  placeholder="Acme Corporativo S.A. de C.V."
                 />
                 <span className="help-msg">
-                  Si lo proporcionas ahora aceleramos la apertura de crédito.
+                  Si la proporcionas ahora aceleramos la apertura de crédito.
                 </span>
               </div>
               <div className="field">

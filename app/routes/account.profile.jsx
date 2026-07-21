@@ -42,10 +42,10 @@ export async function action({request, context}) {
   const firstName = String(form.get('firstName') ?? '') || null;
   const lastName = String(form.get('lastName') ?? '') || null;
   const company = String(form.get('company') ?? '') || null;
-  const rfc = String(form.get('rfc') ?? '') || null;
+  const razonSocial = String(form.get('razonSocial') ?? '') || null;
 
   try {
-    await updateProfile(db, userId, {firstName, lastName, company, rfc});
+    await updateProfile(db, userId, {firstName, lastName, company, razonSocial});
     const user = await findById(db, userId);
     return {error: null, user};
   } catch (error) {
@@ -109,14 +109,14 @@ export default function AccountProfile() {
             />
           </div>
           <div className="field acct-form-full">
-            <label htmlFor="rfc">RFC</label>
+            <label htmlFor="razonSocial">Razón social</label>
             <input
               className="input"
-              id="rfc"
-              name="rfc"
+              id="razonSocial"
+              name="razonSocial"
               type="text"
-              placeholder="XAXX010101000"
-              defaultValue={user?.rfc ?? ''}
+              placeholder="Acme Corporativo S.A. de C.V."
+              defaultValue={user?.razonSocial ?? ''}
             />
           </div>
           <div className="field acct-form-full">

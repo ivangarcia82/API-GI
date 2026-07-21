@@ -1,5 +1,5 @@
 // Server-only. User repository over libSQL. User shape:
-// {id,email,firstName,lastName,company,rfc,role,shopifyCustomerGid,
+// {id,email,firstName,lastName,company,razonSocial,role,shopifyCustomerGid,
 //  sessionVersion,emailVerifiedAt,createdAt,updatedAt}
 import {hashPassword} from './password.js';
 
@@ -22,7 +22,7 @@ function rowToUser(row) {
     firstName: row.first_name ?? null,
     lastName: row.last_name ?? null,
     company: row.company ?? null,
-    rfc: row.rfc ?? null,
+    razonSocial: row.razon_social ?? null,
     phone: row.phone ?? null,
     volume: row.volume ?? null,
     needs: row.needs ?? null,
@@ -35,7 +35,7 @@ function rowToUser(row) {
   };
 }
 
-const SELECT_COLS = `id, email, first_name, last_name, company, rfc, phone, volume, needs, role,
+const SELECT_COLS = `id, email, first_name, last_name, company, razon_social, phone, volume, needs, role,
   shopify_customer_gid, session_version, email_verified_at, created_at, updated_at`;
 
 // Detects the libSQL UNIQUE-constraint violation surfaced by Turso.
@@ -44,7 +44,7 @@ function isUniqueViolation(err) {
   return msg.includes('UNIQUE') || msg.includes('CONSTRAINT');
 }
 
-export async function createUser(db, env, {email, password, firstName, lastName, company, rfc, phone, volume, needs, role}) {
+export async function createUser(db, env, {email, password, firstName, lastName, company, razonSocial, phone, volume, needs, role}) {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   const normalizedEmail = normalizeEmail(email);
@@ -53,7 +53,7 @@ export async function createUser(db, env, {email, password, firstName, lastName,
     await db.execute({
       sql: `INSERT INTO users
         (id, email, password_hash, password_salt, password_iterations,
-         session_version, first_name, last_name, company, rfc, phone, volume, needs, role,
+         session_version, first_name, last_name, company, razon_social, phone, volume, needs, role,
          shopify_customer_gid, email_verified_at, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
       args: [
@@ -65,7 +65,7 @@ export async function createUser(db, env, {email, password, firstName, lastName,
         firstName ?? null,
         lastName ?? null,
         company ?? null,
-        rfc ?? null,
+        razonSocial ?? null,
         phone ?? null,
         volume ?? null,
         needs ?? null,
@@ -84,7 +84,7 @@ export async function createUser(db, env, {email, password, firstName, lastName,
     firstName: firstName ?? null,
     lastName: lastName ?? null,
     company: company ?? null,
-    rfc: rfc ?? null,
+    razonSocial: razonSocial ?? null,
     phone: phone ?? null,
     volume: volume ?? null,
     needs: needs ?? null,
@@ -113,15 +113,15 @@ export async function findById(db, id) {
   return rowToUser(res.rows[0]);
 }
 
-export async function updateProfile(db, id, {firstName, lastName, company, rfc}) {
+export async function updateProfile(db, id, {firstName, lastName, company, razonSocial}) {
   await db.execute({
-    sql: `UPDATE users SET first_name = ?, last_name = ?, company = ?, rfc = ?, updated_at = ?
+    sql: `UPDATE users SET first_name = ?, last_name = ?, company = ?, razon_social = ?, updated_at = ?
           WHERE id = ?`,
     args: [
       firstName ?? null,
       lastName ?? null,
       company ?? null,
-      rfc ?? null,
+      razonSocial ?? null,
       new Date().toISOString(),
       id,
     ],

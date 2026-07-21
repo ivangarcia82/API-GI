@@ -11,7 +11,7 @@ const STATEMENTS = [
     first_name           TEXT,
     last_name            TEXT,
     company              TEXT,
-    rfc                  TEXT,
+    razon_social         TEXT,
     phone                TEXT,
     volume               TEXT,
     needs                TEXT,
@@ -94,6 +94,9 @@ export async function migrate(db) {
   await addColumnIfMissing(db, 'users', 'phone', 'TEXT');
   await addColumnIfMissing(db, 'users', 'volume', 'TEXT');
   await addColumnIfMissing(db, 'users', 'needs', 'TEXT');
+  // Idempotent rename for databases created before the column was renamed
+  // from `rfc` to `razon_social`. No-op on new databases (rfc never existed).
+  await renameColumnIfPresent(db, 'users', 'rfc', 'razon_social');
 }
 
 async function addColumnIfMissing(db, table, column, type) {
@@ -103,5 +106,13 @@ async function addColumnIfMissing(db, table, column, type) {
     const msg = String(err && (err.message || err));
     // Ignore "duplicate column name" — the column already exists.
     if (!/duplicate column name/i.test(msg)) throw err;
+  }
+}
+
+async function renameColumnIfPresent(db, table, from, to) {
+  const info = await db.execute(`PRAGMA table_info(${table})`);
+  const cols = info.rows.map((r) => r.name);
+  if (cols.includes(from) && !cols.includes(to)) {
+    await db.execute(`ALTER TABLE ${table} RENAME COLUMN ${from} TO ${to}`);
   }
 }
