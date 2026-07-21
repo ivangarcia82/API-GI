@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {Form, useActionData} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
+import {ROUTES} from '~/lib/site-content';
 import {validateStep} from './registro.validation.js';
 
 export {action} from './auth.signup.jsx';
@@ -25,6 +26,7 @@ export default function Registro() {
   });
   const [errores, setErrores] = useState({});
   const [revisandoEmail, setRevisandoEmail] = useState(false);
+  const [verPassword, setVerPassword] = useState(false);
   const setField = (k, v) => setForm((f) => ({...f, [k]: v}));
 
   async function continuar() {
@@ -151,16 +153,38 @@ export default function Registro() {
               </div>
               <div className="field">
                 <label htmlFor="reg-password">Contraseña</label>
-                <input
-                  id="reg-password"
-                  className="input"
-                  type="password"
-                  minLength={8}
-                  required
-                  value={form.password}
-                  onChange={(e) => setField('password', e.target.value)}
-                  placeholder="Mínimo 8 caracteres"
-                />
+                <div style={{position: 'relative'}}>
+                  <input
+                    id="reg-password"
+                    className="input"
+                    type={verPassword ? 'text' : 'password'}
+                    minLength={8}
+                    required
+                    value={form.password}
+                    onChange={(e) => setField('password', e.target.value)}
+                    placeholder="Mínimo 8 caracteres"
+                    style={{paddingRight: 44}}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setVerPassword((v) => !v)}
+                    aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    aria-pressed={verPassword}
+                    style={{
+                      position: 'absolute',
+                      right: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 8,
+                      color: 'var(--ink-3)',
+                    }}
+                  >
+                    <Icon name={verPassword ? 'eye_off' : 'eye'} size={18} />
+                  </button>
+                </div>
                 {errores.password && (
                   <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
                     {errores.password}
@@ -270,7 +294,16 @@ export default function Registro() {
                   style={{marginTop: 3}}
                 />
                 <span>
-                  Acepto el Aviso de privacidad y los Términos de uso de Generando Ideas.
+                  Acepto el{' '}
+                  <a
+                    href={ROUTES.privacy}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{color: 'var(--accent)', textDecoration: 'underline'}}
+                  >
+                    Aviso de privacidad
+                  </a>{' '}
+                  y los Términos de uso de Generando Ideas.
                 </span>
               </label>
             </>
