@@ -1,4 +1,5 @@
-import {data, redirect, Form, useActionData, useLoaderData} from 'react-router';
+import {data, redirect, Form, useActionData, useLoaderData, useNavigation} from 'react-router';
+import {Button} from '~/components/gi/ui';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {getDb} from '~/lib/db/client';
 import {verifyAndConsumeToken} from '~/lib/auth/tokens';
@@ -48,30 +49,66 @@ export async function action({request, context}) {
   return data({ok: true});
 }
 
+const wrapStyle = {
+  maxWidth: 480,
+  margin: '80px auto 120px',
+  padding: '0 20px',
+  textAlign: 'center',
+};
+
+const titleStyle = {
+  fontFamily: 'var(--font-display)',
+  fontWeight: 700,
+  fontSize: 'clamp(32px, 5vw, 44px)',
+  letterSpacing: '-0.02em',
+  margin: '12px 0 16px',
+};
+
+const bodyStyle = {color: 'var(--ink-3)', fontSize: 16, lineHeight: 1.6, margin: '0 0 28px'};
+
 export default function Verify() {
   const {hasToken, token} = useLoaderData();
   const actionData = useActionData();
+  const nav = useNavigation();
+  const busy = nav.state !== 'idle';
   const failed = actionData?.ok === false;
 
   if (!hasToken || failed) {
     return (
-      <main style={{maxWidth: 420, margin: '40px auto', padding: 16}}>
-        <h1>Enlace inválido</h1>
-        <p>El enlace es inválido o expiró. Inicia sesión y solicita uno nuevo.</p>
-        <p>
-          <a href="/login">Ir a iniciar sesión</a>
+      <main style={wrapStyle} data-screen-label="Auth Verify">
+        <div className="eyebrow">// Verificación</div>
+        <h1 style={titleStyle}>Este enlace ya no es válido.</h1>
+        <p style={bodyStyle}>
+          El enlace de verificación expiró o ya fue usado. Inicia sesión con tu
+          correo y contraseña para solicitar uno nuevo.
         </p>
+        <Button as="a" href="/login" variant="accent" size="lg" iconRight="arrow_right" style={{color: '#fff'}}>
+          Ir a iniciar sesión
+        </Button>
       </main>
     );
   }
 
   return (
-    <main style={{maxWidth: 420, margin: '40px auto', padding: 16}}>
-      <h1>Confirma tu correo</h1>
-      <p>Haz clic para verificar tu cuenta y entrar.</p>
+    <main style={wrapStyle} data-screen-label="Auth Verify">
+      <div className="eyebrow">// Verificación · último paso</div>
+      <h1 style={titleStyle}>Confirma tu correo.</h1>
+      <p style={bodyStyle}>
+        Al confirmar, tu cuenta queda verificada y entras directo a tu panel —
+        sin volver a iniciar sesión.
+      </p>
       <Form method="post">
         <input type="hidden" name="token" value={token} />
-        <button type="submit">Confirmar mi correo</button>
+        <Button
+          type="submit"
+          variant="accent"
+          size="lg"
+          iconRight="check"
+          disabled={busy}
+          style={{color: '#fff', minWidth: 280, justifyContent: 'center'}}
+        >
+          {busy ? 'Verificando…' : 'Confirmar y entrar a mi cuenta'}
+        </Button>
       </Form>
     </main>
   );
