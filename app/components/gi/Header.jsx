@@ -76,6 +76,7 @@ export function GiHeader({isLoggedIn}) {
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="appbar-auth"
                   onClick={() => navigate('/login')}
                 >
                   Iniciar sesión
@@ -83,6 +84,7 @@ export function GiHeader({isLoggedIn}) {
                 <Button
                   variant="accent"
                   size="sm"
+                  className="appbar-auth"
                   iconRight="arrow_right"
                   onClick={() => navigate('/registro')}
                 >
@@ -209,6 +211,34 @@ export function GiHeader({isLoggedIn}) {
               Mi cuenta
             </NavLink>
           )}
+          {!isLoggedIn && (
+            <div className="mobile-menu-auth">
+              <Button
+                variant="accent"
+                size="lg"
+                iconRight="arrow_right"
+                onClick={() => {
+                  setMobile(false);
+                  navigate('/registro');
+                }}
+              >
+                Crear cuenta
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={() => {
+                  setMobile(false);
+                  navigate('/login');
+                }}
+              >
+                Iniciar sesión
+              </Button>
+            </div>
+          )}
+          <div className="gi-mkt mobile-menu-social">
+            <SocialIcons variant="nav" />
+          </div>
         </div>
       )}
     </>

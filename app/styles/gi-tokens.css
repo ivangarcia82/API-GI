@@ -506,6 +506,9 @@ img, svg {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* Con la nav oculta en móvil ya no hay flex:1 que empuje las acciones
+     a la derecha; el auto margin funciona en ambos layouts. */
+  margin-left: auto;
 }
 .appbar-iconbtn {
   position: relative;
@@ -533,8 +536,21 @@ img, svg {
   border: 2px solid var(--bg);
 }
 
+.appbar-brand { flex-shrink: 0; }
+
 @media (max-width: 880px) {
   .appbar-nav { display: none; }
+  /* Sin la nav, las redes sociales y los dos botones de auth no caben junto
+     al logo: viven en el menú hamburguesa. */
+  .appbar-actions .gi-mkt-header-icons { display: none; }
+  .appbar-auth { display: none; }
+}
+@media (max-width: 540px) {
+  .appbar-inner { gap: 12px; padding: 0 16px; }
+  .brand-logo { height: 34px; }
+}
+@media (pointer: coarse) {
+  .appbar-iconbtn { width: 44px; height: 44px; }
 }
 
 /* Mobile hamburger panel */
@@ -548,9 +564,11 @@ img, svg {
   inset: var(--header-h) 0 0 0;
   background: var(--bg);
   z-index: 49;
-  padding: 24px;
+  padding: 24px 24px max(24px, env(safe-area-inset-bottom));
   overflow-y: auto;
   animation: fadeIn 200ms var(--ease-out);
+  display: flex;
+  flex-direction: column;
 }
 .mobile-menu a,
 .mobile-menu-link {
@@ -570,6 +588,28 @@ img, svg {
   border-top: 0;
   color: inherit;
   cursor: pointer;
+}
+.mobile-menu-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 24px;
+}
+.mobile-menu-auth .btn { width: 100%; justify-content: center; }
+.mobile-menu-social {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
+/* La variante nav de SocialIcons trae un divisor pensado para el appbar.
+   Triple selector: gana en especificidad a `.gi-mkt .social-icons-nav`
+   (gi-marketing.css carga después que este archivo). */
+.mobile-menu .mobile-menu-social .social-icons-nav {
+  border-left: 0;
+  padding-left: 0;
+  margin-left: 0;
+  gap: 20px;
 }
 
 /* ============================================================

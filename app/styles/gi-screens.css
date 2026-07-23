@@ -12,12 +12,12 @@
 }
 .home-hero-grid {
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: 48px;
   align-items: center;
 }
 @media (max-width: 980px) {
-  .home-hero-grid { grid-template-columns: 1fr; gap: 32px; }
+  .home-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
 }
 .home-hero h1 {
   margin: 0 0 24px;
@@ -186,6 +186,11 @@
 @media (max-width: 540px) {
   .hc-chip-1 { right: 0; }
   .hc-chip-2 { left: 0; }
+  .hc-float-1 { right: 0; }
+  .hc-float-2 { left: 0; }
+  /* En pantallas angostas la palabra más larga del h1 ("Promocionales")
+     no cabe con el mínimo de 48px del clamp global. */
+  .home-hero h1 { font-size: clamp(36px, 12.8vw, 48px); }
 }
 
 .hc-orbit {
@@ -680,7 +685,16 @@
   gap: 16px;
 }
 @media (max-width: 1080px) { .svc-strip-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 640px) { .svc-strip-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+  .svc-strip-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Con 5 servicios en 2 columnas, la última tarjeta impar ocupa la fila completa. */
+  .svc-strip-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@media (max-width: 400px) {
+  .svc-strip-grid { grid-template-columns: minmax(0, 1fr); }
+  .svc-strip-grid > :last-child:nth-child(odd) { grid-column: auto; }
+  .svc-strip-card { min-height: 0; }
+}
 .svc-strip-card {
   display: flex;
   flex-direction: column;
@@ -951,12 +965,33 @@
   flex-direction: column;
   gap: 24px;
 }
+/* En móvil los filtros colapsan tras un toggle: apilados abrían la página con
+   ~1,600px de filtros antes del primer producto. */
+.cat-filters-toggle { display: none; }
 @media (max-width: 880px) {
   .cat-sidebar {
     position: static;
     max-height: none;
     overflow: visible;
+    display: none;
   }
+  .cat-sidebar.open { display: flex; }
+  .cat-filters-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--bg-elev);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cat-filters-toggle .chev { transition: transform var(--dur-fast) var(--ease-out); }
+  .cat-filters-toggle[aria-expanded='true'] .chev { transform: rotate(180deg); }
 }
 .cat-filter-group { display: flex; flex-direction: column; gap: 10px; }
 .cat-filter-group h4 {
@@ -1019,6 +1054,16 @@
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
+@media (max-width: 540px) {
+  .cat-toolbar { gap: 10px; }
+  .cat-toolbar > div {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .cat-search { max-width: none; flex-basis: 100%; }
+  .cat-view-toggle button { flex-shrink: 0; }
+}
 .cat-search {
   position: relative;
   flex: 1;
@@ -1068,11 +1113,19 @@
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
-@media (max-width: 1024px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 540px) { .product-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Móvil: 2 columnas compactas (1 columna producía tarjetas de ~1.5 pantallas
+   de alto y páginas de 16,000px). */
+@media (max-width: 540px) {
+  .product-grid { gap: 12px; }
+  .product-grid .pcard-info { padding: 12px; gap: 4px; }
+  .product-grid .pcard-name { font-size: 14px; }
+  .product-grid .pcard-price { font-size: 16px; }
+  .product-grid .pcard-foot { flex-wrap: wrap; }
+}
 
 .product-list { display: flex; flex-direction: column; gap: 12px; }
 
@@ -1123,6 +1176,11 @@
   transition: all var(--dur) var(--ease-out);
 }
 .pcard:hover .pcard-quickactions { opacity: 1; transform: translateY(0); }
+/* Touch no tiene hover: el tap sobre la tarjeta ya navega al detalle, así que
+   las quick-actions (invisibles e inalcanzables) se retiran del flujo. */
+@media (hover: none) {
+  .pcard-quickactions { display: none; }
+}
 .pcard-info {
   padding: 16px;
   display: flex;
@@ -1183,6 +1241,11 @@
 .pcard-list .ph { aspect-ratio: 1; width: 140px; border-radius: var(--r-md); }
 .pcard-list .pcard-name { font-size: 16px; }
 .pcard-list-actions { display: flex; gap: 8px; align-items: center; }
+@media (max-width: 540px) {
+  .pcard-list { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; }
+  .pcard-list .ph { width: 96px; }
+  .pcard-list-actions { grid-column: 1 / -1; justify-content: space-between; }
+}
 
 /* =================
    COLLECTION
@@ -1210,11 +1273,13 @@
    ================= */
 .pdp {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  /* minmax(0, …): sin el mínimo explícito, el min-content de las 5 miniaturas
+     ensancha la columna de la galería y desborda el viewport en móvil. */
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 56px;
   padding: 32px 0 80px;
 }
-@media (max-width: 880px) { .pdp { grid-template-columns: 1fr; gap: 32px; } }
+@media (max-width: 880px) { .pdp { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
 .pdp-gallery { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-h) + 16px); align-self: start; }
 @media (max-width: 880px) { .pdp-gallery { position: static; } }
 .pdp-main {
@@ -1223,7 +1288,7 @@
   border: 1px solid var(--line);
 }
 .pdp-main .ph { aspect-ratio: 1; }
-.pdp-thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.pdp-thumbs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .pdp-thumb {
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -1256,6 +1321,7 @@
   align-items: end;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
   padding: 20px;
   background: var(--bg-elev);
   border: 1px solid var(--line);
@@ -1431,19 +1497,39 @@
   display: flex;
   gap: 8px;
   padding: 16px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.pdp-tabs-nav::-webkit-scrollbar { display: none; }
 .pdp-tabs-nav button {
   padding: 8px 14px;
   border-radius: var(--r-pill);
   font-size: 13px;
   font-weight: 500;
   color: var(--ink-3);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .pdp-tabs-nav button.active { background: var(--ink); color: var(--bg-elev); }
 .pdp-tabs-body { padding-top: 8px; font-size: 14px; line-height: 1.65; color: var(--ink-3); }
 .pdp-tabs-body table { width: 100%; border-collapse: collapse; }
 .pdp-tabs-body td { padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; }
 .pdp-tabs-body td:first-child { font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; width: 200px; }
+@media (max-width: 540px) {
+  .pdp-tabs-body td:first-child { width: 40%; }
+}
+
+/* Fila de confianza del PDP (Producción / Personalización / Garantía) */
+.pdp-trust {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+}
+.pdp-trust-item { display: flex; gap: 10px; min-width: 0; }
 
 /* Gated price (logged out) */
 .pdp-gated {
@@ -1984,7 +2070,7 @@
 }
 .qd-foot {
   border-top: 1px solid var(--line);
-  padding: 16px 20px 20px;
+  padding: 16px 20px max(20px, env(safe-area-inset-bottom));
   background: var(--bg-elev);
   flex-shrink: 0;
 }

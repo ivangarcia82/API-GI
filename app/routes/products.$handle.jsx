@@ -519,22 +519,13 @@ export default function Product() {
           </div>
 
           {/* DELIVERY GRID */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr 1fr',
-              gap: 16,
-              padding: '20px 0',
-              borderTop: '1px solid var(--line)',
-              marginTop: 8,
-            }}
-          >
+          <div className="pdp-trust">
             {[
               {icon: 'truck', label: 'Producción', value: 'Bajo pedido'},
               {icon: 'package', label: 'Personalización', value: 'Incluida'},
               {icon: 'shield', label: 'Garantía', value: 'Reposición s/c'},
             ].map((m) => (
-              <div key={m.label} style={{display: 'flex', gap: 10}}>
+              <div key={m.label} className="pdp-trust-item">
                 <div
                   style={{
                     width: 32,

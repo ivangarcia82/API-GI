@@ -88,6 +88,7 @@ export default function Catalogo() {
   const [view, setView] = useState('grid');
   const [search, setSearch] = useState(data.q || '');
   const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const setParam = (key, value) => {
     const next = new URLSearchParams(params);
@@ -132,7 +133,19 @@ export default function Catalogo() {
       </div>
 
       <div className="cat-page">
-        <aside className="cat-sidebar">
+        <button
+          type="button"
+          className="cat-filters-toggle"
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          <span style={{display: 'inline-flex', alignItems: 'center', gap: 8}}>
+            <Icon name="filter" size={15} />
+            Filtros{data.cat ? ' · 1' : ''}
+          </span>
+          <Icon name="chevron_down" size={15} className="chev" />
+        </button>
+        <aside className={`cat-sidebar ${filtersOpen ? 'open' : ''}`}>
           <div className="cat-filter-group">
             <h4>
               Categorías
