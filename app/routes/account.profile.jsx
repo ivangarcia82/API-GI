@@ -84,15 +84,12 @@ async function changePasswordAction({request, context, db, userId}) {
   // contador de intentos) y role/gid (para el re-login) vienen de la base.
   const user = await findById(db, userId);
   if (!user) {
-    // Response.json (not react-router's `data()`): la acción se invoca desde
-    // un fetcher en el cliente, que necesita un Response real con .status y
-    // .json() — data() sólo produce eso dentro del pipeline del router.
-    return Response.json({error: 'Tu sesión ya no es válida.', passwordChanged: false}, {status: 401});
+    return data({error: 'Tu sesión ya no es válida.', passwordChanged: false}, {status: 401});
   }
 
   const ip = clientIp(request);
   if ((await recentFailures(db, user.email, ip)) >= MAX_ATTEMPTS) {
-    return Response.json(
+    return data(
       {error: 'Demasiados intentos. Intenta de nuevo en unos minutos.', passwordChanged: false},
       {status: 429},
     );
@@ -102,14 +99,14 @@ async function changePasswordAction({request, context, db, userId}) {
   // la petición ya es inválida por longitud, confirmación o repetición.
   const invalido = validatePasswordChange({current, next, confirm});
   if (invalido) {
-    return Response.json({error: invalido, passwordChanged: false}, {status: 400});
+    return data({error: invalido, passwordChanged: false}, {status: 400});
   }
 
   const rec = await getPasswordRecord(db, userId);
   const ok = rec ? await verifyPassword(current, rec, context.env) : false;
   if (!ok) {
     await recordAttempt(db, user.email, ip, false);
-    return Response.json(
+    return data(
       {error: 'La contraseña actual es incorrecta.', passwordChanged: false},
       {status: 401},
     );

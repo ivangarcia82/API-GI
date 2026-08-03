@@ -56,6 +56,18 @@ function postRequest(fields) {
   });
 }
 
+// Normaliza el valor que devuelve la acción a {status, body}, sin importar si
+// es un Response, un DataWithResponseInit (react-router's data()) o un objeto
+// plano — la acción sólo se invoca directamente aquí (fuera del pipeline del
+// router), así que el transporte real de data() no se materializa como
+// Response hasta que el router lo consume. Las pruebas afirman status +
+// payload, no la codificación de transporte.
+async function read(res) {
+  if (res instanceof Response) return {status: res.status, body: await res.json()};
+  if (res?.init) return {status: res.init.status ?? 200, body: res.data};
+  return {status: 200, body: res};
+}
+
 describe('account.profile action: cambio de contraseña', () => {
   let ctx;
   beforeEach(async () => {
@@ -71,8 +83,9 @@ describe('account.profile action: cambio de contraseña', () => {
       }),
       context: ctx.context,
     });
-    const payload = res.passwordChanged !== undefined ? res : await res.json();
+    const {status, body: payload} = await read(res);
 
+    expect(status).toBe(200);
     expect(payload.error).toBeNull();
     expect(payload.passwordChanged).toBe(true);
 
@@ -96,8 +109,8 @@ describe('account.profile action: cambio de contraseña', () => {
       }),
       context: ctx.context,
     });
-    expect(res.status).toBe(401);
-    const payload = await res.json();
+    const {status, body: payload} = await read(res);
+    expect(status).toBe(401);
     expect(payload.error).toBe('La contraseña actual es incorrecta.');
 
     const rec = await getPasswordRecord(ctx.db, ctx.user.id);
@@ -114,8 +127,9 @@ describe('account.profile action: cambio de contraseña', () => {
       }),
       context: ctx.context,
     });
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe('Las contraseñas no coinciden.');
+    const {status, body} = await read(res);
+    expect(status).toBe(400);
+    expect(body.error).toBe('Las contraseñas no coinciden.');
   });
 
   it('bloquea con 429 tras superar el umbral de intentos', async () => {
@@ -134,9 +148,8 @@ describe('account.profile action: cambio de contraseña', () => {
       }),
       context: ctx.context,
     });
-    expect(res.status).toBe(429);
-    expect((await res.json()).error).toBe(
-      'Demasiados intentos. Intenta de nuevo en unos minutos.',
-    );
+    const {status, body} = await read(res);
+    expect(status).toBe(429);
+    expect(body.error).toBe('Demasiados intentos. Intenta de nuevo en unos minutos.');
   });
 });
