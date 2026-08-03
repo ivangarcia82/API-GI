@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {
   data,
   Form,
@@ -182,6 +182,13 @@ export default function AccountProfile() {
   const pwFetcher = useFetcher();
   const pwBusy = pwFetcher.state !== 'idle';
   const pwChanged = pwFetcher.data?.passwordChanged === true;
+  const pwFormRef = useRef(null);
+
+  useEffect(() => {
+    if (pwFetcher.state === 'idle' && pwFetcher.data?.passwordChanged) {
+      pwFormRef.current?.reset();
+    }
+  }, [pwFetcher.state, pwFetcher.data]);
 
   return (
     <>
@@ -267,7 +274,7 @@ export default function AccountProfile() {
       </Form>
 
       <h2 style={{margin: '4px 0 -8px', fontSize: 18}}>Seguridad</h2>
-      <pwFetcher.Form method="POST" className="acct-form" key={pwChanged ? 'ok' : 'edit'}>
+      <pwFetcher.Form method="POST" className="acct-form" ref={pwFormRef}>
         <div className="acct-form-grid">
           <PasswordField
             id="currentPassword"
