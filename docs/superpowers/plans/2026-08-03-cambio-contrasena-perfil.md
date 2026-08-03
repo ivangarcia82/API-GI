@@ -670,7 +670,7 @@ import {
   useNavigation,
   useOutletContext,
 } from 'react-router';
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Icon} from '~/components/gi/Icon';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {requireUser} from '~/lib/auth/guard';
@@ -869,13 +869,23 @@ En `AccountProfile`, agregar al inicio de la función, junto a los hooks existen
   const pwFetcher = useFetcher();
   const pwBusy = pwFetcher.state !== 'idle';
   const pwChanged = pwFetcher.data?.passwordChanged === true;
+  const pwFormRef = useRef(null);
+
+  // Limpia los tres campos cuando llega una respuesta exitosa. fetcher.data es
+  // un objeto nuevo en cada respuesta, así que esto también dispara en el
+  // segundo cambio seguido, y no borra lo tecleado en un reintento fallido.
+  useEffect(() => {
+    if (pwFetcher.state === 'idle' && pwFetcher.data?.passwordChanged) {
+      pwFormRef.current?.reset();
+    }
+  }, [pwFetcher.state, pwFetcher.data]);
 ```
 
 Y agregar este bloque **después** del `</Form>` del formulario de perfil, todavía dentro del `<>…</>`:
 
 ```jsx
       <h2 style={{margin: '4px 0 -8px', fontSize: 18}}>Seguridad</h2>
-      <pwFetcher.Form method="POST" className="acct-form" key={pwChanged ? 'ok' : 'edit'}>
+      <pwFetcher.Form method="POST" className="acct-form" ref={pwFormRef}>
         <div className="acct-form-grid">
           <PasswordField
             id="currentPassword"
@@ -917,7 +927,12 @@ Y agregar este bloque **después** del `</Form>` del formulario de perfil, todav
       </pwFetcher.Form>
 ```
 
-El `key` que alterna entre `'edit'` y `'ok'` es lo que limpia los tres campos tras un cambio exitoso: cambiar la `key` hace que React remonte el formulario con los inputs vacíos, sin necesidad de estado controlado por campo.
+**Corrección aplicada durante la ejecución.** La versión original de este plan limpiaba los campos con `key={pwChanged ? 'ok' : 'edit'}`, apostando a que cambiar la `key` remontara el formulario. La revisión de la Task 5 demostró que ese mecanismo está roto:
+
+- Sólo tiene dos valores, y React remonta **cuando la key cambia**. En un segundo cambio de contraseña exitoso seguido, ambos renders calculan `'ok'`, no hay remontaje y los campos conservan lo escrito.
+- Al fallar un reintento después de un éxito, la key salta `'ok' → 'edit'` y remonta, borrando lo que el usuario acababa de teclear justo cuando aparece el error.
+
+El `formRef.current.reset()` de arriba corrige ambos: `fetcher.data` es un objeto nuevo en cada respuesta, así que el efecto dispara en todos los éxitos, y sólo en los éxitos.
 
 - [ ] **Step 3: Verificar el lint y los tipos**
 
