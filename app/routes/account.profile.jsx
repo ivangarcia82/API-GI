@@ -8,7 +8,21 @@ import {
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
-import {updateProfile, findById} from '~/lib/auth/users';
+import {
+  updateProfile,
+  findById,
+  getPasswordRecord,
+  updatePassword,
+} from '~/lib/auth/users';
+import {verifyPassword} from '~/lib/auth/password';
+import {validatePasswordChange} from '~/lib/auth/password-policy';
+import {loginSession} from '~/lib/auth/session';
+import {
+  clientIp,
+  recentFailures,
+  recordAttempt,
+  MAX_ATTEMPTS,
+} from '~/lib/auth/attempts';
 
 /**
  * @type {Route.MetaFunction}
@@ -31,12 +45,19 @@ export async function loader({context}) {
 export async function action({request, context}) {
   assertSameOrigin(request);
 
-  if (request.method !== 'PUT') {
-    return data({error: 'Method not allowed'}, {status: 405});
-  }
-
   const {userId} = await requireUser(context);
   const db = getDb(context.env);
+
+  if (request.method === 'PUT') {
+    return updateProfileAction({request, db, userId});
+  }
+  if (request.method === 'POST') {
+    return changePasswordAction({request, context, db, userId});
+  }
+  return data({error: 'Method not allowed'}, {status: 405});
+}
+
+async function updateProfileAction({request, db, userId}) {
   const form = await request.formData();
 
   const firstName = String(form.get('firstName') ?? '') || null;
@@ -51,6 +72,61 @@ export async function action({request, context}) {
   } catch (error) {
     return data({error: error.message, user: null}, {status: 400});
   }
+}
+
+async function changePasswordAction({request, context, db, userId}) {
+  const form = await request.formData();
+  const current = String(form.get('currentPassword') ?? '');
+  const next = String(form.get('newPassword') ?? '');
+  const confirm = String(form.get('confirmPassword') ?? '');
+
+  // La sesión sólo guarda el snapshot de la cookie; el correo (clave del
+  // contador de intentos) y role/gid (para el re-login) vienen de la base.
+  const user = await findById(db, userId);
+  if (!user) {
+    // Response.json (not react-router's `data()`): la acción se invoca desde
+    // un fetcher en el cliente, que necesita un Response real con .status y
+    // .json() — data() sólo produce eso dentro del pipeline del router.
+    return Response.json({error: 'Tu sesión ya no es válida.', passwordChanged: false}, {status: 401});
+  }
+
+  const ip = clientIp(request);
+  if ((await recentFailures(db, user.email, ip)) >= MAX_ATTEMPTS) {
+    return Response.json(
+      {error: 'Demasiados intentos. Intenta de nuevo en unos minutos.', passwordChanged: false},
+      {status: 429},
+    );
+  }
+
+  // Las reglas puras van primero: evitan un PBKDF2 de 100k iteraciones cuando
+  // la petición ya es inválida por longitud, confirmación o repetición.
+  const invalido = validatePasswordChange({current, next, confirm});
+  if (invalido) {
+    return Response.json({error: invalido, passwordChanged: false}, {status: 400});
+  }
+
+  const rec = await getPasswordRecord(db, userId);
+  const ok = rec ? await verifyPassword(current, rec, context.env) : false;
+  if (!ok) {
+    await recordAttempt(db, user.email, ip, false);
+    return Response.json(
+      {error: 'La contraseña actual es incorrecta.', passwordChanged: false},
+      {status: 401},
+    );
+  }
+
+  // updatePassword sube session_version, lo que invalida TODA sesión con la
+  // versión vieja — incluida esta. Re-emitir la cookie con la versión nueva es
+  // lo que mantiene dentro a este navegador y deja fuera a los demás.
+  const nuevaVersion = await updatePassword(db, context.env, userId, next);
+  loginSession(context.session, {
+    userId,
+    role: user.role,
+    gid: user.shopifyCustomerGid,
+    sessionVersion: nuevaVersion,
+  });
+
+  return {error: null, passwordChanged: true};
 }
 
 export default function AccountProfile() {
