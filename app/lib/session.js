@@ -81,6 +81,34 @@ export class AppSession {
   }
 }
 
+/**
+ * Attaches the session cookie to a response, if one is needed.
+ *
+ * A route that sets its own `Set-Cookie` — logout does, with the cookie that
+ * EXPIRES the session — always wins. Committing on top of it would serialize
+ * the still-populated in-memory session and silently resurrect the user:
+ * `destroy()` returns an expiring cookie but does NOT clear the session object.
+ *
+ * This matters because `isPending` is not a reliable signal of intent. `set`
+ * and `unset` are getters that flip it on mere property ACCESS, so any code
+ * that merely reaches for them — Hydrogen's customerAccount client does, to
+ * clear or refresh its tokens — marks the session dirty without changing
+ * anything the route cares about.
+ *
+ * @param {Response} response
+ * @param {AppSession} session
+ */
+export async function finalizeSessionCookie(response, session) {
+  if (response.headers.has('Set-Cookie')) {
+    // The route spoke for itself. Clear the flag so nothing commits later.
+    session.isPending = false;
+    return;
+  }
+  if (session.isPending) {
+    response.headers.set('Set-Cookie', await session.commit());
+  }
+}
+
 /** @typedef {import('@shopify/hydrogen').HydrogenSession} HydrogenSession */
 /** @typedef {import('react-router').SessionStorage} SessionStorage */
 /** @typedef {import('react-router').Session} Session */
