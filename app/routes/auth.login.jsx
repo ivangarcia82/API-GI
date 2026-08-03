@@ -1,7 +1,7 @@
 import {redirect, data} from 'react-router';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {getDb} from '~/lib/db/client';
-import {findByEmail, normalizeEmail} from '~/lib/auth/users';
+import {findByEmail, normalizeEmail, getPasswordRecord} from '~/lib/auth/users';
 import {verifyPassword, hashPassword} from '~/lib/auth/password';
 import {loginSession} from '~/lib/auth/session';
 import {clientIp, recentFailures, recordAttempt, MAX_ATTEMPTS} from '~/lib/auth/attempts';
@@ -39,16 +39,12 @@ export async function action({request, context}) {
   // timing is uniform (no user enumeration via response latency).
   let ok = false;
   if (user) {
-    const secret = await db.execute({
-      sql: `SELECT password_hash, password_salt, password_iterations FROM users WHERE id = ?`,
-      args: [user.id],
-    });
-    const row = secret.rows[0];
-    ok = await verifyPassword(password, {
-      hash: row?.password_hash ?? '',
-      salt: row?.password_salt ?? '',
-      iterations: Number(row?.password_iterations ?? 100000),
-    }, context.env);
+    const rec = await getPasswordRecord(db, user.id);
+    ok = await verifyPassword(
+      password,
+      rec ?? {hash: '', salt: '', iterations: 100000},
+      context.env,
+    );
   } else {
     // No user: run an equivalent PBKDF2 (pepper + derive, 100k) so the response
     // timing matches the user-exists path. Defeats account enumeration via latency.

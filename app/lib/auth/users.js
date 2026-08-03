@@ -175,3 +175,20 @@ export async function updatePassword(db, env, id, newPassword) {
   });
   return bumpSessionVersion(db, id);
 }
+
+// Lee las columnas secretas de la contraseña. Devuelve exactamente la forma que
+// verifyPassword espera, o null si el usuario no existe. Vive aquí y no en las
+// rutas para que todo el SQL de `users` quede en un solo lugar.
+export async function getPasswordRecord(db, id) {
+  const res = await db.execute({
+    sql: `SELECT password_hash, password_salt, password_iterations FROM users WHERE id = ?`,
+    args: [id],
+  });
+  const row = res.rows[0];
+  if (!row) return null;
+  return {
+    hash: row.password_hash,
+    salt: row.password_salt,
+    iterations: Number(row.password_iterations),
+  };
+}
