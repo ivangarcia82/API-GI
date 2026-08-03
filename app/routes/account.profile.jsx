@@ -1,10 +1,13 @@
+import {useState} from 'react';
 import {
   data,
   Form,
   useActionData,
+  useFetcher,
   useNavigation,
   useOutletContext,
 } from 'react-router';
+import {Icon} from '~/components/gi/Icon';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
@@ -126,6 +129,48 @@ async function changePasswordAction({request, context, db, userId}) {
   return {error: null, passwordChanged: true};
 }
 
+// Campo de contraseña con toggle de visibilidad. Mismo patrón que registro.jsx.
+function PasswordField({id, name, label, autoComplete, help}) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="field acct-form-full">
+      <label htmlFor={id}>{label}</label>
+      <div style={{position: 'relative'}}>
+        <input
+          className="input"
+          id={id}
+          name={name}
+          type={visible ? 'text' : 'password'}
+          autoComplete={autoComplete}
+          minLength={8}
+          required
+          style={{paddingRight: 44}}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          aria-pressed={visible}
+          style={{
+            position: 'absolute',
+            right: 8,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 8,
+            color: 'var(--ink-3)',
+          }}
+        >
+          <Icon name={visible ? 'eye_off' : 'eye'} size={18} />
+        </button>
+      </div>
+      {help && <span className="help-msg">{help}</span>}
+    </div>
+  );
+}
+
 export default function AccountProfile() {
   const {user: contextUser} = useOutletContext();
   const {state} = useNavigation();
@@ -133,6 +178,10 @@ export default function AccountProfile() {
   const actionData = useActionData();
   const user = actionData?.user ?? contextUser;
   const saved = Boolean(actionData && !actionData.error && actionData.user);
+
+  const pwFetcher = useFetcher();
+  const pwBusy = pwFetcher.state !== 'idle';
+  const pwChanged = pwFetcher.data?.passwordChanged === true;
 
   return (
     <>
@@ -216,6 +265,48 @@ export default function AccountProfile() {
           </button>
         </div>
       </Form>
+
+      <h2 style={{margin: '4px 0 -8px', fontSize: 18}}>Seguridad</h2>
+      <pwFetcher.Form method="POST" className="acct-form" key={pwChanged ? 'ok' : 'edit'}>
+        <div className="acct-form-grid">
+          <PasswordField
+            id="currentPassword"
+            name="currentPassword"
+            label="Contraseña actual"
+            autoComplete="current-password"
+          />
+          <PasswordField
+            id="newPassword"
+            name="newPassword"
+            label="Nueva contraseña"
+            autoComplete="new-password"
+            help="Mínimo 8 caracteres."
+          />
+          <PasswordField
+            id="confirmPassword"
+            name="confirmPassword"
+            label="Confirmar nueva contraseña"
+            autoComplete="new-password"
+          />
+        </div>
+
+        {pwFetcher.data?.error && (
+          <p className="error-msg" role="alert">
+            {pwFetcher.data.error}
+          </p>
+        )}
+        {pwChanged && (
+          <p className="help-msg" style={{color: 'var(--ok)'}} role="status">
+            Contraseña actualizada. Cerramos la sesión en tus otros dispositivos.
+          </p>
+        )}
+
+        <div className="acct-form-actions">
+          <button type="submit" className="btn btn-accent" disabled={pwBusy}>
+            {pwBusy ? 'Cambiando…' : 'Cambiar contraseña'}
+          </button>
+        </div>
+      </pwFetcher.Form>
     </>
   );
 }
