@@ -1,6 +1,6 @@
 /* Generando Ideas — site header */
 import {useState} from 'react';
-import {Form, NavLink, useNavigate} from 'react-router';
+import {NavLink, useNavigate, useSubmit} from 'react-router';
 import {Icon} from './Icon';
 import {Button} from './ui';
 import {SocialIcons} from '~/components/marketing/SocialIcons';
@@ -29,6 +29,7 @@ function Logo() {
 
 export function GiHeader({isLoggedIn}) {
   const navigate = useNavigate();
+  const submit = useSubmit();
   const {quoteCount, openQuoteDrawer, openSearch} = useApp();
   const [mobile, setMobile] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
@@ -156,17 +157,32 @@ export function GiHeader({isLoggedIn}) {
                         paddingTop: 4,
                       }}
                     >
-                      <Form method="post" action="/auth/logout">
-                        <button
-                          type="submit"
-                          role="menuitem"
-                          onClick={() => setUserMenu(false)}
-                          style={{...menuItemStyle, color: 'var(--ink-3)'}}
-                        >
-                          <Icon name="log_out" size={15} />
-                          Cerrar sesión
-                        </button>
-                      </Form>
+                      {/*
+                        Envío programático, no un <Form> con type="submit".
+                        Cerrar el menú desmonta este subárbol (`userMenu &&`
+                        arriba), y React 18 vacía ese setState de forma síncrona
+                        al terminar el clic — antes de que el navegador despache
+                        el `submit`. El form quedaba desconectado y el navegador
+                        cancelaba el envío ("Form submission canceled because
+                        the form is not connected"): la petición nunca salía.
+                        `submit()` no depende del ciclo de vida del DOM, igual
+                        que el `navigate()` de los demás ítems de este menú.
+                      */}
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setUserMenu(false);
+                          submit(null, {
+                            method: 'post',
+                            action: '/auth/logout',
+                          });
+                        }}
+                        style={{...menuItemStyle, color: 'var(--ink-3)'}}
+                      >
+                        <Icon name="log_out" size={15} />
+                        Cerrar sesión
+                      </button>
                     </div>
                   </div>
                 )}
