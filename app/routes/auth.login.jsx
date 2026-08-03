@@ -4,36 +4,8 @@ import {getDb} from '~/lib/db/client';
 import {findByEmail, normalizeEmail} from '~/lib/auth/users';
 import {verifyPassword, hashPassword} from '~/lib/auth/password';
 import {loginSession} from '~/lib/auth/session';
+import {clientIp, recentFailures, recordAttempt, MAX_ATTEMPTS} from '~/lib/auth/attempts';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
-
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_ATTEMPTS = 8; // per email OR per IP within the window
-
-function clientIp(request) {
-  return (
-    request.headers.get('CF-Connecting-IP') ||
-    request.headers.get('X-Forwarded-For')?.split(',')[0].trim() ||
-    'unknown'
-  );
-}
-
-async function recentFailures(db, email, ip) {
-  const since = new Date(Date.now() - WINDOW_MS).toISOString();
-  const res = await db.execute({
-    sql: `SELECT COUNT(*) AS n FROM login_attempts
-          WHERE success = 0 AND created_at >= ? AND (email = ? OR ip = ?)`,
-    args: [since, email, ip],
-  });
-  return Number(res.rows[0]?.n ?? 0);
-}
-
-async function recordAttempt(db, email, ip, success) {
-  await db.execute({
-    sql: `INSERT INTO login_attempts (id, email, ip, success, created_at)
-          VALUES (?, ?, ?, ?, ?)`,
-    args: [crypto.randomUUID(), email, ip, success ? 1 : 0, new Date().toISOString()],
-  });
-}
 
 /**
  * @param {import('./+types/auth.login').Route.ActionArgs} args
