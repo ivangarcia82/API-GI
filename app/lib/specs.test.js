@@ -60,12 +60,35 @@ describe('formatSpecValue — casos que sí se muestran', () => {
     expect(formatSpecValue('8 x 8 x 21 cm')).toBe('8 x 8 x 21 cm');
   });
 
-  it('no descarta una medida sólo porque contenga un cero', () => {
-    // Guard contra una regla demasiado agresiva: "10x0x5" tiene un cero pero
-    // no es una medida vacía, y "0.5" es un valor legítimo.
-    expect(formatSpecValue('10x0x5')).toBe('10x0x5');
+  it('conserva las medidas sin ceros tal cual', () => {
     expect(formatSpecValue('0.5')).toBe('0.5');
     expect(formatSpecValue('20x30')).toBe('20x30');
+    expect(formatSpecValue('8 x 21 cm')).toBe('8 x 21 cm');
+  });
+
+  it('recorta el componente en cero y conserva el resto', () => {
+    // Un tercio del catálogo son cilindros medidos como "alto x diámetro x 0".
+    expect(formatSpecValue('22.5 x 7.7 x 0 cm')).toBe('22.5 x 7.7 cm');
+    expect(formatSpecValue('24 x 7.5 x 0 cm')).toBe('24 x 7.5 cm');
+    expect(formatSpecValue('21 x 14 x 0 cm')).toBe('21 x 14 cm');
+    expect(formatSpecValue('10x0x5')).toBe('10x5');
+    expect(formatSpecValue('0 x 5 x 3 cm')).toBe('5 x 3 cm');
+  });
+
+  it('respeta el separador y la unidad al recortar', () => {
+    expect(formatSpecValue('30x8.5x0 cm')).toBe('30x8.5 cm');
+    expect(formatSpecValue('50 X 50 X 0 mm')).toBe('50 X 50 mm');
+    expect(formatSpecValue('12 × 4 × 0 cm')).toBe('12 × 4 cm');
+  });
+
+  it('oculta la fila si al recortar no queda ninguna medida', () => {
+    expect(formatSpecValue('0 x 0 x 0 cm')).toBeNull();
+  });
+
+  it('no toca un texto que no es una lista de medidas', () => {
+    // "4 x 15 cm / 4 x 8 cm" son dos áreas alternativas: no se recorta nada.
+    expect(formatSpecValue('4 x 15 cm / 4 x 8 cm')).toBe('4 x 15 cm / 4 x 8 cm');
+    expect(formatSpecValue('Acero inoxidable')).toBe('Acero inoxidable');
   });
 
   it('formatea un metafield de dimensión con valor real', () => {

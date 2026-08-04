@@ -28,26 +28,44 @@ const UNIDADES = {
   YARDS: 'yd',
 };
 
-/** ¿Este texto representa "cero" en alguna de sus formas? */
-function esCero(texto) {
-  const s = texto.trim();
-  if (!s) return true;
+/** ¿Este texto es un único número igual a cero? ("0", "0.0", "0,00", "0 cm") */
+function esCeroSimple(texto) {
+  return /^0+([.,]0+)?\s*[a-z"'´]*$/i.test(texto.trim());
+}
 
-  // Un único número igual a cero, con o sin unidad: "0", "0.0", "0,00", "0 cm".
-  if (/^0+([.,]0+)?\s*[a-z"'´]*$/i.test(s)) return true;
+/**
+ * Recorta de una medida los componentes que valen cero.
+ *
+ * Casi un tercio del catálogo son cilindros que el admin captura como
+ * "alto x diámetro x 0": la tercera dimensión no aplica y mostrarla como
+ * "22.5 x 7.7 x 0 cm" se lee como un dato roto. Al recortar queda
+ * "22.5 x 7.7 cm", que es la medida real.
+ *
+ * Devuelve null si al quitar los ceros no queda ninguna medida (el "0x0x0"
+ * que pidió ocultar el cliente), y el texto intacto si no es una lista de
+ * medidas —"4 x 15 cm / 4 x 8 cm" son dos áreas alternativas, no una sola.
+ *
+ * @param {string} texto
+ * @returns {string|null|undefined} undefined si no aplica y hay que seguir
+ */
+function recortarCeros(texto) {
+  // Sólo se procesan cadenas de la forma "n x n [x n] [unidad]". Cualquier
+  // otra cosa (barras, texto libre) se deja intacta.
+  const m = texto.trim().match(/^([\d.,\s]+(?:[x×*][\d.,\s]+)+)\s*([a-z"'´]*)$/i);
+  if (!m) return undefined;
 
-  // Medidas donde TODOS los componentes son cero: "0x0x0", "0 × 0", "0x0x0 cm".
-  // Se exige que todos lo sean para no descartar "10x0x5", que sí es una
-  // medida real con un componente plano.
-  const partes = s.split(/\s*[x×*]\s*/i);
-  if (partes.length > 1) {
-    const numeros = partes.map((p) => p.replace(/[^\d.,]/g, '')).filter(Boolean);
-    if (numeros.length === partes.length && numeros.every((n) => parseFloat(n.replace(',', '.')) === 0)) {
-      return true;
-    }
-  }
+  const separador = texto.match(/\s*[x×*]\s*/i)[0];
+  const unidad = m[2] ? ` ${m[2]}` : '';
+  const componentes = m[1]
+    .split(/\s*[x×*]\s*/i)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
-  return false;
+  const utiles = componentes.filter((p) => parseFloat(p.replace(',', '.')) !== 0);
+  if (!utiles.length) return null; // era 0x0x0
+  if (utiles.length === componentes.length) return undefined; // no había ceros
+
+  return `${utiles.join(separador)}${unidad}`.trim();
 }
 
 /**
@@ -91,7 +109,10 @@ export function formatSpecValue(raw) {
   }
 
   if (SIN_DATO.has(texto.toLowerCase())) return null;
-  if (esCero(texto)) return null;
+  if (esCeroSimple(texto)) return null;
+
+  const recortado = recortarCeros(texto);
+  if (recortado !== undefined) return recortado; // null = todo era cero
 
   return texto;
 }
