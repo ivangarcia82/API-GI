@@ -92,6 +92,54 @@ export const GI_COLLECTION_PRODUCTS_QUERY = `#graphql
   }
 `;
 
+/**
+ * Búsqueda facetada del catálogo.
+ *
+ * Es el único endpoint de la Storefront API que acepta texto libre Y facetas a
+ * la vez: `products(query:)` no admite `filters` y `collection.products` no
+ * admite texto. `productFilters` devuelve las facetas recalculadas sobre el
+ * resultado actual, con sus conteos, y `totalCount` el total real (no el de la
+ * página).
+ */
+export const GI_CATALOG_SEARCH_QUERY = `#graphql
+  ${GI_PRODUCT_CARD_FRAGMENT}
+  query GiCatalogSearch(
+    $query: String!
+    $productFilters: [ProductFilter!]
+    $sortKey: SearchSortKeys
+    $reverse: Boolean
+    $first: Int
+    $last: Int
+    $startCursor: String
+    $endCursor: String
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    search(
+      query: $query
+      types: PRODUCT
+      productFilters: $productFilters
+      sortKey: $sortKey
+      reverse: $reverse
+      first: $first
+      last: $last
+      before: $startCursor
+      after: $endCursor
+      unavailableProducts: LAST
+    ) {
+      totalCount
+      productFilters {
+        id
+        label
+        type
+        values { id label count input }
+      }
+      nodes { ...GiProductCard }
+      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
+    }
+  }
+`;
+
 /** Related products for the PDP "Productos similares" section. */
 export const GI_PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
   ${GI_PRODUCT_CARD_FRAGMENT}

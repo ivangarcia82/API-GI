@@ -1,70 +1,113 @@
-import {useLoaderData, useSearchParams, useNavigate} from 'react-router';
-import {useState} from 'react';
+import {useLoaderData, useSearchParams, useNavigate, useNavigation} from 'react-router';
+import {useEffect, useState} from 'react';
 import {getPaginationVariables, Pagination} from '@shopify/hydrogen';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
+import {CatalogFilters, ActiveFilterChips} from '~/components/gi/CatalogFilters';
+import {GI_CATALOG_SEARCH_QUERY} from '~/lib/giFragments';
+import {normalizeProduct, HOME_CATEGORIES} from '~/lib/gi';
 import {
-  GI_PRODUCTS_QUERY,
-  GI_COLLECTION_PRODUCTS_QUERY,
-} from '~/lib/giFragments';
-import {normalizeProduct, HOME_CATEGORIES, FEATURED_COLLECTIONS, colorHex} from '~/lib/gi';
+  SORTS,
+  parseFilterParams,
+  toSearchParams,
+  buildSearchQuery,
+  buildProductFilters,
+  groupColorValues,
+  activeChips,
+  hasActiveFilters,
+} from '~/lib/filters';
 
 export const meta = () => [
   {title: 'Catálogo · Generando Ideas'},
   {
     name: 'description',
     content:
-      'Catálogo de artículos promocionales y regalos corporativos personalizables. Filtra por categoría, color y precio, y cotiza en línea.',
+      'Catálogo de artículos promocionales y regalos corporativos personalizables. Filtra por categoría, color, material, técnica de impresión y precio.',
   },
 ];
 
-const SORTS = {
-  relevance: {global: ['RELEVANCE', false], collection: ['COLLECTION_DEFAULT', false]},
-  bestseller: {global: ['BEST_SELLING', false], collection: ['BEST_SELLING', false]},
-  new: {global: ['CREATED_AT', true], collection: ['CREATED', true]},
-  'price-asc': {global: ['PRICE', false], collection: ['PRICE', false]},
-  'price-desc': {global: ['PRICE', true], collection: ['PRICE', true]},
+const EMPTY = {nodes: [], pageInfo: {hasNextPage: false, hasPreviousPage: false}};
+
+/* Ids de faceta que devuelve esta tienda. Se leen por id y no por posición
+   porque Shopify sólo incluye las facetas que aplican al resultado. */
+const FACET = {
+  color: 'filter.v.option.color',
+  talla: 'filter.v.option.talla',
+  material: 'filter.p.m.custom.material',
+  tecnica: 'filter.p.m.custom.tecnicas_de_impresion',
 };
 
-const EMPTY_CONNECTION = {nodes: [], pageInfo: {hasNextPage: false, hasPreviousPage: false}};
+const listaDe = (facetas, id) =>
+  (facetas.find((f) => f.id === id)?.values || [])
+    .filter((v) => v.count > 0)
+    .map((v) => ({value: v.label, label: v.label, count: v.count}));
 
 export async function loader({context, request}) {
   const {storefront} = context;
   const url = new URL(request.url);
-  const cat = url.searchParams.get('cat') || '';
-  const q = url.searchParams.get('q') || '';
-  const sort = url.searchParams.get('sort') || 'relevance';
-  const sortDef = SORTS[sort] || SORTS.relevance;
+  const filtros = parseFilterParams(url.searchParams);
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
+  const sortDef = SORTS[filtros.sort];
 
-  let products = EMPTY_CONNECTION;
-  let title = 'Todos los productos';
+  const consultaBase = {
+    query: buildSearchQuery(filtros),
+    sortKey: sortDef.sortKey,
+    reverse: sortDef.reverse,
+  };
 
-  if (cat) {
-    const [sortKey, reverse] = sortDef.collection;
-    const res = await storefront
-      .query(GI_COLLECTION_PRODUCTS_QUERY, {
-        variables: {handle: cat, sortKey, reverse, ...paginationVariables},
-      })
-      .catch(() => null);
-    const coll = res?.collection;
-    title = coll?.title || cat;
-    products = coll?.products || EMPTY_CONNECTION;
-  } else {
-    const [sortKeyRel, reverse] = sortDef.global;
-    // RELEVANCE only valid with a query; fall back to BEST_SELLING otherwise
-    const sortKey = sortKeyRel === 'RELEVANCE' && !q ? 'BEST_SELLING' : sortKeyRel;
-    const res = await storefront
-      .query(GI_PRODUCTS_QUERY, {
-        variables: {query: q || undefined, sortKey, reverse, ...paginationVariables},
-      })
-      .catch(() => null);
-    products = res?.products || EMPTY_CONNECTION;
-    title = q ? `Resultados · “${q}”` : 'Todos los productos';
+  const buscar = (variables, etiqueta) =>
+    storefront.query(GI_CATALOG_SEARCH_QUERY, {variables}).catch((error) => {
+      console.error(`[catalogo] búsqueda (${etiqueta}) falló:`, error);
+      return null;
+    });
+
+  /* Una familia de color se traduce a un OR de los tonos crudos que existan
+     ahora mismo ("Verde" → VERDE, VERDE PISTACHO, VERDE AQUA…), y esos tonos
+     sólo se conocen leyendo la faceta. De ahí el huevo y la gallina: para
+     construir el filtro hace falta una respuesta previa.
+     Esa consulta de vocabulario pide `first: 1` porque sus productos se
+     descartan — las facetas vienen igual sea cual sea el tamaño de página. */
+  let colorValues = [];
+  if (filtros.color.length) {
+    const vocabulario = await buscar(
+      {...consultaBase, productFilters: null, first: 1},
+      'vocabulario de color',
+    );
+    colorValues = vocabulario?.search?.productFilters?.find((f) => f.id === FACET.color)?.values || [];
   }
 
-  return {products, title, cat, q, sort};
+  const res = await buscar(
+    {
+      ...consultaBase,
+      productFilters: buildProductFilters(filtros, groupColorValues(colorValues)),
+      ...paginationVariables,
+    },
+    'resultados',
+  );
+
+  const resultado = res?.search;
+  const facetasCrudas = resultado?.productFilters || [];
+
+  /* Todas las facetas salen de la consulta ya filtrada para que sus conteos
+     reflejen lo aplicado. La de color es la excepción aparente: Shopify no
+     estrecha una faceta con su propio filtro, así que aquí sigue llegando el
+     vocabulario completo y los demás colores se pueden seguir eligiendo. */
+  const colores = groupColorValues(
+    (facetasCrudas.find((f) => f.id === FACET.color)?.values || []).filter((v) => v.count > 0),
+  );
+
+  return {
+    products: resultado ? {nodes: resultado.nodes || [], pageInfo: resultado.pageInfo} : EMPTY,
+    totalCount: resultado?.totalCount ?? 0,
+    filtros,
+    facetas: {
+      colores,
+      materiales: listaDe(facetasCrudas, FACET.material),
+      tecnicas: listaDe(facetasCrudas, FACET.tecnica),
+      tallas: listaDe(facetasCrudas, FACET.talla),
+    },
+  };
 }
 
 const paginationLinkStyle = {
@@ -82,33 +125,68 @@ const paginationLinkStyle = {
 };
 
 export default function Catalogo() {
-  const data = useLoaderData();
-  const [params, setParams] = useSearchParams();
+  const {products, totalCount, filtros, facetas} = useLoaderData();
+  const [, setParams] = useSearchParams();
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const [view, setView] = useState('grid');
-  const [search, setSearch] = useState(data.q || '');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [panelAbierto, setPanelAbierto] = useState(false);
+  const [texto, setTexto] = useState(filtros.q);
 
-  const setParam = (key, value) => {
-    const next = new URLSearchParams(params);
-    if (value) next.set(key, value);
-    else next.delete(key);
-    setParams(next, {preventScrollReset: true});
+  // El input es controlado, pero la verdad vive en la URL: al navegar con
+  // atrás/adelante o al quitar el chip de búsqueda hay que resincronizarlo.
+  useEffect(() => setTexto(filtros.q), [filtros.q]);
+
+  const cargando = navigation.state === 'loading';
+
+  const aplicar = (siguiente) => {
+    // Cualquier cambio de filtro reinicia la paginación: los cursores de la
+    // consulta anterior no son válidos para el nuevo resultado.
+    setParams(toSearchParams(siguiente), {preventScrollReset: true});
   };
 
-  const submitSearch = (e) => {
+  const enviarBusqueda = (e) => {
     e.preventDefault();
-    const next = new URLSearchParams(params);
-    if (search) next.set('q', search);
-    else next.delete('q');
-    next.delete('cat'); // free search spans whole catalog
-    setParams(next, {preventScrollReset: true});
+    aplicar({...filtros, q: texto});
   };
 
-  // Client-side price refinement runs over the accumulated paginated nodes.
-  const priceFilter = (p) =>
-    p.price == null || (p.price >= priceRange[0] && p.price <= priceRange[1]);
+  const quitarChip = (chip) => {
+    const f = {...filtros};
+    switch (chip.group) {
+      case 'q':
+        f.q = '';
+        break;
+      case 'cat':
+        f.cat = '';
+        break;
+      case 'precio':
+        f.precioMin = null;
+        f.precioMax = null;
+        break;
+      case 'disp':
+        f.soloDisponibles = false;
+        break;
+      case 'nuevos':
+        f.nuevos = false;
+        break;
+      case 'ofertas':
+        f.ofertas = false;
+        break;
+      default:
+        // color / material / tecnica / talla
+        f[chip.group] = (f[chip.group] || []).filter((v) => v !== chip.value);
+    }
+    aplicar(f);
+  };
+
+  const limpiarTodo = () => navigate('/catalogo', {preventScrollReset: true});
+
+  const chips = activeChips(filtros, {categorias: HOME_CATEGORIES});
+  const hayFiltros = hasActiveFilters(filtros);
+
+  const titulo = filtros.q
+    ? `Resultados · “${filtros.q}”`
+    : HOME_CATEGORIES.find((c) => c.handle === filtros.cat)?.name || 'Todos los productos';
 
   return (
     <div className="container" data-screen-label="04 Catalog">
@@ -124,181 +202,116 @@ export default function Catalogo() {
             margin: '12px 0 8px',
           }}
         >
-          {data.title}
+          {titulo}
         </h1>
         <p style={{color: 'var(--ink-3)', margin: 0, fontSize: 16}}>
-          Explora nuestro inventario completo. Filtra por categoría, busca por SKU o
-          ajusta el rango de precio.
+          {totalCount.toLocaleString('es-MX')} productos
+          {hayFiltros ? ' con los filtros aplicados' : ' en el catálogo'}. Combina
+          categoría, color, precio y acabados.
         </p>
       </div>
+
+      <ActiveFilterChips chips={chips} onRemove={quitarChip} onClearAll={limpiarTodo} />
 
       <div className="cat-page">
         <button
           type="button"
           className="cat-filters-toggle"
-          aria-expanded={filtersOpen}
-          onClick={() => setFiltersOpen((o) => !o)}
+          aria-expanded={panelAbierto}
+          onClick={() => setPanelAbierto(true)}
         >
           <span style={{display: 'inline-flex', alignItems: 'center', gap: 8}}>
             <Icon name="filter" size={15} />
-            Filtros{data.cat ? ' · 1' : ''}
+            Filtros{chips.length ? ` · ${chips.length}` : ''}
           </span>
           <Icon name="chevron_down" size={15} className="chev" />
         </button>
-        <aside className={`cat-sidebar ${filtersOpen ? 'open' : ''}`}>
-          <div className="cat-filter-group">
-            <h4>
-              Categorías
-              {(data.cat || data.q) && (
-                <button
-                  onClick={() => navigate('/catalogo')}
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 10,
-                    color: 'var(--accent-deep)',
-                    textDecoration: 'underline',
-                    textTransform: 'none',
-                  }}
-                >
-                  reset
-                </button>
-              )}
-            </h4>
-            <div className="cat-filter-list">
-              <button
-                onClick={() => setParam('cat', '')}
-                className={!data.cat ? 'active' : ''}
-              >
-                <span>Todas</span>
-              </button>
-              {HOME_CATEGORIES.map((c) => (
-                <button
-                  key={c.handle}
-                  onClick={() => setParam('cat', c.handle)}
-                  className={data.cat === c.handle ? 'active' : ''}
-                >
-                  <span>{c.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
 
-          <div className="cat-filter-group">
-            <h4>Colecciones</h4>
-            <div className="cat-tags">
-              {FEATURED_COLLECTIONS.map((handle) => (
-                <button
-                  key={handle}
-                  className={`cat-tag-btn ${data.cat === handle ? 'active' : ''}`}
-                  onClick={() => setParam('cat', handle)}
-                >
-                  {handle.replace(/-/g, ' ')}
-                </button>
-              ))}
-            </div>
-          </div>
+        {panelAbierto && (
+          <button
+            type="button"
+            className="cf-scrim"
+            aria-label="Cerrar filtros"
+            onClick={() => setPanelAbierto(false)}
+          />
+        )}
 
-          <div className="cat-filter-group">
-            <h4>Color</h4>
-            <div style={{display: 'flex', gap: 8, flexWrap: 'wrap'}}>
-              {['Negro', 'Blanco', 'Azul', 'Rojo', 'Verde', 'Amarillo', 'Gris', 'Plata'].map(
-                (c) => (
-                  <button
-                    key={c}
-                    title={c}
-                    onClick={() => {
-                      setSearch(c);
-                      setParam('q', c);
-                    }}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      background: colorHex(c),
-                      border: '2px solid var(--bg)',
-                      boxShadow: '0 0 0 1px var(--line)',
-                      cursor: 'pointer',
-                    }}
-                  />
-                ),
-              )}
-            </div>
-          </div>
-
-          <div className="cat-filter-group">
-            <h4>Rango de precio</h4>
-            <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
-              <input
-                type="number"
-                className="input"
-                value={priceRange[0]}
-                onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])}
-                style={{padding: '8px 10px', fontSize: 13}}
-              />
-              <span style={{color: 'var(--ink-4)'}}>—</span>
-              <input
-                type="number"
-                className="input"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
-                style={{padding: '8px 10px', fontSize: 13}}
-              />
-            </div>
-            <span className="help-msg">MXN · sin IVA</span>
-          </div>
-        </aside>
+        <CatalogFilters
+          filters={filtros}
+          facets={facetas}
+          categorias={HOME_CATEGORIES}
+          onChange={aplicar}
+          onClearAll={limpiarTodo}
+          totalCount={totalCount}
+          open={panelAbierto}
+          onClose={() => setPanelAbierto(false)}
+        />
 
         <div>
-          <Pagination connection={data.products}>
+          <div className="cat-toolbar">
+            <form className="cat-search" onSubmit={enviarBusqueda}>
+              <Icon name="search" size={14} />
+              <input
+                placeholder="Buscar producto, SKU o categoría…"
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                aria-label="Buscar en el catálogo"
+              />
+              {texto && (
+                <button
+                  type="button"
+                  className="cat-search-clear"
+                  aria-label="Borrar búsqueda"
+                  onClick={() => {
+                    setTexto('');
+                    aplicar({...filtros, q: ''});
+                  }}
+                >
+                  <Icon name="x" size={13} />
+                </button>
+              )}
+            </form>
+            <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
+              <span className="cat-results-meta">
+                {cargando ? 'Buscando…' : `${totalCount.toLocaleString('es-MX')} productos`}
+              </span>
+              <select
+                className="input"
+                value={filtros.sort}
+                onChange={(e) => aplicar({...filtros, sort: e.target.value})}
+                aria-label="Ordenar"
+                style={{padding: '10px 14px', fontSize: 13, borderRadius: 999, fontWeight: 500}}
+              >
+                {Object.entries(SORTS).map(([key, def]) => (
+                  <option key={key} value={key}>
+                    {def.label}
+                  </option>
+                ))}
+              </select>
+              <div className="cat-view-toggle">
+                <button
+                  className={view === 'grid' ? 'active' : ''}
+                  onClick={() => setView('grid')}
+                  aria-label="Vista cuadrícula"
+                >
+                  <Icon name="grid" size={14} />
+                </button>
+                <button
+                  className={view === 'list' ? 'active' : ''}
+                  onClick={() => setView('list')}
+                  aria-label="Vista lista"
+                >
+                  <Icon name="list" size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <Pagination connection={products}>
             {({nodes, isLoading, PreviousLink, NextLink, hasNextPage, hasPreviousPage}) => {
-              const visible = nodes
-                .map(normalizeProduct)
-                .filter(Boolean)
-                .filter(priceFilter);
+              const visible = nodes.map(normalizeProduct).filter(Boolean);
               return (
                 <>
-                  <div className="cat-toolbar">
-                    <form className="cat-search" onSubmit={submitSearch}>
-                      <Icon name="search" size={14} />
-                      <input
-                        placeholder="Buscar producto, SKU o categoría…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    </form>
-                    <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
-                      <span className="cat-results-meta">{visible.length} productos</span>
-                      <select
-                        className="input"
-                        value={data.sort}
-                        onChange={(e) => setParam('sort', e.target.value)}
-                        style={{padding: '10px 14px', fontSize: 13, borderRadius: 999, fontWeight: 500}}
-                      >
-                        <option value="relevance">Relevancia</option>
-                        <option value="bestseller">Más vendidos</option>
-                        <option value="new">Nuevos primero</option>
-                        <option value="price-asc">Precio: menor a mayor</option>
-                        <option value="price-desc">Precio: mayor a menor</option>
-                      </select>
-                      <div className="cat-view-toggle">
-                        <button
-                          className={view === 'grid' ? 'active' : ''}
-                          onClick={() => setView('grid')}
-                          aria-label="Vista cuadrícula"
-                        >
-                          <Icon name="grid" size={14} />
-                        </button>
-                        <button
-                          className={view === 'list' ? 'active' : ''}
-                          onClick={() => setView('list')}
-                          aria-label="Vista lista"
-                        >
-                          <Icon name="list" size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
                   {hasPreviousPage && (
                     <div style={{display: 'flex', justifyContent: 'center', marginBottom: 24}}>
                       <PreviousLink style={paginationLinkStyle}>
@@ -311,21 +324,24 @@ export default function Catalogo() {
                     <div className="empty">
                       <Icon name="search" size={32} className="muted-2" />
                       <h3>Sin resultados</h3>
-                      <p>Intenta con otros filtros o palabras de búsqueda.</p>
-                      <Button variant="ghost" onClick={() => navigate('/catalogo')}>
-                        Limpiar filtros
-                      </Button>
-                    </div>
-                  ) : view === 'grid' ? (
-                    <div className="product-grid stagger">
-                      {visible.map((p) => (
-                        <ProductCard key={p.id} product={p} />
-                      ))}
+                      <p>
+                        {hayFiltros
+                          ? 'Ninguna combinación de estos filtros devuelve productos. Prueba a quitar alguno.'
+                          : 'Intenta con otras palabras de búsqueda.'}
+                      </p>
+                      {hayFiltros && (
+                        <Button variant="ghost" onClick={limpiarTodo}>
+                          Limpiar filtros
+                        </Button>
+                      )}
                     </div>
                   ) : (
-                    <div className="product-list stagger">
+                    <div
+                      className={`${view === 'grid' ? 'product-grid' : 'product-list'} stagger`}
+                      data-loading={cargando ? '' : undefined}
+                    >
                       {visible.map((p) => (
-                        <ProductCard key={p.id} product={p} view="list" />
+                        <ProductCard key={p.id} product={p} view={view === 'list' ? 'list' : undefined} />
                       ))}
                     </div>
                   )}
