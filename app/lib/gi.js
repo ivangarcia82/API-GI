@@ -174,6 +174,11 @@ export const HOME_CATEGORIES = [
   {handle: 'textil', name: 'Textil', icon: 'shirt'},
 ];
 
+/* Las dos colecciones que el home destaca. Es una lista aparte de
+   FEATURED_COLLECTIONS a propósito: esa otra alimenta los chips de filtro de
+   /catalogo y debe seguir completa. */
+export const HOME_FEATURED_COLLECTIONS = ['nuevos', 'ofertas'];
+
 // Curated "featured collections" row on home + which to spotlight
 export const FEATURED_COLLECTIONS = [
   'mundial',

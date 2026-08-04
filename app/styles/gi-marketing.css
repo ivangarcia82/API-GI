@@ -1340,6 +1340,12 @@
 /* ==========================================================================
    Componente: ImpactBand.astro
    ========================================================================== */
+/* La banda es más baja que el resto de secciones .gi-mkt (120px de padding) y
+   a la vez sus números pesan más: el cliente pidió compactarla verticalmente
+   sin perder protagonismo de las cifras. Los overrides se anclan a `.impact`
+   para no alterar las demás secciones de marketing. */
+.gi-mkt .section.impact { padding: 64px 0; }
+.gi-mkt .impact .section-head { margin-bottom: 32px; }
 .gi-mkt .impact-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1347,7 +1353,10 @@
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 .gi-mkt .impact-cell {
-  padding: 40px 28px 8px;
+  /* 20px de lado, no 28px: cada celda mide 304px en el ancho máximo y el
+     número más largo ("+67,000") ocupa 3.56em, así que cada píxel de padding
+     que se quita es tamaño de cifra que se gana. */
+  padding: 24px 20px 8px;
   border-left: 1px solid rgba(255, 255, 255, 0.12);
   min-width: 0;
 }
@@ -1356,7 +1365,11 @@
 }
 .gi-mkt .impact-cell strong {
   font-family: var(--font-display);
-  font-size: clamp(44px, 5vw, 72px);
+  /* El techo lo marca "+67,000" (3.56em) contra los 264px útiles de la celda
+     en el ancho máximo: 72px es el mayor tamaño que no desborda. El tramo
+     fluido (5vw) está calculado para que tampoco desborde en el punto más
+     apretado de la retícula de cuatro columnas, justo antes de los 860px. */
+  font-size: clamp(30px, 5vw, 72px);
   font-weight: 700;
   letter-spacing: -0.03em;
   color: #fff;
@@ -1364,7 +1377,11 @@
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
-.gi-mkt .impact-cell span {
+/* Hijo directo, no cualquier descendiente: <CountUp> renderiza su cifra dentro
+   de un <span> anidado en el <strong>, así que el selector sin `>` se la comía
+   —la pintaba a 12px, en mayúsculas y en gris— y anulaba el tamaño grande del
+   <strong>. Es la razón por la que los números se veían diminutos. */
+.gi-mkt .impact-cell > span {
   font-family: var(--font-mono);
   font-size: 12px;
   text-transform: uppercase;
@@ -1383,7 +1400,12 @@
     border-left: none;
   }
   .gi-mkt .impact-cell {
-    padding: 32px 20px 8px;
+    padding: 20px 12px 8px;
+  }
+  /* En dos columnas la celda es más ancha en proporción, pero en móviles
+     estrechos el ancho absoluto manda: 8.5vw mantiene "+67,000" dentro. */
+  .gi-mkt .impact-cell strong {
+    font-size: clamp(28px, 8.5vw, 56px);
   }
 }
 

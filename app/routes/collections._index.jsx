@@ -3,12 +3,15 @@ import {Icon} from '~/components/gi/Icon';
 import {PH} from '~/components/gi/ui';
 import {pickCollectionImage} from '~/lib/giFragments';
 
+/* Shopify modela estas familias como "collections" y de ahí sale la URL, pero
+   Generando Ideas las llama categorías de cara al cliente. La ruta se queda
+   como está; el copy es el que habla de categorías. */
 export const meta = () => [
-  {title: 'Colecciones · Generando Ideas'},
+  {title: 'Categorías · Generando Ideas'},
   {
     name: 'description',
     content:
-      'Explora nuestras colecciones de artículos promocionales: líneas premium, ecológicas y temáticas para campañas B2B en México.',
+      'Explora nuestras categorías de artículos promocionales: líneas premium, ecológicas y temáticas para campañas B2B en México.',
   },
 ];
 
@@ -35,7 +38,7 @@ export default function Collections() {
   return (
     <div className="container" data-screen-label="05 Collections list">
       <div style={{padding: '32px 0 56px'}}>
-        <div className="eyebrow">// Colecciones · /colecciones</div>
+        <div className="eyebrow">// Categorías</div>
         <h1
           style={{
             fontFamily: 'var(--font-display)',
@@ -49,7 +52,7 @@ export default function Collections() {
         >
           {collections.length > 0 ? (
             <>
-              {collections.length} colecciones<br />
+              {collections.length} categorías<br />
               para campañas{' '}
               <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent-deep)'}}>
                 precisas
@@ -57,11 +60,11 @@ export default function Collections() {
               .
             </>
           ) : (
-            'Colecciones'
+            'Categorías'
           )}
         </h1>
         <p style={{color: 'var(--ink-3)', fontSize: 17, maxWidth: 600}}>
-          Cada colección une calidad, oferta y propósito. Desde nuestras líneas premium
+          Cada categoría une calidad, oferta y propósito. Desde nuestras líneas premium
           hasta alternativas 100% ecológicas, encuentra la familia que se ajusta a tu marca.
         </p>
       </div>
@@ -69,7 +72,7 @@ export default function Collections() {
       {collections.length === 0 ? (
         <div className="empty" style={{marginBottom: 80}}>
           <Icon name="search" size={32} className="muted-2" />
-          <h3>No hay colecciones por ahora</h3>
+          <h3>No hay categorías por ahora</h3>
           <p>Vuelve pronto o explora el catálogo completo.</p>
         </div>
       ) : (
@@ -105,7 +108,7 @@ export default function Collections() {
               <div>
                 <div className="coll-card-name">{c.title}</div>
                 <div className="coll-card-meta">
-                  {c.description?.slice(0, 48) || 'Colección destacada'}
+                  {c.description?.slice(0, 48) || 'Categoría destacada'}
                 </div>
               </div>
               <div

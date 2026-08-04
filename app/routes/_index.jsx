@@ -16,7 +16,7 @@ import {GI_PRODUCTS_QUERY, fetchCollectionCards} from '~/lib/giFragments';
 import {
   normalizeProduct,
   HOME_CATEGORIES,
-  FEATURED_COLLECTIONS,
+  HOME_FEATURED_COLLECTIONS,
 } from '~/lib/gi';
 
 export const meta = () => [
@@ -38,7 +38,7 @@ async function loadCriticalData({context}) {
 
   const [categories, featuredCollections, productsRes] = await Promise.all([
     fetchCollectionCards(storefront, HOME_CATEGORIES.map((c) => c.handle)),
-    fetchCollectionCards(storefront, FEATURED_COLLECTIONS),
+    fetchCollectionCards(storefront, HOME_FEATURED_COLLECTIONS),
     storefront.query(GI_PRODUCTS_QUERY, {
       variables: {first: 16, sortKey: 'BEST_SELLING'},
     }),
@@ -58,7 +58,7 @@ async function loadCriticalData({context}) {
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     categoryCards,
-    featuredCollections: featuredCollections.slice(0, 3),
+    featuredCollections,
     products,
   };
 }
@@ -86,8 +86,7 @@ export default function Homepage() {
           <div className="home-hero-grid">
             <div>
               <h1 className="fade-up" style={{animationDelay: '80ms'}}>
-                Promocionales<br />
-                que <em>generan</em><br />
+                Promocionales que <em>generan</em><br />
                 memoria.
               </h1>
 
@@ -131,7 +130,6 @@ export default function Homepage() {
       <section id="categorias" className="section container" style={{paddingTop: 60}}>
         <div className="section-head">
           <div>
-            <div className="eyebrow">// Catálogo · 01</div>
             <h2>
               Encuentra por <span className="text-accent">categoría.</span>
             </h2>
@@ -143,7 +141,7 @@ export default function Homepage() {
         </div>
         <ScrollReveal>
           <div className="cat-grid">
-            {categoryCards.slice(0, 6).map((c) => (
+            {categoryCards.slice(0, 4).map((c) => (
               <a
                 key={c.handle}
                 href={`/collections/${c.handle}`}
@@ -172,15 +170,17 @@ export default function Homepage() {
             ))}
           </div>
         </ScrollReveal>
-        {categoryCards.length > 6 && (
+        {categoryCards.length > 4 && (
           <div style={{display: 'flex', justifyContent: 'center', marginTop: 32}}>
+            {/* Lleva al listado completo de familias (/collections), no al
+                catálogo de productos: la home sólo muestra cuatro. */}
             <Button
               variant="ghost"
               size="lg"
               iconRight="arrow_right"
-              onClick={() => navigate('/catalogo')}
+              onClick={() => navigate('/collections')}
             >
-              Ver más categorías
+              Ver todas las categorías
             </Button>
           </div>
         )}
@@ -193,8 +193,10 @@ export default function Homepage() {
       <section className="section container" style={{paddingTop: 40}}>
         <div className="section-head">
           <div>
-            <div className="eyebrow">// Colecciones · 03</div>
-            <h2>Líneas para campañas precisas.</h2>
+            <h2>
+              <span className="text-accent">Colecciones</span> para campañas
+              precisas.
+            </h2>
           </div>
           <p>
             Cada colección une calidad, oferta y propósito. Diseñadas por nuestro
@@ -202,11 +204,13 @@ export default function Homepage() {
           </p>
         </div>
         <ScrollReveal>
-          <div className="collections">
+          {/* Misma retícula y proporción que las categorías: el cliente pidió
+              que estas tarjetas no fueran más anchas que aquéllas. */}
+          <div className="cat-grid collections-compact">
             {featuredCollections.map((c, i) => (
               <div
                 key={c.handle}
-                className={`coll-card ${i === 0 ? 'coll-card-large' : ''}`}
+                className="coll-card"
                 onClick={() => navigate(`/collections/${c.handle}`)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -218,12 +222,7 @@ export default function Homepage() {
                 tabIndex={0}
               >
                 <div className="coll-card-img">
-                  <PH
-                    src={c.image}
-                    alt={c.title}
-                    zoom
-                    className={i === 0 ? '' : 'ph-square'}
-                  />
+                  <PH src={c.image} alt={c.title} zoom className="ph-square" />
                   <div className="coll-card-tag">// {String(i + 1).padStart(2, '0')}</div>
                 </div>
                 <div className="coll-card-info">
@@ -252,13 +251,15 @@ export default function Homepage() {
           </div>
         </ScrollReveal>
         <div style={{display: 'flex', justifyContent: 'center', marginTop: 32}}>
+          {/* /collections pasó a presentarse como "Categorías", así que el
+              cierre de esta sección lleva al catálogo de productos. */}
           <Button
             variant="ghost"
             size="lg"
             iconRight="arrow_right"
-            onClick={() => navigate('/collections')}
+            onClick={() => navigate('/catalogo')}
           >
-            Ver todas las colecciones
+            Ver todo el catálogo
           </Button>
         </div>
       </section>

@@ -12,7 +12,11 @@
 }
 .home-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  /* La columna de texto pesa más que 1.05fr desde que el h1 lleva
+     "Promocionales que generan" en una sola línea: con el reparto anterior la
+     columna medía 627px y el título no habría pasado de 53px. Con 1.62fr sube
+     a ~757px y el título aguanta 64px, a cambio de un collage algo menor. */
+  grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr);
   gap: 48px;
   align-items: center;
 }
@@ -25,14 +29,20 @@
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 0.9;
-  font-size: clamp(48px, 7.5vw, 124px);
+  /* El techo bajó de 124px: la primera línea pasó de "Promocionales" (13
+     caracteres) a "Promocionales que generan" (25). Medido en el navegador,
+     esa línea ocupa 11.77em, así que en los 757px de la columna ensanchada
+     (ver .home-hero-grid) el máximo sin partirse son 64px. */
+  font-size: clamp(38px, 4.9vw, 64px);
   /* Same client-requested dark-grey as .section-head h2 (see below); the
      hero h1 otherwise inherits --ink (near-black) from html,body. */
   color: var(--ink-title);
 }
 .home-hero h1 em {
-  font-style: italic;
-  font-weight: 400;
+  /* Negritas rectas, no itálica delgada: el cliente pidió "generan" en
+     negritas conservando el naranja de marca. */
+  font-style: normal;
+  font-weight: 700;
   background: linear-gradient(180deg, var(--accent-deep), var(--accent));
   -webkit-background-clip: text;
   background-clip: text;
@@ -57,7 +67,10 @@
   position: relative;
   aspect-ratio: 1 / 1.05;
   width: 100%;
-  max-width: 560px;
+  /* Bajó de 560px al ensanchar la columna de texto del hero: sin esto el
+     collage se estiraría hasta el borde de su celda y desequilibraría la
+     composición frente al título, que ahora ocupa una línea más ancha. */
+  max-width: 470px;
   justify-self: end;
   animation: fadeIn 700ms 200ms var(--ease-out) both;
 }
@@ -188,8 +201,10 @@
   .hc-chip-2 { left: 0; }
   .hc-float-1 { right: 0; }
   .hc-float-2 { left: 0; }
-  /* En pantallas angostas la palabra más larga del h1 ("Promocionales")
-     no cabe con el mínimo de 48px del clamp global. */
+  /* En pantallas angostas la palabra más larga del h1 ("Promocionales") marca
+     el límite: por debajo de ~370px hay que bajar de los 38px del piso global.
+     Arriba de ese ancho el título puede crecer hasta 48px, que es más de lo que
+     daría el tramo fluido del clamp global a estos anchos. */
   .home-hero h1 { font-size: clamp(36px, 12.8vw, 48px); }
 }
 
@@ -308,6 +323,10 @@
      explicitly so the title doesn't silently depend on inherited color. */
   color: var(--ink-title);
 }
+/* Los 12px de arriba compensan el eyebrow. Varias secciones del home ya no lo
+   llevan, y ahí el h2 abre el bloque: sin esto queda desalineado con el párrafo
+   de la derecha, que el flex alinea por abajo. */
+.section-head > div > h2:first-child { margin-top: 0; }
 .section-head p { color: var(--ink-3); max-width: 380px; margin: 0; font-size: 15px; }
 
 /* ============== Categories — PHOTO mode ============== */
@@ -501,6 +520,15 @@
 .coll-card-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); margin-top: 4px; }
 .coll-card-large .coll-card-img { background-color: #fef4cf; }
 .coll-card-large .coll-card-name { font-size: 36px; }
+
+/* Colecciones destacadas del home: viven en `.cat-grid` (4 columnas) para
+   ocupar exactamente el mismo ancho que una tarjeta de categoría. El
+   min-height de 380px pensado para el layout ancho 2fr/1fr/1fr sobraría aquí,
+   y la imagen cuadrada deja la tarjeta a una altura comparable a la
+   proporción 5/6 de las categorías. */
+.collections-compact .coll-card { min-height: 0; }
+.collections-compact .coll-card-info { padding: 16px; }
+.collections-compact .coll-card-name { font-size: 20px; }
 
 /* How it works */
 .how {
@@ -715,6 +743,18 @@
   color: var(--bg-elev);
   border-color: var(--ink);
   transform: translateY(-4px);
+}
+/* El subrayado no lo pone la tarjeta: viene de `a:hover { text-decoration:
+   underline }` en reset.css, que gana sobre el `a { text-decoration: none }`
+   de gi-tokens.css por especificidad. Se anula sólo aquí —el cliente lo pidió
+   para esta tira— en vez de tocar la regla global, que afecta a páginas fuera
+   del alcance de este cambio. */
+.svc-strip-card:hover,
+.svc-strip-card:focus,
+.svc-strip-card:active,
+.svc-strip-card:hover *,
+.svc-strip-card:focus * {
+  text-decoration: none;
 }
 .svc-strip-top { display: flex; align-items: center; justify-content: space-between; }
 .svc-strip-num { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }

@@ -538,6 +538,19 @@ img, svg {
 
 .appbar-brand { flex-shrink: 0; }
 
+/* Botón "Crear cuenta": naranja de marca con texto blanco, por petición
+   explícita del cliente. Es una excepción deliberada a `.btn-accent`, que usa
+   --accent-ink (#2e3033) porque blanco sobre #ff8300 rinde ~2.9:1 y no alcanza
+   el 4.5:1 de WCAG AA para texto de 13px (el hover sobre --accent-deep tampoco:
+   ~3.9:1). Queda documentado para que no se revierta creyéndolo un descuido.
+   El menú móvil replica el color para que los dos CTA no queden en dos tonos. */
+.appbar-auth.btn-accent,
+.appbar-auth.btn-accent:hover,
+.mobile-menu-auth .btn-accent,
+.mobile-menu-auth .btn-accent:hover {
+  color: #fff;
+}
+
 @media (max-width: 880px) {
   .appbar-nav { display: none; }
   /* Sin la nav, las redes sociales y los dos botones de auth no caben junto

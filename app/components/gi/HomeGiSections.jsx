@@ -22,8 +22,10 @@ export function ServicesStrip() {
     <section className="section container">
       <div className="section-head">
         <div>
-          <div className="eyebrow">// Servicios</div>
-          <h2>Cinco servicios, una sola relación.</h2>
+          <h2>
+            Cinco servicios,{' '}
+            <span className="text-accent">una sola relación.</span>
+          </h2>
         </div>
         <p>
           De la selección de producto a la importación a medida: un solo
