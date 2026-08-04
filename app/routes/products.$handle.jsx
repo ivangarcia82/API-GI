@@ -13,6 +13,7 @@ import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
+import {buildProductSpecs} from '~/lib/specs';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
@@ -138,6 +139,8 @@ export default function Product() {
     techniques: getTechniques(readMetafield('tecnicas_de_impresion')),
     surface: String(readMetafield('material') ?? ''),
   };
+  // Ficha técnica visible: ya viene filtrada de vacíos y ceros.
+  const specs = buildProductSpecs(product);
   // Recompute decoration from the live quantity (qtyNum), not decoDetail.qty —
   // otherwise the total flashes a stale value for a frame on each qty change.
   const decoCalc = decoDetail
@@ -589,6 +592,15 @@ export default function Product() {
               <tbody>
                 <tr><td>SKU</td><td className="mono">{selectedVariant?.sku || product.handle}</td></tr>
                 <tr><td>Marca</td><td>Generando Ideas</td></tr>
+                {/* Material, Medidas y Área de impresión salen de metafields y
+                    sólo aparecen si traen dato: un campo vacío o en cero
+                    (0, 0x0x0) no pinta fila. */}
+                {specs.map((s) => (
+                  <tr key={s.label}>
+                    <td>{s.label}</td>
+                    <td>{s.value}</td>
+                  </tr>
+                ))}
                 <tr><td>Técnicas</td><td>{decoProduct.techniques.length ? decoProduct.techniques.join(' · ') : 'Consultar con asesor'}</td></tr>
                 <tr><td>Tiempo de producción</td><td>Según técnica y volumen</td></tr>
                 <tr><td>Origen</td><td>México</td></tr>
@@ -669,6 +681,13 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
   }
 `;
 
+/* Los metafields de abajo cubren dos usos distintos:
+   - `tecnicas_de_impresion` y `material` alimentan el motor de decoración
+     (`material` es la superficie con la que se calcula el precio).
+   - `material_front`, `medidas` y `area_de_impresion` son la ficha técnica que
+     lee el cliente; las procesa `~/lib/specs`, que oculta las vacías y las
+     que vienen en cero. Ojo: `material` y `material_front` NO son el mismo
+     campo ni tienen el mismo contenido. */
 const PRODUCT_FRAGMENT = `#graphql
   fragment Product on Product {
     id
@@ -697,7 +716,10 @@ const PRODUCT_FRAGMENT = `#graphql
     }
     metafields(identifiers: [
       {namespace: "custom", key: "tecnicas_de_impresion"},
-      {namespace: "custom", key: "material"}
+      {namespace: "custom", key: "material"},
+      {namespace: "custom", key: "material_front"},
+      {namespace: "custom", key: "medidas"},
+      {namespace: "custom", key: "area_de_impresion"}
     ]) { key namespace value }
     seo { description title }
   }
