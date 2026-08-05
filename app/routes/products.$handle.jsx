@@ -14,7 +14,7 @@ import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
 import {buildProductSpecs} from '~/lib/specs';
-import {resolveVariantImageIndex} from '~/lib/gallery';
+import {useVariantGallery} from '~/lib/gallery';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
@@ -126,18 +126,7 @@ export default function Product() {
   // The input can sit briefly empty ('') while editing; qtyNum is the numeric
   // value used for all pricing/math so a transient empty field never yields NaN.
   const qtyNum = typeof qty === 'number' && qty >= 1 ? qty : 1;
-  const [activeImg, setActiveImg] = useState(0);
-  /* Al cambiar de variante, la galería salta a la foto de esa variante.
-     El estado se ajusta durante el render —no en un useEffect— para que la
-     foto salga en el mismo frame que el precio y el SKU; con useEffect habría
-     un frame intermedio con la foto anterior, justo el parpadeo que estamos
-     corrigiendo. Un clic manual en una miniatura manda sobre esto hasta el
-     siguiente cambio de variante, porque syncedVariantId no se mueve. */
-  const [syncedVariantId, setSyncedVariantId] = useState(selectedVariant?.id);
-  if (selectedVariant?.id !== syncedVariantId) {
-    setSyncedVariantId(selectedVariant?.id);
-    setActiveImg(resolveVariantImageIndex(images, selectedVariant?.image));
-  }
+  const [activeImg, setActiveImg] = useVariantGallery(images, selectedVariant);
   const [tab, setTab] = useState('desc');
   const [decoDetail, setDecoDetail] = useState(null);
 
