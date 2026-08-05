@@ -700,7 +700,7 @@ const PRODUCT_FRAGMENT = `#graphql
     encodedVariantExistence
     encodedVariantAvailability
     featuredImage { url altText }
-    images(first: 12) { nodes { id url altText width height } }
+    images(first: 25) { nodes { id url altText width height } }
     options {
       name
       optionValues {
