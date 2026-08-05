@@ -14,6 +14,7 @@ import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
 import {buildProductSpecs} from '~/lib/specs';
+import {resolveVariantImageIndex} from '~/lib/gallery';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
@@ -126,6 +127,17 @@ export default function Product() {
   // value used for all pricing/math so a transient empty field never yields NaN.
   const qtyNum = typeof qty === 'number' && qty >= 1 ? qty : 1;
   const [activeImg, setActiveImg] = useState(0);
+  /* Al cambiar de variante, la galería salta a la foto de esa variante.
+     El estado se ajusta durante el render —no en un useEffect— para que la
+     foto salga en el mismo frame que el precio y el SKU; con useEffect habría
+     un frame intermedio con la foto anterior, justo el parpadeo que estamos
+     corrigiendo. Un clic manual en una miniatura manda sobre esto hasta el
+     siguiente cambio de variante, porque syncedVariantId no se mueve. */
+  const [syncedVariantId, setSyncedVariantId] = useState(selectedVariant?.id);
+  if (selectedVariant?.id !== syncedVariantId) {
+    setSyncedVariantId(selectedVariant?.id);
+    setActiveImg(resolveVariantImageIndex(images, selectedVariant?.image));
+  }
   const [tab, setTab] = useState('desc');
   const [decoDetail, setDecoDetail] = useState(null);
 
@@ -255,11 +267,11 @@ export default function Product() {
         {/* GALLERY */}
         <div className="pdp-gallery">
           <div className="pdp-main">
-            <PH src={mainImage} alt={product.title} aspect="ph-square" />
+            <PH key={mainImage} src={mainImage} alt={product.title} aspect="ph-square" />
           </div>
           {images.length > 1 && (
             <div className="pdp-thumbs">
-              {images.slice(0, 5).map((img, i) => (
+              {images.map((img, i) => (
                 <button
                   type="button"
                   key={img.url ?? i}
@@ -699,7 +711,7 @@ const PRODUCT_FRAGMENT = `#graphql
     encodedVariantExistence
     encodedVariantAvailability
     featuredImage { url altText }
-    images(first: 6) { nodes { url altText width height } }
+    images(first: 12) { nodes { id url altText width height } }
     options {
       name
       optionValues {
