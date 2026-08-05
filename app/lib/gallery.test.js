@@ -40,6 +40,12 @@ describe('resolveVariantImageIndex — cae a la primera foto', () => {
     expect(resolveVariantImageIndex(conNulo, {id: null})).toBe(0);
   });
 
+  it('ignora elementos nulos dentro de la galería sin reventar', () => {
+    const conHueco = [null, {id: IMG(2), url: 'rojo.jpg'}, undefined];
+    expect(resolveVariantImageIndex(conHueco, {id: IMG(2)})).toBe(1);
+    expect(resolveVariantImageIndex(conHueco, {id: IMG(99)})).toBe(0);
+  });
+
   it('cuando la galería viene vacía o no es un arreglo', () => {
     expect(resolveVariantImageIndex([], {id: IMG(2)})).toBe(0);
     expect(resolveVariantImageIndex(undefined, {id: IMG(2)})).toBe(0);

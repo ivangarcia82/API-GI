@@ -16,8 +16,9 @@
 export function resolveVariantImageIndex(images, variantImage) {
   const id = variantImage?.id;
   if (!id || !Array.isArray(images) || images.length === 0) return 0;
-  // `img?.id &&` no es redundante: `Image.id` es nullable en la Storefront
-  // API y sin ese guardia dos nulos se emparejarían entre sí.
+  // `img?.id &&` protege de un elemento nulo dentro de la galería: sin él,
+  // un `null` en el arreglo revienta al leer `img.id`. Que la variante traiga
+  // id nulo ya lo resolvió el early-return de arriba.
   const i = images.findIndex((img) => img?.id && img.id === id);
   return i >= 0 ? i : 0;
 }
