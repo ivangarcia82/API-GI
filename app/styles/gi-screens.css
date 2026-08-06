@@ -1650,13 +1650,18 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
 
 .pdp-info { display: flex; flex-direction: column; gap: 24px; }
 .pdp-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* Los títulos llegan del catálogo en MAYÚSCULAS ("TAPETE DE ESCRITORIO RADIAN
+   TAP-RAD"). A 52px eso ocupaba tres renglones y se leía como un grito; las
+   versales necesitan menos cuerpo que las minúsculas para pesar lo mismo, y
+   algo de tracking positivo para no apelmazarse. */
 .pdp-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(28px, 3.6vw, 52px);
-  letter-spacing: -0.025em;
-  line-height: 1;
+  font-size: clamp(26px, 2.6vw, 36px);
+  letter-spacing: -0.005em;
+  line-height: 1.1;
   margin: 0;
+  text-wrap: balance;
 }
 .pdp-sku {
   font-family: var(--font-mono);

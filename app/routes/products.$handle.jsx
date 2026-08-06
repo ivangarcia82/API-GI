@@ -14,6 +14,7 @@ import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
 import {buildProductSpecs} from '~/lib/specs';
+import {resumen, separarFrasesPegadas} from '~/lib/text';
 import {useVariantGallery} from '~/lib/gallery';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {ProductCard} from '~/components/gi/ProductCard';
@@ -309,7 +310,12 @@ export default function Product() {
             </span>
           </div>
 
-          {product.description && <p className="pdp-desc">{product.description}</p>}
+          {/* Sólo el arranque de la descripción. El texto completo vive en la
+              pestaña "Descripción" de abajo; pintarlo entero aquí lo repetía
+              palabra por palabra en la misma pantalla. */}
+          {product.description && (
+            <p className="pdp-desc">{resumen(product.description)}</p>
+          )}
 
           {/* PRICE */}
           {isLoggedIn ? (
@@ -584,7 +590,7 @@ export default function Product() {
               dangerouslySetInnerHTML={{
                 __html:
                   product.descriptionHtml ||
-                  `<p>${product.description || 'Producto promocional personalizable.'}</p>`,
+                  `<p>${separarFrasesPegadas(product.description) || 'Producto promocional personalizable.'}</p>`,
               }}
             />
           )}
@@ -603,7 +609,6 @@ export default function Product() {
                   </tr>
                 ))}
                 <tr><td>Técnicas</td><td>{decoProduct.techniques.length ? decoProduct.techniques.join(' · ') : 'Consultar con asesor'}</td></tr>
-                <tr><td>Tiempo de producción</td><td>Según técnica y volumen</td></tr>
                 <tr><td>Origen</td><td>México</td></tr>
               </tbody>
             </table>
@@ -611,7 +616,15 @@ export default function Product() {
           {tab === 'logistics' && (
             <table>
               <tbody>
-                <tr><td>Tiempo de producción</td><td>Según técnica y volumen</td></tr>
+                {/* "Según técnica y volumen" no es una respuesta: el comprador
+                    llega aquí porque necesita saber si le da tiempo, y unas
+                    pantallas después le pedimos una fecha objetivo. Mientras no
+                    haya plazos por técnica en los metafields, se dice cuándo
+                    tendrá el dato y quién se lo da. */}
+                <tr>
+                  <td>Tiempo de producción</td>
+                  <td>Tu asesor lo confirma al cotizar, en menos de 24 h hábiles</td>
+                </tr>
                 <tr><td>Flete</td><td>CDMX y Zona Metropolitana</td></tr>
                 <tr><td>Devoluciones</td><td>Reposición sin costo en defectos de fabricación</td></tr>
               </tbody>
