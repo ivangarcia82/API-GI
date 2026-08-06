@@ -1344,12 +1344,16 @@
   letter-spacing: 0.04em;
 }
 
+/* Más densidad: con ~7,000 productos el comprador escanea, y a tres por fila
+   veía tres resultados por pantalla. auto-fill reparte según el ancho real del
+   contenedor, que no es el mismo en el catálogo (con panel de filtros al lado,
+   ~960px → 4 columnas) que a ancho completo (~1320px → 5). */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 24px;
 }
-@media (max-width: 1024px) { .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* Móvil: 2 columnas compactas (1 columna producía tarjetas de ~1.5 pantallas
    de alto y páginas de 16,000px). */
 @media (max-width: 540px) {
@@ -1361,6 +1365,45 @@
 }
 
 .product-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* Barra de acciones de la selección múltiple. Fija abajo y centrada: en móvil
+   cae en la zona del pulgar, que es donde el comprador la necesita. */
+.bulk-bar {
+  position: fixed;
+  z-index: 60;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 12px 12px 20px;
+  border-radius: var(--r-pill);
+  background: var(--bg-elev);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-3);
+  animation: fadeUp 220ms var(--ease-out) both;
+}
+.bulk-bar-count { font-weight: 600; font-size: 14px; white-space: nowrap; }
+.bulk-bar-clear {
+  font-size: 13px;
+  color: var(--ink-3);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.bulk-bar-clear:hover { color: var(--ink); }
+/* Con la barra visible, los toasts suben para no taparla. */
+body:has(.bulk-bar) .toast-stack { bottom: 96px; }
+@media (max-width: 540px) {
+  .bulk-bar { left: 16px; right: 16px; transform: none; width: auto; max-width: none; gap: 10px; }
+  .bulk-bar .btn { margin-left: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bulk-bar { animation: none; }
+}
 
 .pcard {
   background: var(--bg-elev);
@@ -1387,6 +1430,7 @@
 .pcard-fav {
   position: absolute;
   top: 12px; right: 12px;
+  z-index: 2;
   width: 36px; height: 36px;
   border-radius: 50%;
   background: rgba(255,255,255,0.9);
@@ -1404,16 +1448,88 @@
   bottom: 12px; left: 12px; right: 12px;
   display: flex;
   gap: 8px;
+  z-index: 2;
   opacity: 0;
   transform: translateY(8px);
-  transition: all var(--dur) var(--ease-out);
+  transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
 }
-.pcard:hover .pcard-quickactions { opacity: 1; transform: translateY(0); }
-/* Touch no tiene hover: el tap sobre la tarjeta ya navega al detalle, así que
-   las quick-actions (invisibles e inalcanzables) se retiran del flujo. */
+.pcard:hover .pcard-quickactions,
+.pcard:focus-within .pcard-quickactions { opacity: 1; transform: translateY(0); }
+/* Táctil no tiene hover. Antes se ocultaban del todo, lo que dejaba al
+   comprador en móvil sin más camino que abrir la ficha para cada producto:
+   aquí se muestran siempre, apoyadas sobre un velo para que se lean encima
+   de cualquier foto. */
 @media (hover: none) {
-  .pcard-quickactions { display: none; }
+  .pcard-quickactions {
+    opacity: 1;
+    transform: none;
+    background: linear-gradient(to top, rgba(255,255,255,0.96), rgba(255,255,255,0));
+    left: 0; right: 0; bottom: 0;
+    padding: 24px 12px 12px;
+  }
 }
+@media (prefers-reduced-motion: reduce) {
+  .pcard-quickactions { transition: opacity var(--dur-fast) linear; transform: none; }
+  .pcard:hover .pcard-quickactions,
+  .pcard:focus-within .pcard-quickactions { transform: none; }
+}
+
+/* Enlace estirado: el <a> del título cubre la tarjeta entera, así que
+   cmd-click / clic central / "abrir en pestaña nueva" funcionan igual que en
+   cualquier enlace. Todo lo interactivo que va encima lleva z-index. */
+.pcard-link { display: inline-block; }
+.pcard-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.pcard:has(.pcard-link:focus-visible),
+.pcard-list:has(.pcard-link:focus-visible) {
+  outline: 2px solid var(--accent-deep);
+  outline-offset: 2px;
+}
+.pcard-link:focus-visible { outline: none; }
+
+/* Selección múltiple para el añadido en lote del catálogo. */
+.pcard-select {
+  position: absolute;
+  top: 12px; left: 12px;
+  z-index: 2;
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: transparent;
+  transition: background var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+}
+.pcard-select input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.pcard-select.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg-elev);
+}
+.pcard-select:has(input:focus-visible) {
+  outline: 2px solid var(--accent-deep);
+  outline-offset: 2px;
+}
+/* Con el checkbox visible, los badges ceden el hueco de la esquina. */
+.pcard:has(.pcard-select) .pcard-badges { left: 46px; }
+.pcard.is-selected,
+.pcard-list.is-selected { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.pcard-list { position: relative; }
+.pcard-list .pcard-select { top: 12px; left: 12px; }
 .pcard-info {
   padding: 16px;
   display: flex;

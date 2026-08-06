@@ -58,6 +58,8 @@ export function GiHeader({isLoggedIn}) {
             <button
               className="appbar-iconbtn"
               aria-label="Buscar"
+              aria-keyshortcuts="Meta+K Control+K"
+              title="Buscar (⌘K)"
               onClick={openSearch}
             >
               <Icon name="search" size={18} />
@@ -65,11 +67,19 @@ export function GiHeader({isLoggedIn}) {
 
             <button
               className="appbar-iconbtn"
-              aria-label="Cotización"
+              aria-label={
+                quoteCount > 0
+                  ? `Cotización · ${quoteCount} ${quoteCount === 1 ? 'pieza' : 'piezas'}`
+                  : 'Cotización'
+              }
               onClick={openQuoteDrawer}
             >
               <Icon name="quote" size={18} />
-              {quoteCount > 0 && <span className="appbar-badge">{quoteCount}</span>}
+              {quoteCount > 0 && (
+                <span className="appbar-badge" aria-hidden="true">
+                  {quoteCount}
+                </span>
+              )}
             </button>
 
             {!isLoggedIn ? (

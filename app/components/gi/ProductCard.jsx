@@ -1,5 +1,5 @@
 /* Generando Ideas — product card (grid + list views) */
-import {useNavigate} from 'react-router';
+import {Link, useNavigate} from 'react-router';
 import {Icon} from './Icon';
 import {Button, PH} from './ui';
 import {useApp, useToast} from '~/lib/AppContext';
@@ -88,35 +88,67 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
   );
 }
 
-export function ProductCard({product, view = 'grid'}) {
-  const navigate = useNavigate();
+/**
+ * Checkbox that opts a product into the catalog's bulk "añadir a cotización".
+ * No hace falta frenar la propagación: el enlace estirado es un hermano con
+ * menos z-index (ver .pcard-select en gi-screens.css), no un ancestro, así que
+ * el clic nunca llega a él.
+ */
+function SelectBox({product, selected, onToggle}) {
+  return (
+    <label className={`pcard-select ${selected ? 'on' : ''}`}>
+      <input
+        type="checkbox"
+        checked={selected}
+        onChange={() => onToggle(product)}
+        aria-label={`Seleccionar ${product.title} para cotizar`}
+      />
+      <Icon name="check" size={13} strokeWidth={3} />
+    </label>
+  );
+}
+
+/**
+ * @param {object} props
+ * @param {boolean} [props.selectable] show the bulk-selection checkbox
+ * @param {boolean} [props.selected]   current selection state
+ * @param {(p: object) => void} [props.onToggleSelect]
+ */
+export function ProductCard({
+  product,
+  view = 'grid',
+  selectable = false,
+  selected = false,
+  onToggleSelect,
+}) {
   const {isLoggedIn, favs, toggleFav} = useApp();
   const toast = useToast();
   const isFav = favs.includes(product.id);
-  const go = () => navigate(`/products/${product.handle}`);
-  const onCardKey = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      go();
-    }
-  };
+
+  /* The title is a real <a> whose ::after covers the whole card ("stretched
+     link"). That keeps cmd-click, middle-click, right-click → open in new tab
+     and the browser status bar working — the behaviour a B2B buyer relies on
+     to compare a dozen products — while the card still reads as one target.
+     Everything interactive on top of it needs z-index (see gi-screens.css). */
+  const titleLink = (
+    <Link className="pcard-link" to={`/products/${product.handle}`} prefetch="intent">
+      {product.title}
+    </Link>
+  );
 
   if (view === 'list') {
     return (
-      <div
-        className="pcard-list lift"
-        onClick={go}
-        role="button"
-        tabIndex={0}
-        onKeyDown={onCardKey}
-      >
+      <article className={`pcard-list lift ${selected ? 'is-selected' : ''}`}>
+        {selectable && (
+          <SelectBox product={product} selected={selected} onToggle={onToggleSelect} />
+        )}
         <PH src={product.image} alt={product.imageAlt} zoom />
         <div style={{display: 'flex', flexDirection: 'column', gap: 4}}>
           <div style={{display: 'flex', gap: 6}}>
             {product.isNew && <span className="tag tag-accent">Nuevo</span>}
             {product.isOffer && <span className="tag tag-ink">Oferta</span>}
           </div>
-          <div className="pcard-name">{product.title}</div>
+          <div className="pcard-name">{titleLink}</div>
           <div className="pcard-sku">{product.sku}</div>
           {product.colors.length > 0 && <Swatches colors={product.colors} size={16} />}
         </div>
@@ -135,24 +167,21 @@ export function ProductCard({product, view = 'grid'}) {
           )}
           <AddControl product={product} variant="primary" />
         </div>
-      </div>
+      </article>
     );
   }
 
   return (
-    <div
-      className="pcard"
-      onClick={go}
-      role="button"
-      tabIndex={0}
-      onKeyDown={onCardKey}
-    >
+    <article className={`pcard ${selected ? 'is-selected' : ''}`}>
       <div className="pcard-img">
         <PH src={product.image} alt={product.imageAlt} zoom />
         <div className="pcard-badges">
           {product.isNew && <span className="tag tag-accent">Nuevo</span>}
           {product.isOffer && <span className="tag tag-ink">Oferta</span>}
         </div>
+        {selectable && (
+          <SelectBox product={product} selected={selected} onToggle={onToggleSelect} />
+        )}
         <button
           className={`pcard-fav ${isFav ? 'on' : ''}`}
           onClick={(e) => {
@@ -162,7 +191,12 @@ export function ProductCard({product, view = 'grid'}) {
               icon: 'heart_fill',
             });
           }}
-          aria-label="Favorito"
+          aria-pressed={isFav}
+          aria-label={
+            isFav
+              ? `Quitar ${product.title} de favoritos`
+              : `Guardar ${product.title} en favoritos`
+          }
         >
           <Icon name={isFav ? 'heart_fill' : 'heart_outline'} size={16} />
         </button>
@@ -177,7 +211,7 @@ export function ProductCard({product, view = 'grid'}) {
       </div>
       <div className="pcard-info">
         <div className="pcard-sku">{product.sku}</div>
-        <div className="pcard-name">{product.title}</div>
+        <div className="pcard-name">{titleLink}</div>
         {product.colors.length > 0 && <Swatches colors={product.colors} />}
         <div className="pcard-foot">
           {isLoggedIn ? (
@@ -194,6 +228,6 @@ export function ProductCard({product, view = 'grid'}) {
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

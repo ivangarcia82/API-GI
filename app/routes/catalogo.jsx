@@ -1,10 +1,11 @@
 import {useLoaderData, useSearchParams, useNavigate, useNavigation} from 'react-router';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {getPaginationVariables, Pagination} from '@shopify/hydrogen';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {CatalogFilters, ActiveFilterChips} from '~/components/gi/CatalogFilters';
+import {useApp, useToast} from '~/lib/AppContext';
 import {GI_CATALOG_SEARCH_QUERY} from '~/lib/giFragments';
 import {normalizeProduct, HOME_CATEGORIES} from '~/lib/gi';
 import {
@@ -129,9 +130,70 @@ export default function Catalogo() {
   const [, setParams] = useSearchParams();
   const navigate = useNavigate();
   const navigation = useNavigation();
+  const {isLoggedIn, addToQuote, openQuoteDrawer} = useApp();
+  const toast = useToast();
   const [view, setView] = useState('grid');
   const [panelAbierto, setPanelAbierto] = useState(false);
   const [texto, setTexto] = useState(filtros.q);
+  /* Selección múltiple: se guarda el producto entero, no sólo el id, porque la
+     barra de acciones tiene que poder cotizar productos que ya salieron de la
+     página visible (paginación por cursor). */
+  const [seleccion, setSeleccion] = useState(() => new Map());
+  const [añadiendo, setAñadiendo] = useState(false);
+
+  const alternarSeleccion = useCallback((producto) => {
+    setSeleccion((prev) => {
+      const next = new Map(prev);
+      if (next.has(producto.id)) next.delete(producto.id);
+      else next.set(producto.id, producto);
+      return next;
+    });
+  }, []);
+
+  const limpiarSeleccion = useCallback(() => setSeleccion(new Map()), []);
+
+  const cotizarSeleccion = async () => {
+    const elegidos = [...seleccion.values()];
+    const cotizables = elegidos.filter((p) => p.firstVariantId);
+    const sinVariante = elegidos.length - cotizables.length;
+    setAñadiendo(true);
+    let ok = 0;
+    try {
+      // En serie: cada respuesta del servidor trae la lista autoritativa de
+      // líneas, así que lanzarlas en paralelo haría que la última pisara al
+      // resto.
+      for (const p of cotizables) {
+        await addToQuote({
+          variantId: p.firstVariantId,
+          productId: p.id,
+          handle: p.handle,
+          title: p.title,
+          sku: p.sku,
+          image: p.image,
+          price: p.price,
+          qty: 1,
+        });
+        ok += 1;
+      }
+      limpiarSeleccion();
+      openQuoteDrawer();
+      toast(
+        sinVariante > 0
+          ? `${ok} en tu cotización · ${sinVariante} necesitan que elijas variante`
+          : `${ok} ${ok === 1 ? 'producto añadido' : 'productos añadidos'} a tu cotización`,
+        {icon: 'quote', accent: true},
+      );
+    } catch (err) {
+      toast(
+        ok > 0
+          ? `Se añadieron ${ok} y falló el resto: ${err.message || 'inténtalo de nuevo'}`
+          : err.message || 'No se pudo añadir a la cotización',
+        {icon: 'alert'},
+      );
+    } finally {
+      setAñadiendo(false);
+    }
+  };
 
   // El input es controlado, pero la verdad vive en la URL: al navegar con
   // atrás/adelante o al quitar el chip de búsqueda hay que resincronizarlo.
@@ -341,7 +403,14 @@ export default function Catalogo() {
                       data-loading={cargando ? '' : undefined}
                     >
                       {visible.map((p) => (
-                        <ProductCard key={p.id} product={p} view={view === 'list' ? 'list' : undefined} />
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          view={view === 'list' ? 'list' : undefined}
+                          selectable={isLoggedIn}
+                          selected={seleccion.has(p.id)}
+                          onToggleSelect={alternarSeleccion}
+                        />
                       ))}
                     </div>
                   )}
@@ -359,6 +428,25 @@ export default function Catalogo() {
           </Pagination>
         </div>
       </div>
+
+      {seleccion.size > 0 && (
+        <div className="bulk-bar" role="region" aria-label="Selección para cotizar">
+          <span className="bulk-bar-count">
+            {seleccion.size} {seleccion.size === 1 ? 'seleccionado' : 'seleccionados'}
+          </span>
+          <button type="button" className="bulk-bar-clear" onClick={limpiarSeleccion}>
+            Limpiar
+          </button>
+          <Button
+            variant="accent"
+            icon="quote"
+            disabled={añadiendo}
+            onClick={cotizarSeleccion}
+          >
+            {añadiendo ? 'Añadiendo…' : 'Añadir a cotización'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

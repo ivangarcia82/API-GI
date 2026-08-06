@@ -19,7 +19,7 @@ const EMPTY_ITEMS = {
 };
 
 export function GiSearchModal() {
-  const {searchOpen, closeSearch, isLoggedIn} = useApp();
+  const {searchOpen, closeSearch, openSearch, isLoggedIn} = useApp();
   const navigate = useNavigate();
   const fetcher = useFetcher({key: 'gi-search'});
   const inputRef = useRef(null);
@@ -39,6 +39,31 @@ export function GiSearchModal() {
       document.body.style.overflow = '';
     };
   }, [searchOpen]);
+
+  // Atajos globales: ⌘K / Ctrl+K y "/" abren la búsqueda desde cualquier
+  // pantalla. Se ignoran mientras el foco está en un campo de texto para no
+  // secuestrar la tecla "/" que el usuario está escribiendo.
+  useEffect(() => {
+    if (searchOpen) return undefined;
+    const isTyping = () => {
+      const el = document.activeElement;
+      if (!el) return false;
+      return (
+        el.isContentEditable ||
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)
+      );
+    };
+    const onKey = (e) => {
+      const cmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+      const slash = e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey;
+      if (!cmdK && !slash) return;
+      if (slash && isTyping()) return;
+      e.preventDefault();
+      openSearch();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [searchOpen, openSearch]);
 
   // Focus the input on open, close on Escape, and reset the term on close.
   useEffect(() => {
