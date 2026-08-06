@@ -31,4 +31,18 @@ describe('CountUp', () => {
     render(<CountUp value={2700} prefix="+" />);
     expect(screen.getByText('+2,700')).toBeInTheDocument();
   });
+
+  /* La banda de estadísticas de la home se publicaba como "+0 / +0 / +0 / 0.0"
+     en cualquier render que no hiciera scroll: captura de página completa,
+     impresión, exportar a PDF. El valor inicial es el final justamente para
+     que eso no vuelva a pasar. */
+  it('muestra la cifra real, no 0, cuando nadie ha hecho scroll', () => {
+    window.matchMedia = vi.fn().mockImplementation((q) => ({
+      matches: false, media: q, addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      addListener: vi.fn(), removeListener: vi.fn(), onchange: null, dispatchEvent: vi.fn(),
+    }));
+    render(<CountUp value={67000} prefix="+" />);
+    expect(screen.getByText('+67,000')).toBeInTheDocument();
+    expect(screen.queryByText('+0')).toBeNull();
+  });
 });

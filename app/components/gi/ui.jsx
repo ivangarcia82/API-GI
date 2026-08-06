@@ -1,6 +1,10 @@
 /* Generando Ideas — small shared UI primitives */
-import {useState, useEffect, useRef} from 'react';
+import {useState, useEffect, useLayoutEffect, useRef} from 'react';
 import {Icon} from './Icon';
+import {hasUserScrolled, prefersReducedMotion} from '~/lib/reveal';
+
+/* useLayoutEffect avisa en SSR; en el servidor cae a useEffect, donde no corre. */
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export function Button({
   children,
@@ -25,24 +29,54 @@ export function Button({
   );
 }
 
-/** Animated number that counts up to `to` once on mount. */
+/**
+ * Animated number that counts up to `to` when it scrolls into view.
+ *
+ * Arranca en `to`, no en 0, y sólo cuenta si el usuario ha hecho scroll: el
+ * HTML del servidor y cualquier render que no se desplace (captura de página
+ * completa, impresión, exportar a PDF) muestran la cifra real. La banda de
+ * estadísticas de la home se publicaba como "+0 / +0 / +0 / 0.0" por arrancar
+ * en cero. El reset a 0 va en un layout effect, antes del primer pintado, para
+ * que no se vea el valor final parpadear antes de la cuenta.
+ */
 export function CountUp({to, suffix = '', prefix = '', duration = 1400}) {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
+  const ref = useRef(null);
+  const [val, setVal] = useState(to);
+  useIsoLayoutEffect(() => {
+    if (prefersReducedMotion()) return undefined;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+
     let raf;
-    let start;
-    const ease = (t) => 1 - Math.pow(1 - t, 3);
-    const tick = (now) => {
-      if (start === undefined) start = now;
-      const t = Math.min(1, (now - start) / duration);
-      setVal(Math.round(to * ease(t)));
-      if (t < 1) raf = requestAnimationFrame(tick);
+    const animar = () => {
+      setVal(0);
+      let start;
+      const ease = (t) => 1 - Math.pow(1 - t, 3);
+      const tick = (now) => {
+        if (start === undefined) start = now;
+        const t = Math.min(1, (now - start) / duration);
+        setVal(Math.round(to * ease(t)));
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        if (hasUserScrolled()) animar();
+      },
+      {threshold: 0.6},
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, [to, duration]);
   return (
-    <span>
+    <span ref={ref}>
       {prefix}
       {val.toLocaleString('es-MX')}
       {suffix}
@@ -50,7 +84,16 @@ export function CountUp({to, suffix = '', prefix = '', duration = 1400}) {
   );
 }
 
-/** Reveal children on scroll into view. */
+/**
+ * Reveal children on scroll into view.
+ *
+ * Anima SÓLO transform, nunca opacidad. Un reveal que apaga la opacidad
+ * esconde el contenido hasta que el IntersectionObserver dispara, y hay
+ * renders donde no dispara nunca: capturas de página completa, impresión,
+ * exportar a PDF, pestañas en segundo plano. La home salía con cinco
+ * secciones en blanco por esto. Con transform sólo, lo peor que pasa es que
+ * un bloque queda 24px desplazado, que nadie nota y todo el mundo puede leer.
+ */
 export function ScrollReveal({children, delay = 0, className = ''}) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -79,9 +122,8 @@ export function ScrollReveal({children, delay = 0, className = ''}) {
       ref={ref}
       className={className}
       style={{
-        opacity: inView ? 1 : 0,
         transform: inView ? 'translateY(0)' : 'translateY(24px)',
-        transition: `opacity 700ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 700ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        transition: `transform 700ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
       }}
     >
       {children}

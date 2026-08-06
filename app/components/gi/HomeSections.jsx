@@ -182,10 +182,10 @@ export function ProductSpotlight({product}) {
               <div
                 key={s.l}
                 className="spotlight-spec"
+                /* Sólo transform: ver la nota de ScrollReveal en ui.jsx. */
                 style={{
-                  opacity: inView ? 1 : 0,
                   transform: inView ? 'translateX(0)' : 'translateX(-12px)',
-                  transition: `all 500ms cubic-bezier(0.16,1,0.3,1) ${i * 90 + 200}ms`,
+                  transition: `transform 500ms cubic-bezier(0.16,1,0.3,1) ${i * 90 + 200}ms`,
                 }}
               >
                 <span className="ss-l">{s.l}</span>
@@ -262,10 +262,10 @@ function LookbookCard({lb, index, onClick}) {
           onClick?.();
         }
       }}
+      /* Sólo transform: ver la nota de ScrollReveal en ui.jsx. */
       style={{
-        opacity: inView ? 1 : 0,
         transform: inView ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.98)',
-        transition: `opacity 700ms cubic-bezier(0.16,1,0.3,1) ${index * 70}ms, transform 700ms cubic-bezier(0.16,1,0.3,1) ${index * 70}ms`,
+        transition: `transform 700ms cubic-bezier(0.16,1,0.3,1) ${index * 70}ms`,
       }}
     >
       <div className="lookbook-img">

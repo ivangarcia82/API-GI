@@ -913,14 +913,17 @@
   background: var(--ink); color: white; border-color: var(--ink);
 }
 
-/* Reveal on scroll */
+/* Reveal on scroll.
+   Sólo transform, nunca opacidad: el `.in` lo pone un IntersectionObserver
+   (useMarketingReveal) y hay renders donde no llega a dispararse — captura de
+   página completa, impresión, exportar a PDF, pestaña en segundo plano. Con
+   `opacity: 0` de partida esas secciones salían literalmente en blanco. */
 .gi-mkt .reveal {
-  opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.8s cubic-bezier(.2,.8,.2,1), transform 0.8s cubic-bezier(.2,.8,.2,1);
+  transition: transform 0.8s cubic-bezier(.2,.8,.2,1);
 }
 .gi-mkt .reveal.in {
-  opacity: 1; transform: none;
+  transform: none;
 }
 
 /* Process */
@@ -1307,13 +1310,13 @@
   z-index: 1;
 }
 
-/* Base hidden state for the scroll stagger (transform/opacity only).
-   Guarded so reduced-motion users see fully-visible steps. */
+/* Base state for the scroll stagger. Sólo transform: un reveal que apaga la
+   opacidad deja el paso invisible si el ScrollTrigger no llega a dispararse
+   (captura completa, impresión, pestaña en segundo plano). */
 @media (prefers-reduced-motion: no-preference) {
   .gi-mkt [data-proc-step] {
-    opacity: 0;
     transform: translateY(26px);
-    will-change: transform, opacity;
+    will-change: transform;
   }
 }
 
@@ -2184,18 +2187,14 @@
   text-wrap: balance;
 }
 
-/* ===== Calm reveal (transform/opacity only, motion-guarded below) ===== */
+/* ===== Calm reveal (sólo transform, motion-guarded below) ===== */
 @media (prefers-reduced-motion: no-preference) {
   .gi-mkt .svc-rev {
-    opacity: 0;
     transform: translateY(22px);
-    transition:
-      opacity 0.7s cubic-bezier(.2,.8,.2,1),
-      transform 0.7s cubic-bezier(.2,.8,.2,1);
-    will-change: transform, opacity;
+    transition: transform 0.7s cubic-bezier(.2,.8,.2,1);
+    will-change: transform;
   }
   .gi-mkt .svc-rev.in {
-    opacity: 1;
     transform: none;
     will-change: auto;
   }
@@ -2209,16 +2208,12 @@
      (Astro's `:global(.svc)` scope-escape is translated to a plain
      descendant selector — everything already lives under .gi-mkt.) */
   .gi-mkt .svc-mosaic-mount .svc {
-    opacity: 0;
     transform: translateY(26px);
-    transition:
-      opacity 0.7s cubic-bezier(.2,.8,.2,1),
-      transform 0.7s cubic-bezier(.2,.8,.2,1);
+    transition: transform 0.7s cubic-bezier(.2,.8,.2,1);
     transition-delay: calc(var(--svc-i, 0) * 0.07s);
-    will-change: transform, opacity;
+    will-change: transform;
   }
   .gi-mkt .svc-mosaic-mount.in .svc {
-    opacity: 1;
     transform: none;
     will-change: auto;
   }
@@ -2732,20 +2727,16 @@
   margin: 0;
 }
 
-/* Per-card stagger for the GSAP grid reveal. Purely transform/opacity and
-   only consumed when motion is allowed (see the script guard). The custom
-   property is set inline (--i) so re-rendered nodes inherit it too. */
+/* Per-card stagger for the GSAP grid reveal. Sólo transform, y sólo cuando se
+   permite movimiento (ver la guarda del script). La custom property va inline
+   (--i) para que los nodos re-renderizados la hereden. */
 @media (prefers-reduced-motion: no-preference) {
   .gi-mkt .blog-grid .blog-card {
-    opacity: 0;
     transform: translateY(24px);
   }
   .gi-mkt .blog-grid.in .blog-card {
-    opacity: 1;
     transform: none;
-    transition:
-      opacity 0.6s cubic-bezier(.2, .8, .2, 1),
-      transform 0.6s cubic-bezier(.2, .8, .2, 1);
+    transition: transform 0.6s cubic-bezier(.2, .8, .2, 1);
     transition-delay: calc(var(--i, 0) * 0.06s);
   }
 }
