@@ -14,7 +14,13 @@
   --ink: #2e3033;
   --ink-2: #4a4d51;
   --ink-3: #636569;
-  --ink-4: #8d8f93;
+  /* --ink-4 pinta los metadatos pequeños: SKU, conteos de faceta, etiquetas de
+     10-12px. En #8d8f93 daba 3.0-3.2:1 sobre --bg y sobre blanco, por debajo
+     del 4.5:1 que pide WCAG AA — y el SKU es justo el dato con el que un
+     comprador identifica un producto ante su asesor. #6f7175 mantiene el tono
+     Cool Gray de la marca y sube a 4.6:1 sobre --bg / 4.9:1 sobre blanco.
+     No lo aclares sin volver a medirlo. */
+  --ink-4: #6f7175;
   --ink-5: #b6b8bc;
   /* Section/hero titles on the home screen: client feedback said the default
      --ink (#2e3033) reads as near-black. This is the same softer dark-grey

@@ -289,7 +289,11 @@ export function AppProvider({
     <AppCtx.Provider value={value}>
       <ToastCtx.Provider value={pushToast}>
         {children}
-        <div className="toast-stack">
+        {/* Los toasts son el único canal de confirmación y de error del flujo
+            de cotización, así que la región tiene que anunciarse: sin esto un
+            lector de pantalla no se entera ni de "producto añadido" ni de
+            "no se pudo actualizar la cantidad". */}
+        <div className="toast-stack" role="status" aria-live="polite" aria-atomic="false">
           {toasts.map((t) => (
             <div key={t.id} className={`toast ${t.accent ? 'toast-accent' : ''}`}>
               {t.icon && <Icon name={t.icon} size={16} />}

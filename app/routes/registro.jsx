@@ -109,7 +109,7 @@ export default function Registro() {
                     placeholder="Mariana"
                   />
                   {errores.name && (
-                    <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                    <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
                       {errores.name}
                     </span>
                   )}
@@ -125,7 +125,7 @@ export default function Registro() {
                     placeholder="Ruiz"
                   />
                   {errores.lastName && (
-                    <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                    <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
                       {errores.lastName}
                     </span>
                   )}
@@ -146,7 +146,7 @@ export default function Registro() {
                   Usa el correo de la empresa para acelerar la aprobación.
                 </span>
                 {errores.email && (
-                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
                     {errores.email}
                   </span>
                 )}
@@ -186,7 +186,7 @@ export default function Registro() {
                   </button>
                 </div>
                 {errores.password && (
-                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
                     {errores.password}
                   </span>
                 )}
@@ -218,7 +218,7 @@ export default function Registro() {
                   placeholder="Acme Corp"
                 />
                 {errores.company && (
-                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
                     {errores.company}
                   </span>
                 )}
@@ -252,7 +252,7 @@ export default function Registro() {
                   <option>Más de $500,000 MXN</option>
                 </select>
                 {errores.volume && (
-                  <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
                     {errores.volume}
                   </span>
                 )}
@@ -310,7 +310,7 @@ export default function Registro() {
           )}
 
           {actionData?.error && (
-            <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+            <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
               {actionData.error}
             </span>
           )}

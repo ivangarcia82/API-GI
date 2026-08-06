@@ -197,6 +197,11 @@ export function Icon({name, size = 18, strokeWidth = 1.7, className = ''}) {
   const path = PATHS[name];
   if (!path) return null;
   return (
+    /* Los iconos de este set son siempre decorativos: cada botón que los usa
+       lleva su propio aria-label, y donde acompañan a un texto ese texto ya
+       dice lo mismo. Marcarlos ocultos evita que el lector de pantalla los
+       anuncie dos veces; focusable="false" es por el IE/Edge heredado que
+       mete los <svg> en el orden de tabulación. */
     <svg
       className={className}
       width={size}
@@ -207,6 +212,8 @@ export function Icon({name, size = 18, strokeWidth = 1.7, className = ''}) {
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
     >
       {path}
     </svg>

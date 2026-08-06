@@ -86,7 +86,7 @@ export default function Login() {
           </div>
 
           {actionData?.error && (
-            <span className="help-msg" role="alert" style={{color: 'var(--danger, #c0392b)'}}>
+            <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
               {actionData.error}
             </span>
           )}
