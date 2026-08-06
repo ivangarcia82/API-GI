@@ -2,6 +2,7 @@ import {useLoaderData, useSearchParams, useNavigate, useNavigation} from 'react-
 import {useCallback, useEffect, useState} from 'react';
 import {getPaginationVariables, Pagination} from '@shopify/hydrogen';
 import {Icon} from '~/components/gi/Icon';
+import {RouteError} from '~/components/gi/RouteError';
 import {Button} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {CatalogFilters, ActiveFilterChips} from '~/components/gi/CatalogFilters';
@@ -109,6 +110,31 @@ export async function loader({context, request}) {
       tallas: listaDe(facetasCrudas, FACET.talla),
     },
   };
+}
+
+/* Si la búsqueda de Shopify falla, el loader ya degrada a lista vacía; esto
+   cubre lo demás (una combinación de filtros que revienta la consulta, un
+   cursor inválido pegado en la URL). Se queda dentro del layout para que la
+   cabecera y la cotización sigan ahí. */
+export function ErrorBoundary() {
+  return (
+    <div className="container">
+      <RouteError
+        titulo="No pudimos cargar el catálogo"
+        descripcion="Puede ser una combinación de filtros que no admite la búsqueda. Empieza de nuevo sin filtros o escríbenos si sigue pasando."
+        acciones={
+          <div style={{display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap'}}>
+            <a className="btn btn-accent" href="/catalogo">
+              Ver todo el catálogo
+            </a>
+            <a className="btn btn-ghost" href="/contacto">
+              Reportar el problema
+            </a>
+          </div>
+        }
+      />
+    </div>
+  );
 }
 
 const paginationLinkStyle = {

@@ -2422,6 +2422,34 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
   color: var(--ink-4);
   cursor: pointer;
 }
+
+/* Confirmación en el sitio, no un modal encima del drawer: apilar diálogos
+   rompería la trampa de foco del panel. */
+.qd-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--err);
+  border-radius: var(--r-md);
+  background: var(--err-soft);
+  font-size: 13px;
+  color: var(--ink);
+}
+.qd-confirm-actions { display: flex; gap: 8px; }
+.qd-confirm-actions button {
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-elev);
+  font-size: 13px;
+  font-weight: 600;
+}
+.qd-confirm-actions .qd-confirm-yes {
+  background: var(--err);
+  border-color: var(--err);
+  color: #fff;
+}
 .qd-foot {
   border-top: 1px solid var(--line);
   padding: 16px 20px max(20px, env(safe-area-inset-bottom));

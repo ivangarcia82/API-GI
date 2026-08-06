@@ -1,6 +1,7 @@
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
+  useLocation,
   useRouteError,
   isRouteErrorResponse,
   Links,
@@ -287,14 +288,41 @@ export default function App() {
   );
 }
 
+/**
+ * Un 404 suele llegar desde un enlace viejo en un correo del asesor, con un
+ * SKU o un nombre de producto en la URL. Mandar sólo a la portada obliga a
+ * empezar de cero: aquí se rescata ese texto y se ofrece como búsqueda, más
+ * las dos salidas que de verdad se usan (catálogo y contacto).
+ * @param {string} pathname
+ * @returns {string} término aprovechable, o '' si no hay nada rescatable
+ */
+export function terminoDesdeRuta(pathname = '') {
+  const ultimo = decodeURIComponent(String(pathname))
+    .split('?')[0]
+    .split('/')
+    .filter(Boolean)
+    .pop();
+  if (!ultimo) return '';
+  const limpio = ultimo
+    .replace(/\.[a-z0-9]{2,5}$/i, '') // extensión de archivo
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Un id o un hash no le sirven de nada a nadie como término de búsqueda.
+  if (limpio.length < 3 || /^\d+$/.test(limpio)) return '';
+  return limpio;
+}
+
 export function ErrorBoundary() {
   const error = useRouteError();
+  const location = useLocation();
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
     errorStatus = error.status;
   }
   const isNotFound = errorStatus === 404;
+  const termino = isNotFound ? terminoDesdeRuta(location?.pathname) : '';
 
   return (
     <div className="container" style={{padding: '96px 0', textAlign: 'center'}}>
@@ -303,21 +331,40 @@ export function ErrorBoundary() {
         style={{
           fontFamily: 'var(--font-display)',
           fontWeight: 700,
-          fontSize: 'clamp(40px, 6vw, 72px)',
+          fontSize: 'clamp(32px, 5vw, 56px)',
           letterSpacing: '-0.03em',
           margin: '12px 0 12px',
         }}
       >
         {isNotFound ? 'Página no encontrada' : 'Algo salió mal'}
       </h1>
-      <p style={{color: 'var(--ink-3)', maxWidth: 480, margin: '0 auto 24px'}}>
+      <p style={{color: 'var(--ink-3)', maxWidth: 520, margin: '0 auto 24px'}}>
         {isNotFound
-          ? 'La página que buscas no existe o fue movida.'
+          ? termino
+            ? `No encontramos “${termino}” en esta dirección. Puede que el producto haya cambiado de nombre.`
+            : 'La página que buscas no existe o fue movida.'
           : 'Ocurrió un error inesperado. Intenta de nuevo en unos momentos.'}
       </p>
-      <a className="btn btn-primary" href="/">
-        Volver al inicio
-      </a>
+      <div
+        style={{
+          display: 'flex',
+          gap: 10,
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
+        {termino ? (
+          <a className="btn btn-accent" href={`/search?q=${encodeURIComponent(termino)}`}>
+            Buscar “{termino}”
+          </a>
+        ) : null}
+        <a className="btn btn-primary" href="/catalogo">
+          Ver catálogo
+        </a>
+        <a className="btn btn-ghost" href="/contacto">
+          Hablar con un asesor
+        </a>
+      </div>
     </div>
   );
 }

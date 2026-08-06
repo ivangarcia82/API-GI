@@ -27,7 +27,11 @@ export function QuoteDrawer() {
   const [result, setResult] = useState(null);
   const [notes, setNotes] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [confirmandoVaciar, setConfirmandoVaciar] = useState(false);
   const submitting = submitFetcher.state !== 'idle';
+  // Una fecha objetivo en el pasado no es un objetivo. El input la rechaza en
+  // el propio calendario en vez de dejar que llegue al asesor.
+  const hoy = new Date().toISOString().slice(0, 10);
 
   // Lock the page scroll behind the drawer while it's open.
   useEffect(() => {
@@ -90,6 +94,7 @@ export function QuoteDrawer() {
       setResult(null);
       setNotes('');
       setDeadline('');
+      setConfirmandoVaciar(false);
     }
   }, [quoteDrawerOpen]);
 
@@ -134,10 +139,15 @@ export function QuoteDrawer() {
     removeFromQuote(id)
       .then(() => toast('Producto removido'))
       .catch((e) => toast(e?.message || 'No se pudo quitar el producto', {icon: 'alert'}));
-  const handleClear = () =>
-    clearQuote()
+  /* Vaciar borra la cotización entera y no hay deshacer, así que pide
+     confirmación en el propio sitio en vez de abrir un modal encima de un
+     drawer (que además rompería la trampa de foco). */
+  const handleClear = () => {
+    setConfirmandoVaciar(false);
+    return clearQuote()
       .then(() => toast('Lista vaciada'))
       .catch((e) => toast(e?.message || 'No se pudo vaciar la lista', {icon: 'alert'}));
+  };
 
   const goAndClose = (to) => {
     closeQuoteDrawer();
@@ -262,6 +272,7 @@ export function QuoteDrawer() {
               id="qd-deadline"
               className="input"
               type="date"
+              min={hoy}
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
             />
@@ -279,9 +290,26 @@ export function QuoteDrawer() {
             />
           </div>
 
-          <button className="qd-clear" onClick={handleClear}>
-            <Icon name="trash" size={12} /> Vaciar lista
-          </button>
+          {confirmandoVaciar ? (
+            <div className="qd-confirm" role="group" aria-label="Confirmar vaciar la lista">
+              <span>
+                ¿Vaciar los {quote.length}{' '}
+                {quote.length === 1 ? 'producto' : 'productos'}? No se puede deshacer.
+              </span>
+              <div className="qd-confirm-actions">
+                <button type="button" onClick={() => setConfirmandoVaciar(false)}>
+                  Cancelar
+                </button>
+                <button type="button" className="qd-confirm-yes" onClick={handleClear}>
+                  Sí, vaciar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="qd-clear" onClick={() => setConfirmandoVaciar(true)}>
+              <Icon name="trash" size={12} /> Vaciar lista
+            </button>
+          )}
         </div>
 
         <div className="qd-foot">

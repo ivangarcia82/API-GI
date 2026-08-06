@@ -10,6 +10,7 @@ import {
 } from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {Icon} from '~/components/gi/Icon';
+import {RouteError} from '~/components/gi/RouteError';
 import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
@@ -676,6 +677,30 @@ export default function Product() {
         }}
       />
     </>
+  );
+}
+
+/* Un producto retirado o renombrado es el 404 más común de esta tienda: llega
+   desde un enlace viejo en un correo del asesor. Se resuelve dentro del layout
+   para no tirar la cabecera ni la cotización que el comprador ya llevaba. */
+export function ErrorBoundary() {
+  return (
+    <div className="container">
+      <RouteError
+        titulo="Este producto ya no está disponible"
+        descripcion="Puede que lo hayamos retirado o que haya cambiado de nombre. Busca en el catálogo o pregúntale a tu asesor por el SKU."
+        acciones={
+          <div style={{display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap'}}>
+            <Link className="btn btn-accent" to="/catalogo">
+              Ver catálogo
+            </Link>
+            <Link className="btn btn-ghost" to="/contacto">
+              Hablar con un asesor
+            </Link>
+          </div>
+        }
+      />
+    </div>
   );
 }
 

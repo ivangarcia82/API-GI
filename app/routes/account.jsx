@@ -1,5 +1,6 @@
 import {data as remixData, Form, NavLink, Outlet, redirect, useLoaderData} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
+import {RouteError} from '~/components/gi/RouteError';
 import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {findById} from '~/lib/auth/users';
@@ -108,6 +109,30 @@ export default function AccountLayout() {
       <div className="acct-content">
         <Outlet context={{user}} />
       </div>
+    </div>
+  );
+}
+
+/* La cuenta cuelga de la sesión, de la base y del Admin API: cualquiera de los
+   tres puede fallar. Sin este boundary el fallo se llevaba también la cabecera
+   y el drawer, dejando al usuario sin forma de salir salvo el botón de atrás. */
+export function ErrorBoundary() {
+  return (
+    <div className="container">
+      <RouteError
+        titulo="No pudimos cargar tu cuenta"
+        descripcion="Puede que tu sesión haya caducado. Vuelve a entrar y, si sigue igual, escríbenos."
+        acciones={
+          <div style={{display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap'}}>
+            <a className="btn btn-accent" href="/login">
+              Iniciar sesión
+            </a>
+            <a className="btn btn-ghost" href="/catalogo">
+              Ver catálogo
+            </a>
+          </div>
+        }
+      />
     </div>
   );
 }
