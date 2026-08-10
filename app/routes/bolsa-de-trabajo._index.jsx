@@ -3,20 +3,19 @@
 // <script> in the source, are replaced by the shared <CountUp> and
 // <MagneticButton> primitives; `.reveal` fade-ins are handled globally by
 // MarketingLayout's useMarketingReveal().
-import {Link} from 'react-router';
+import {Link, useLoaderData} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
 import {CountUp} from '~/components/marketing/CountUp';
 import {MagneticButton} from '~/components/marketing/MagneticButton';
-import {JOBS, RECRUITMENT} from '~/lib/site-content';
+import {getJobs, getRecruitmentSettings} from '~/lib/cms';
 
-const openCvHref = `mailto:${RECRUITMENT.email}?subject=${encodeURIComponent('CV abierto — Generando Ideas')}`;
-
-// Hairline stat band (no card boxes) — modeled on ImpactBand. Only the clean
-// integer (6) counts up; non-integers (140+) render statically.
-const STATS = [
-  {value: 6, suffix: '', display: '6', count: true, label: 'Vacantes abiertas'},
-  {value: 140, suffix: '+', display: '140+', count: false, label: 'Colaboradores actuales'},
-];
+export async function loader() {
+  const [jobs, {recruitment}] = await Promise.all([
+    getJobs(),
+    getRecruitmentSettings(),
+  ]);
+  return {jobs, recruitment};
+}
 
 export const meta = () => [
   {title: 'Bolsa de Trabajo | Oportunidades Profesionales en Generando Ideas'},
@@ -28,6 +27,16 @@ export const meta = () => [
 ];
 
 export default function BolsaDeTrabajoIndex() {
+  const {jobs, recruitment} = useLoaderData();
+
+  const openCvHref = `mailto:${recruitment.email}?subject=${encodeURIComponent('CV abierto — Generando Ideas')}`;
+
+  // Hairline stat band — vacante count is now dynamic from CMS.
+  const STATS = [
+    {value: jobs.length, suffix: '', display: String(jobs.length), count: true, label: 'Vacantes abiertas'},
+    {value: 140, suffix: '+', display: '140+', count: false, label: 'Colaboradores actuales'},
+  ];
+
   return (
     <MarketingLayout>
       <div className="page">
@@ -69,7 +78,7 @@ export default function BolsaDeTrabajoIndex() {
           <div className="wrap">
             <h2 className="display careers-h2 reveal">Vacantes disponibles</h2>
             <div className="jobs-list reveal">
-              {JOBS.map((j) => (
+              {jobs.map((j) => (
                 <Link className="job-row careers-job" to={`/bolsa-de-trabajo/${j.id}`} key={j.id}>
                   <div className="job-main">
                     <h3 className="job-title">{j.title}</h3>
@@ -109,7 +118,7 @@ export default function BolsaDeTrabajoIndex() {
                 mes.
               </p>
               <MagneticButton>
-                <a className="btn btn-accent btn-lg open-cv-btn" href={openCvHref}>
+                <a className="btn btn-accent btn-lg open-cv-btn" href={openCvHref} rel="noopener">
                   Enviar CV abierto
                   <svg
                     width="16"

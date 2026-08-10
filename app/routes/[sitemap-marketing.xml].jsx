@@ -3,7 +3,8 @@
 // can't be produced by `getSitemap`/`getSitemapIndex` — instead this route
 // hand-builds a urlset from `~/lib/site-content`, the single source of truth
 // for marketing ids. Linked from `[sitemap.xml].jsx` via `customChildSitemaps`.
-import {BLOG_POSTS, JOBS, SERVICE_DETAIL_IDS} from '~/lib/site-content';
+import {BLOG_POSTS, SERVICE_DETAIL_IDS} from '~/lib/site-content';
+import {getJobs} from '~/lib/cms';
 
 const STATIC_PATHS = [
   '/',
@@ -20,12 +21,13 @@ const STATIC_PATHS = [
  */
 export async function loader({request}) {
   const {origin} = new URL(request.url);
+  const jobs = await getJobs();
 
   const paths = [
     ...STATIC_PATHS,
     ...SERVICE_DETAIL_IDS.map((id) => `/servicios/${id}`),
     ...BLOG_POSTS.map((post) => `/blog/${post.id}`),
-    ...JOBS.map((job) => `/bolsa-de-trabajo/${job.id}`),
+    ...jobs.map((job) => `/bolsa-de-trabajo/${job.id}`),
   ];
 
   const body =

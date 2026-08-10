@@ -9,12 +9,16 @@
 import {Link, redirect, useLoaderData} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
 import {MagneticButton} from '~/components/marketing/MagneticButton';
-import {JOBS, RECRUITMENT, RECRUITMENT_DISCLAIMER, ROUTES} from '~/lib/site-content';
+import {ROUTES} from '~/lib/site-content';
+import {getJobById, getRecruitmentSettings} from '~/lib/cms';
 
 export async function loader({params}) {
-  const job = JOBS.find((j) => String(j.id) === params.id);
+  const [job, {recruitment, disclaimer}] = await Promise.all([
+    getJobById(params.id),
+    getRecruitmentSettings(),
+  ]);
   if (!job) throw redirect(ROUTES.careers);
-  return {job};
+  return {job, recruitment, disclaimer};
 }
 
 export const meta = ({data}) => {
@@ -44,9 +48,11 @@ export const meta = ({data}) => {
 };
 
 export default function JobDetail() {
-  const {job} = useLoaderData();
+  const {job, recruitment, disclaimer} = useLoaderData();
 
   // Apply via the recruitment inbox, with the role pre-filled in the subject.
+  const RECRUITMENT = recruitment;
+  const RECRUITMENT_DISCLAIMER = disclaimer;
   const applyHref = `mailto:${RECRUITMENT.email}?subject=${encodeURIComponent('Postulación: ' + job.title)}`;
   const altApplyHref = `mailto:${RECRUITMENT.altEmail}?subject=${encodeURIComponent('Postulación: ' + job.title)}`;
   const telHref = `tel:+52${RECRUITMENT.phone.replace(/\s+/g, '')}`;
