@@ -12,10 +12,11 @@ import {MagneticButton} from '~/components/marketing/MagneticButton';
 import {ROUTES} from '~/lib/site-content';
 import {getJobById, getRecruitmentSettings} from '~/lib/cms';
 
-export async function loader({params}) {
+export async function loader({params, context}) {
+  const cmsUrl = context.env.CMS_API_URL;
   const [job, {recruitment, disclaimer}] = await Promise.all([
-    getJobById(params.id),
-    getRecruitmentSettings(),
+    getJobById(params.id, cmsUrl),
+    getRecruitmentSettings(cmsUrl),
   ]);
   if (!job) throw redirect(ROUTES.careers);
   return {job, recruitment, disclaimer};

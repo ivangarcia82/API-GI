@@ -19,9 +19,10 @@ const STATIC_PATHS = [
 /**
  * @param {Route.LoaderArgs}
  */
-export async function loader({request}) {
+export async function loader({request, context}) {
   const {origin} = new URL(request.url);
-  const jobs = await getJobs();
+  const cmsUrl = context.env.CMS_API_URL;
+  const jobs = await getJobs(cmsUrl);
 
   const paths = [
     ...STATIC_PATHS,

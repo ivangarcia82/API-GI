@@ -9,10 +9,11 @@ import {CountUp} from '~/components/marketing/CountUp';
 import {MagneticButton} from '~/components/marketing/MagneticButton';
 import {getJobs, getRecruitmentSettings} from '~/lib/cms';
 
-export async function loader() {
+export async function loader({context}) {
+  const cmsUrl = context.env.CMS_API_URL;
   const [jobs, {recruitment}] = await Promise.all([
-    getJobs(),
-    getRecruitmentSettings(),
+    getJobs(cmsUrl),
+    getRecruitmentSettings(cmsUrl),
   ]);
   return {jobs, recruitment};
 }
