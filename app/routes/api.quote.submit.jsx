@@ -3,9 +3,8 @@ import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {findById, setShopifyGid} from '~/lib/auth/users';
 import {isStubMode} from '~/lib/admin/client';
-import {createCustomer, createDraftOrder, getCustomerAdvisor} from '~/lib/admin/operations';
-import {buildAdvisorEmail} from '~/lib/quotes/advisorEmail';
-import {sendEmail} from '~/lib/email/resend';
+import {createCustomer, createDraftOrder} from '~/lib/admin/operations';
+import {notifyQuoteSubmitted} from '~/lib/quotes/notify';
 import {getOrCreateDraftQuote, getQuoteWithItems} from '~/lib/quotes/repo';
 import {buildDraftOrderInput} from '~/lib/quotes/draftInput';
 
@@ -96,24 +95,17 @@ export async function action({request, context}) {
     'write',
   );
 
-  // Best-effort advisor notification. The quote is already submitted and
-  // persisted; failures here must NOT fail the submit. Resolve the advisor from
-  // the Shopify customer's custom.ejecutiva_de_venta metaobject (key "correo").
-  try {
-    const advisor = await getCustomerAdvisor(env, customerGid);
-    if (advisor.email) {
-      const message = buildAdvisorEmail({
-        advisorEmail: advisor.email,
-        quote: {id: quote.id, notes: quote.notes, deadline: quote.deadline},
-        user,
-        items,
-        invoiceUrl, // raw url; advisor is internal staff, may see stub url in dev
-      });
-      await sendEmail(env, message);
-    }
-  } catch (err) {
-    console.error('[quote.submit] advisor notification failed (non-fatal):', err);
-  }
+  // Best-effort notifications: the internal copy (advisor, or the sales inbox
+  // when the customer has none) and the buyer's confirmation. The quote is
+  // already submitted and persisted, so notifyQuoteSubmitted never throws.
+  await notifyQuoteSubmitted(env, {
+    quote: {id: quote.id, notes: quote.notes, deadline: quote.deadline},
+    user,
+    items,
+    invoiceUrl, // raw url; goes to internal staff only, never to the buyer
+    customerGid,
+    origin: new URL(request.url).origin,
+  });
 
   // Never surface a stub invoice URL to the user.
   const safeInvoiceUrl = isStubMode(env) ? null : invoiceUrl;
