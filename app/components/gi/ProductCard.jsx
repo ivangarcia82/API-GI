@@ -26,6 +26,36 @@ function Swatches({colors, size = 14}) {
 }
 
 /**
+ * Precio de la tarjeta. Se pinta con o sin sesión: el comprador que compara
+ * proveedores no abre una cuenta para saber si estamos en su rango. Cotizar
+ * sí sigue pidiendo login (ver AddControl).
+ *
+ * `product.price` es null cuando la variante no trae precio (normalizeProduct
+ * en ~/lib/gi) y formatPrice devuelve '' con null: sin esta rama la tarjeta
+ * pintaría "desde" seguido de un hueco.
+ */
+function Precio({product, view}) {
+  if (product.price == null) {
+    return <span className="pcard-price-ask">Consultar con asesor</span>;
+  }
+  const importe = formatPrice(product.price, product.currency);
+  if (view === 'list') {
+    return (
+      <div style={{textAlign: 'right'}}>
+        <div className="pcard-price-from">Desde</div>
+        <div className="pcard-price">{importe}</div>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <span className="pcard-price-from">desde</span>
+      <span className="pcard-price">{importe}</span>
+    </div>
+  );
+}
+
+/**
  * Add control: logged-in users add to the client-side quote list; guests are
  * routed to the product detail. (No purchase flow — quote-only.)
  */
@@ -121,7 +151,7 @@ export function ProductCard({
   selected = false,
   onToggleSelect,
 }) {
-  const {isLoggedIn, favs, toggleFav} = useApp();
+  const {favs, toggleFav} = useApp();
   const toast = useToast();
   const isFav = favs.includes(product.id);
 
@@ -153,18 +183,7 @@ export function ProductCard({
           {product.colors.length > 0 && <Swatches colors={product.colors} size={16} />}
         </div>
         <div className="pcard-list-actions">
-          {isLoggedIn ? (
-            <div style={{textAlign: 'right'}}>
-              <div className="pcard-price-from">Desde</div>
-              <div className="pcard-price">
-                {formatPrice(product.price, product.currency)}
-              </div>
-            </div>
-          ) : (
-            <div className="pcard-quote-label">
-              <Icon name="eye_off" size={11} /> Inicia sesión
-            </div>
-          )}
+          <Precio product={product} view="list" />
           <AddControl product={product} variant="primary" />
         </div>
       </article>
@@ -214,18 +233,7 @@ export function ProductCard({
         <div className="pcard-name">{titleLink}</div>
         {product.colors.length > 0 && <Swatches colors={product.colors} />}
         <div className="pcard-foot">
-          {isLoggedIn ? (
-            <div>
-              <span className="pcard-price-from">desde</span>
-              <span className="pcard-price">
-                {formatPrice(product.price, product.currency)}
-              </span>
-            </div>
-          ) : (
-            <span className="pcard-quote-label">
-              <Icon name="eye_off" size={11} /> Precio para clientes
-            </span>
-          )}
+          <Precio product={product} />
         </div>
       </div>
     </article>

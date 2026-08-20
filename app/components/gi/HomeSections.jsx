@@ -5,7 +5,6 @@ import {useNavigate} from 'react-router';
 import {Icon} from './Icon';
 import {Button, CountUp, useInView} from './ui';
 import {AddControl} from './ProductCard';
-import {useApp} from '~/lib/AppContext';
 import {formatPrice, LOOKBOOK} from '~/lib/gi';
 
 /* ---- scroll parallax ---- */
@@ -139,7 +138,6 @@ export function ImageMarquee({products = [], direction = 'left', speed = 50}) {
 /* ---- product spotlight ---- */
 export function ProductSpotlight({product}) {
   const navigate = useNavigate();
-  const {isLoggedIn} = useApp();
   const [imgRef, imgOffset] = useParallax(0.08);
   const [ref, inView] = useInView();
   if (!product) return null;
@@ -195,7 +193,7 @@ export function ProductSpotlight({product}) {
           </div>
 
           <div className="spotlight-foot">
-            {isLoggedIn ? (
+            {product.price != null ? (
               <div className="spotlight-price">
                 <span className="sp-from">Desde</span>
                 <span className="sp-v">{formatPrice(product.price, product.currency)}</span>
@@ -203,7 +201,7 @@ export function ProductSpotlight({product}) {
               </div>
             ) : (
               <div className="spotlight-price">
-                <span className="sp-from">Precio para clientes</span>
+                <span className="sp-from">Consultar con asesor</span>
               </div>
             )}
             <div style={{display: 'flex', gap: 10, flexWrap: 'wrap'}}>

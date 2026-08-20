@@ -5,7 +5,11 @@ import {Icon} from '~/components/gi/Icon';
 import {RouteError} from '~/components/gi/RouteError';
 import {Button} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
-import {CatalogFilters, ActiveFilterChips} from '~/components/gi/CatalogFilters';
+import {
+  CatalogFilters,
+  ActiveFilterChips,
+  SortSheet,
+} from '~/components/gi/CatalogFilters';
 import {useApp, useToast} from '~/lib/AppContext';
 import {GI_CATALOG_SEARCH_QUERY} from '~/lib/giFragments';
 import {normalizeProduct, HOME_CATEGORIES} from '~/lib/gi';
@@ -160,6 +164,7 @@ export default function Catalogo() {
   const toast = useToast();
   const [view, setView] = useState('grid');
   const [panelAbierto, setPanelAbierto] = useState(false);
+  const [ordenAbierto, setOrdenAbierto] = useState(false);
   const [texto, setTexto] = useState(filtros.q);
   /* Selección múltiple: se guarda el producto entero, no sólo el id, porque la
      barra de acciones tiene que poder cotizar productos que ya salieron de la
@@ -302,19 +307,6 @@ export default function Catalogo() {
       <ActiveFilterChips chips={chips} onRemove={quitarChip} onClearAll={limpiarTodo} />
 
       <div className="cat-page">
-        <button
-          type="button"
-          className="cat-filters-toggle"
-          aria-expanded={panelAbierto}
-          onClick={() => setPanelAbierto(true)}
-        >
-          <span style={{display: 'inline-flex', alignItems: 'center', gap: 8}}>
-            <Icon name="filter" size={15} />
-            Filtros{chips.length ? ` · ${chips.length}` : ''}
-          </span>
-          <Icon name="chevron_down" size={15} className="chev" />
-        </button>
-
         {panelAbierto && (
           <button
             type="button"
@@ -331,6 +323,7 @@ export default function Catalogo() {
           onChange={aplicar}
           onClearAll={limpiarTodo}
           totalCount={totalCount}
+          cargando={cargando}
           open={panelAbierto}
           onClose={() => setPanelAbierto(false)}
         />
@@ -364,7 +357,7 @@ export default function Catalogo() {
                 {cargando ? 'Buscando…' : `${totalCount.toLocaleString('es-MX')} productos`}
               </span>
               <select
-                className="input"
+                className="input cat-sort-select"
                 value={filtros.sort}
                 onChange={(e) => aplicar({...filtros, sort: e.target.value})}
                 aria-label="Ordenar"
@@ -454,6 +447,48 @@ export default function Catalogo() {
           </Pagination>
         </div>
       </div>
+
+      {/* Barra fija de móvil. El toggle vivía sobre la grilla y sólo se
+          alcanzaba subiendo hasta arriba; filtrar y ordenar es justo lo que se
+          quiere después de haber bajado un par de pantallas.
+          Cede el sitio a .bulk-bar, que ocupa la misma franja: con productos
+          seleccionados, cotizarlos es la tarea en curso. */}
+      {seleccion.size === 0 && (
+        <div className="cat-mobile-bar">
+          <button
+            type="button"
+            className="cat-mobile-btn"
+            aria-expanded={panelAbierto}
+            onClick={() => setPanelAbierto(true)}
+          >
+            <Icon name="filter" size={16} />
+            Filtros
+            {chips.length > 0 && (
+              <span className="cat-mobile-badge">{chips.length}</span>
+            )}
+          </button>
+          <button
+            type="button"
+            className="cat-mobile-btn"
+            aria-expanded={ordenAbierto}
+            onClick={() => setOrdenAbierto(true)}
+          >
+            <Icon name="sort" size={16} />
+            {SORTS[filtros.sort].short}
+          </button>
+        </div>
+      )}
+
+      <SortSheet
+        open={ordenAbierto}
+        value={filtros.sort}
+        options={Object.entries(SORTS)}
+        onSelect={(sort) => {
+          aplicar({...filtros, sort});
+          setOrdenAbierto(false);
+        }}
+        onClose={() => setOrdenAbierto(false)}
+      />
 
       {seleccion.size > 0 && (
         <div className="bulk-bar" role="region" aria-label="Selección para cotizar">

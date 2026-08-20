@@ -106,10 +106,13 @@ export function groupColorValues(facetValues) {
 /* `SearchSortKeys` sólo expone RELEVANCE y PRICE — no hay equivalente de
    BEST_SELLING ni CREATED_AT. "Novedades" y "Ofertas" se ofrecen como filtros
    por tag en su lugar. */
+/* `short` es para la barra fija de móvil, donde el botón comparte una fila de
+   375px con el de filtros: "Precio: menor a mayor" no cabe, y recortar `label`
+   por el ":" dejaría los dos criterios de precio indistinguibles. */
 export const SORTS = {
-  relevance: {label: 'Relevancia', sortKey: 'RELEVANCE', reverse: false},
-  'price-asc': {label: 'Precio: menor a mayor', sortKey: 'PRICE', reverse: false},
-  'price-desc': {label: 'Precio: mayor a menor', sortKey: 'PRICE', reverse: true},
+  relevance: {label: 'Relevancia', short: 'Relevancia', sortKey: 'RELEVANCE', reverse: false},
+  'price-asc': {label: 'Precio: menor a mayor', short: 'Precio ↑', sortKey: 'PRICE', reverse: false},
+  'price-desc': {label: 'Precio: mayor a menor', short: 'Precio ↓', sortKey: 'PRICE', reverse: true},
 };
 
 /* ------------------------------------------------------------------ *

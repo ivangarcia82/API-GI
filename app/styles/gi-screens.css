@@ -1180,28 +1180,35 @@
   margin-left: 4px;
 }
 
+/* En móvil los chips no envuelven: con tres o cuatro filtros aplicados
+   crecían a tres filas y empujaban la grilla fuera de la pantalla. Pasan a
+   carrusel, con una máscara al borde que delata que hay más a la derecha. */
+@media (max-width: 880px) {
+  .cf-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    margin: 0 -16px;
+    padding: 4px 16px 10px;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  }
+  .cf-chips::-webkit-scrollbar { display: none; }
+  .cf-chip {
+    flex: 0 0 auto;
+    min-height: 40px;
+    scroll-snap-align: start;
+  }
+  .cf-chips-clear { flex: 0 0 auto; white-space: nowrap; padding-right: 8px; }
+}
+
 .cf-scrim { display: none; }
 
 /* En móvil el panel es un cajón deslizante: apilado abría la página con
-   ~1.600px de filtros antes del primer producto. */
-.cat-filters-toggle { display: none; }
+   ~1.600px de filtros antes del primer producto. Se abre desde la barra fija
+   inferior (.cat-mobile-bar), no desde un botón sobre la grilla. */
 @media (max-width: 880px) {
-  .cat-filters-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--line);
-    border-radius: var(--r-md);
-    background: var(--bg-elev);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink);
-  }
-  .cat-filters-toggle .chev { transform: rotate(-90deg); }
-
   .cf-scrim {
     display: block;
     position: fixed;
@@ -1256,9 +1263,132 @@
     border-top: 1px solid var(--line);
   }
   .cf-mobile-foot .btn { flex: 1; justify-content: center; }
+
+  /* 44px es el mínimo que se acierta con el pulgar sin apuntar. En el sidebar
+     de escritorio se dejan compactos: ahí la densidad ayuda a comparar. */
+  .cf-option,
+  .cf-swatch,
+  .cf-cats button,
+  .cf-quick-btn,
+  .cf-more,
+  .cf-clear {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .cf-quick-btn { padding: 0 16px; }
+  .cf-group-head { min-height: 48px; }
+  .cf-precio .input { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cf-panel { transition: none; }
+}
+
+/* ---------- Barra fija de móvil: filtrar y ordenar ---------- */
+.cat-mobile-bar { display: none; }
+.sort-sheet { display: none; }
+
+@media (max-width: 880px) {
+  .cat-mobile-bar {
+    position: fixed;
+    z-index: 60;
+    left: 16px;
+    right: 16px;
+    /* env() cae a 0 fuera de iOS; el calc protege del indicador de inicio. */
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: var(--r-pill);
+    background: var(--bg-elev);
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow-3);
+  }
+  .cat-mobile-btn {
+    flex: 1;
+    min-height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .cat-mobile-btn + .cat-mobile-btn { border-left: 1px solid var(--line); }
+  .cat-mobile-btn:active { background: var(--bg-soft); }
+  .cat-mobile-badge {
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* La barra flota sobre la grilla: sin este aire tapa la última fila y el
+     paginador "Cargar más". */
+  .cat-page { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  body:has(.cat-mobile-bar) .toast-stack { bottom: 88px; }
+
+  /* El orden se elige en la hoja inferior, no en el select del toolbar. */
+  .cat-sort-select { display: none; }
+
+  /* ---------- Hoja de orden ---------- */
+  .sort-sheet {
+    display: block;
+    position: fixed;
+    z-index: 91;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0 8px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-elev);
+    border-top: 1px solid var(--line);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    box-shadow: var(--shadow-3);
+    animation: fadeUp 220ms var(--ease-out) both;
+  }
+  .sort-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 12px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+  }
+  .sort-sheet-head button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--ink-3);
+  }
+  .sort-opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 12px;
+    border-radius: var(--r-md);
+    font-size: 15px;
+    color: var(--ink-2);
+    text-align: left;
+  }
+  .sort-opt:active { background: var(--bg-soft); }
+  .sort-opt.active { font-weight: 600; color: var(--ink); }
+  .sort-opt.active svg { color: var(--accent-deep); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sort-sheet { animation: none; }
 }
 
 .cat-toolbar {
@@ -1563,7 +1693,10 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
   letter-spacing: -0.01em;
 }
 .pcard-price-from { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); margin-right: 4px; }
-.pcard-quote-label {
+/* Sustituye a .pcard-quote-label ("Precio para clientes"), que desapareció al
+   abrir los precios: ahora el único hueco sin importe es el del producto que
+   de verdad no tiene precio de lista. */
+.pcard-price-ask {
   font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
@@ -1897,24 +2030,15 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
 }
 .pdp-trust-item { display: flex; gap: 10px; min-width: 0; }
 
-/* Gated price (logged out) */
-.pdp-gated {
-  background: var(--bg-elev);
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--r-lg);
-  padding: 24px;
-  text-align: center;
+/* Letra chica bajo el precio. Sustituye a .pdp-gated, el bloque que tapaba el
+   precio a quien no había iniciado sesión. */
+.pdp-price-note {
+  margin: -8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
 }
-.pdp-gated h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 18px;
-  margin: 0 0 6px;
-  text-transform: none;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-.pdp-gated p { margin: 0 0 16px; font-size: 14px; color: var(--ink-3); }
 
 /* =================
    CART / QUOTE

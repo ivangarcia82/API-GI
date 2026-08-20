@@ -19,7 +19,7 @@ const EMPTY_ITEMS = {
 };
 
 export function GiSearchModal() {
-  const {searchOpen, closeSearch, openSearch, isLoggedIn} = useApp();
+  const {searchOpen, closeSearch, openSearch} = useApp();
   const navigate = useNavigate();
   const fetcher = useFetcher({key: 'gi-search'});
   const inputRef = useRef(null);
@@ -239,14 +239,12 @@ export function GiSearchModal() {
                       />
                       <div className="gis-row-main">
                         <div className="gis-row-title">{p.title}</div>
-                        {isLoggedIn && price ? (
+                        {price ? (
                           <div className="gis-row-price">
                             {formatPrice(price.amount, price.currencyCode)}
                           </div>
                         ) : (
-                          <div className="gis-row-sub">
-                            <Icon name="eye_off" size={11} /> Precio para clientes
-                          </div>
+                          <div className="gis-row-sub">Consultar con asesor</div>
                         )}
                       </div>
                       <Icon name="arrow_right" size={15} className="gis-row-arrow" />

@@ -7,8 +7,9 @@
  * Se escribe desacoplado de la ruta para que las páginas de colección puedan
  * adoptarlo sin cambios.
  */
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {Icon} from './Icon';
+import {useDialogBehavior} from '~/lib/dialog';
 import {toggleMulti} from '~/lib/filters';
 
 /** Grupo plegable. Los grupos sin opciones no se montan (ver CatalogFilters). */
@@ -71,10 +72,16 @@ export function CatalogFilters({
   onChange,
   onClearAll,
   totalCount,
+  cargando = false,
   open,
   onClose,
 }) {
   const set = (patch) => onChange({...filters, ...patch});
+  const panelRef = useRef(null);
+
+  /* En móvil el panel es un cajón encima de la página; en escritorio es una
+     columna fija y `open` nunca es true, así que el hook no hace nada. */
+  useDialogBehavior({open, onClose, panelRef});
 
   // El precio se edita en local para no lanzar una consulta por cada tecla;
   // se aplica al enviar o al salir del campo.
@@ -91,7 +98,13 @@ export function CatalogFilters({
   };
 
   return (
-    <aside className={`cf-panel ${open ? 'open' : ''}`} aria-label="Filtros">
+    <aside
+      ref={panelRef}
+      className={`cf-panel ${open ? 'open' : ''}`}
+      aria-label="Filtros"
+      role={open ? 'dialog' : undefined}
+      aria-modal={open ? true : undefined}
+    >
       <div className="cf-mobile-head">
         <strong>Filtros</strong>
         <button type="button" onClick={onClose} aria-label="Cerrar filtros">
@@ -234,11 +247,73 @@ export function CatalogFilters({
         <button type="button" className="cf-clear" onClick={onClearAll}>
           Limpiar todo
         </button>
-        <button type="button" className="btn btn-accent" onClick={onClose}>
-          Ver {totalCount.toLocaleString('es-MX')} productos
+        {/* Mientras la consulta viaja, `totalCount` sigue siendo el de los
+            filtros anteriores. Prometer "Ver 1,240 productos" y aterrizar en
+            80 es peor que decir que todavía se está contando. */}
+        <button
+          type="button"
+          className="btn btn-accent"
+          onClick={onClose}
+          disabled={cargando}
+          aria-live="polite"
+        >
+          {cargando ? 'Buscando…' : `Ver ${totalCount.toLocaleString('es-MX')} productos`}
         </button>
       </div>
     </aside>
+  );
+}
+
+/**
+ * Hoja inferior para elegir el orden. Existe sólo para móvil: el <select> del
+ * toolbar se queda sin sitio a 375px junto al buscador y el cambio de vista, y
+ * el picker nativo no deja ver cuál está activo hasta abrirlo.
+ */
+export function SortSheet({open, value, options, onSelect, onClose}) {
+  const panelRef = useRef(null);
+  useDialogBehavior({open, onClose, panelRef});
+  if (!open) return null;
+  return (
+    <>
+      <button
+        type="button"
+        className="cf-scrim"
+        aria-label="Cerrar orden"
+        onClick={onClose}
+      />
+      <div
+        ref={panelRef}
+        className="sort-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Ordenar"
+      >
+        <div className="sort-sheet-head">
+          <strong>Ordenar</strong>
+          <button type="button" onClick={onClose} aria-label="Cerrar orden">
+            <Icon name="x" size={18} />
+          </button>
+        </div>
+        <div role="radiogroup" aria-label="Ordenar por">
+          {options.map(([key, def]) => {
+            const activo = key === value;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={activo}
+                className={`sort-opt ${activo ? 'active' : ''}`}
+                onClick={() => onSelect(key)}
+              >
+                <span>{def.label}</span>
+                {activo && <Icon name="check" size={16} />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
   );
 }
 

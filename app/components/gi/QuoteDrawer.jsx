@@ -6,6 +6,7 @@ import {useFetcher, useNavigate} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
+import {useDialogBehavior} from '~/lib/dialog';
 import {formatPrice} from '~/lib/gi';
 
 export function QuoteDrawer() {
@@ -23,7 +24,6 @@ export function QuoteDrawer() {
   const navigate = useNavigate();
   const submitFetcher = useFetcher();
   const panelRef = useRef(null);
-  const lastFocusedRef = useRef(null);
   const [result, setResult] = useState(null);
   const [notes, setNotes] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -33,60 +33,8 @@ export function QuoteDrawer() {
   // el propio calendario en vez de dejar que llegue al asesor.
   const hoy = new Date().toISOString().slice(0, 10);
 
-  // Lock the page scroll behind the drawer while it's open.
-  useEffect(() => {
-    if (typeof document === 'undefined') return undefined;
-    document.body.style.overflow = quoteDrawerOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [quoteDrawerOpen]);
-
-  // Close on Escape.
-  useEffect(() => {
-    if (!quoteDrawerOpen) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape') closeQuoteDrawer();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [quoteDrawerOpen, closeQuoteDrawer]);
-
-  // Focus management: move focus into the panel on open, trap Tab within it,
-  // and restore focus to the trigger on close.
-  useEffect(() => {
-    if (!quoteDrawerOpen) return undefined;
-    const panel = panelRef.current;
-    if (!panel) return undefined;
-    lastFocusedRef.current = document.activeElement;
-    const getFocusables = () =>
-      Array.from(
-        panel.querySelectorAll(
-          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      );
-    getFocusables()[0]?.focus();
-
-    const onKey = (e) => {
-      if (e.key !== 'Tab') return;
-      const items = getFocusables();
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    panel.addEventListener('keydown', onKey);
-    return () => {
-      panel.removeEventListener('keydown', onKey);
-      lastFocusedRef.current?.focus?.();
-    };
-  }, [quoteDrawerOpen]);
+  // Bloqueo del fondo, Escape y foco atrapado: ver ~/lib/dialog.
+  useDialogBehavior({open: quoteDrawerOpen, onClose: closeQuoteDrawer, panelRef});
 
   // Reset the post-submit success view once the drawer is dismissed.
   useEffect(() => {

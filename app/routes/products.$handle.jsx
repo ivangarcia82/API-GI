@@ -318,70 +318,66 @@ export default function Product() {
             <p className="pdp-desc">{resumen(product.description)}</p>
           )}
 
-          {/* PRICE */}
-          {isLoggedIn ? (
-            unit != null ? (
-              <div className="pdp-price-bar">
-                <div>
-                  <div className="pdp-price-from">Precio por pieza</div>
-                  <div className="pdp-price">{formatPrice(effUnit, currency)}</div>
-                  {compareAt != null && compareAt > unit && decoTotal === 0 && (
-                    <div
-                      style={{
-                        textDecoration: 'line-through',
-                        color: 'var(--ink-4)',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: 13,
-                        marginTop: 2,
-                      }}
-                    >
-                      {formatPrice(compareAt, currency)}
-                    </div>
-                  )}
-                </div>
-                <div style={{textAlign: 'right'}}>
-                  <div className="pdp-price-from">Total · {qtyNum} pz</div>
+          {/* PRICE — se pinta con o sin sesión. Lo que sigue pidiendo login
+              es cotizar (ver ACTIONS), no consultar el precio. */}
+          {unit != null ? (
+            <div className="pdp-price-bar">
+              <div>
+                <div className="pdp-price-from">Precio por pieza</div>
+                <div className="pdp-price">{formatPrice(effUnit, currency)}</div>
+                {compareAt != null && compareAt > unit && decoTotal === 0 && (
                   <div
                     style={{
-                      fontFamily: 'var(--font-display)',
-                      fontWeight: 600,
-                      fontSize: 22,
-                      color: 'var(--ink-2)',
-                      letterSpacing: '-0.01em',
+                      textDecoration: 'line-through',
+                      color: 'var(--ink-4)',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 13,
+                      marginTop: 2,
                     }}
                   >
-                    {formatPrice(effTotal, currency)}
+                    {formatPrice(compareAt, currency)}
                   </div>
+                )}
+              </div>
+              <div style={{textAlign: 'right'}}>
+                <div className="pdp-price-from">Total · {qtyNum} pz</div>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 600,
+                    fontSize: 22,
+                    color: 'var(--ink-2)',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {formatPrice(effTotal, currency)}
                 </div>
               </div>
-            ) : (
-              <div className="pdp-price-bar">
-                <div>
-                  <div className="pdp-price-from">Precio</div>
-                  <div className="pdp-price" style={{fontSize: 20}}>
-                    Consultar con asesor
-                  </div>
-                </div>
-              </div>
-            )
+            </div>
           ) : (
-            <div className="pdp-gated">
-              <Icon name="eye_off" size={20} className="muted-2" />
-              <h3>Precios solo para clientes registrados</h3>
-              <p>Crea tu cuenta gratuita para ver precios y cotizar.</p>
-              <div style={{display: 'flex', gap: 8, justifyContent: 'center'}}>
-                <Button variant="accent" iconRight="arrow_right" onClick={() => navigate('/registro')}>
-                  Crear cuenta
-                </Button>
-                <Button variant="ghost" onClick={() => navigate('/login')}>
-                  Iniciar sesión
-                </Button>
+            <div className="pdp-price-bar">
+              <div>
+                <div className="pdp-price-from">Precio</div>
+                <div className="pdp-price" style={{fontSize: 20}}>
+                  Consultar con asesor
+                </div>
               </div>
             </div>
           )}
 
-          {/* DECORATION SELECTOR */}
-          {isLoggedIn && unit != null && decoProduct.techniques.length > 0 && (
+          {/* El precio dejó de estar tras el login, pero sigue siendo precio
+              de lista: volumen, decorado y plazo se cierran en la cotización.
+              Decirlo aquí evita que se lea como un total cerrado. */}
+          {unit != null && (
+            <p className="pdp-price-note">
+              {currency} · sin IVA · precio de lista
+              {!isLoggedIn && ' · inicia sesión para cotizar'}
+            </p>
+          )}
+
+          {/* DECORATION SELECTOR — también sin sesión: es lo que hace visible
+              cómo la técnica y el volumen mueven el precio por pieza. */}
+          {unit != null && decoProduct.techniques.length > 0 && (
             <div className="pdp-section">
               <h3>Decorado</h3>
               <DecorationSelector

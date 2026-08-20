@@ -68,6 +68,9 @@ const PATHS = {
   chevron_down: <path d="m6 9 6 6 6-6" />,
   chevron_right: <path d="m9 6 6 6-6 6" />,
   filter: <path d="M3 6h18M6 12h12M10 18h4" />,
+  /* Ordenar: dos flechas opuestas. `filter` ya existe pero significa otra
+     cosa en la barra del catálogo, donde ambos botones van juntos. */
+  sort: <path d="M7 4v16M7 20l-3-3M7 4l3 3M17 20V4M17 4l3 3M17 20l-3-3" />,
   grid: (
     <>
       <rect x="3" y="3" width="7" height="7" rx="1" />

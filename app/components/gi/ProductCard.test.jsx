@@ -24,13 +24,13 @@ const PRODUCTO = {
   firstVariantId: 'gid://shopify/ProductVariant/9',
 };
 
-function montar(props = {}, {isLoggedIn = true} = {}) {
+function montar(props = {}, {isLoggedIn = true, producto = PRODUCTO} = {}) {
   const Stub = createRoutesStub([
     {
       path: '/',
       Component: () => (
         <AppProvider isLoggedIn={isLoggedIn}>
-          <ProductCard product={PRODUCTO} {...props} />
+          <ProductCard product={producto} {...props} />
         </AppProvider>
       ),
     },
@@ -83,5 +83,37 @@ describe('selección múltiple', () => {
     montar({view: 'list', selectable: true, selected: false, onToggleSelect});
     fireEvent.click(screen.getByRole('checkbox', {name: /Seleccionar/i}));
     expect(onToggleSelect).toHaveBeenCalledWith(PRODUCTO);
+  });
+});
+
+/* El precio dejó de estar tras el login: un comprador que compara proveedores
+   no crea una cuenta para saber si estamos en su rango. Lo que sigue cerrado
+   es cotizar. */
+describe('precio visible sin sesión', () => {
+  it('muestra el precio en la cuadrícula aunque no haya sesión', () => {
+    montar({}, {isLoggedIn: false});
+    expect(screen.getByText('$129')).toBeTruthy();
+    expect(screen.queryByText(/Precio para clientes/i)).toBeNull();
+  });
+
+  it('muestra el precio en la vista de lista aunque no haya sesión', () => {
+    montar({view: 'list'}, {isLoggedIn: false});
+    expect(screen.getByText('$129')).toBeTruthy();
+    expect(screen.queryByText(/Inicia sesión/i)).toBeNull();
+  });
+
+  it('dice a quién preguntar cuando el producto no trae precio', () => {
+    // normalizeProduct deja price en null si la variante no tiene precio
+    // (gi.js). formatPrice devuelve '' con null, así que sin esta rama la
+    // tarjeta pintaba "desde" seguido de un hueco.
+    montar({}, {isLoggedIn: false, producto: {...PRODUCTO, price: null}});
+    expect(screen.getByText(/Consultar con asesor/i)).toBeTruthy();
+    expect(screen.queryByText('desde')).toBeNull();
+  });
+
+  it('sigue sin dejar cotizar sin sesión', () => {
+    montar({}, {isLoggedIn: false});
+    expect(screen.getByRole('button', {name: /Ver detalles/i})).toBeTruthy();
+    expect(screen.queryByRole('button', {name: /cotizaci[oó]n/i})).toBeNull();
   });
 });
