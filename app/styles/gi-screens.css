@@ -1203,6 +1203,19 @@
   .cf-chips-clear { flex: 0 0 auto; white-space: nowrap; padding-right: 8px; }
 }
 
+/* El widget de chat (Brevo, inyectado en root.jsx) se pinta con z-index 9999,
+   por encima de cualquier cajón de la app. Sobre un modal abierto tapa justo
+   la acción que el usuario fue a buscar — el "Ver N productos" del pie de los
+   filtros, el envío de la cotización — así que se retira mientras haya uno.
+   Aplica a todos los anchos: la cotización y el buscador son modales también
+   en escritorio. */
+body:has(.cf-panel.open) #brevo-conversations,
+body:has(.sort-sheet) #brevo-conversations,
+body:has(.qd-overlay.open) #brevo-conversations,
+body:has(.gis-overlay.open) #brevo-conversations {
+  display: none;
+}
+
 .cf-scrim { display: none; }
 
 /* En móvil el panel es un cajón deslizante: apilado abría la página con
@@ -1226,7 +1239,15 @@
     z-index: 91;
     width: min(92vw, 380px);
     max-height: none;
-    padding: 0 20px 20px;
+    /* La regla base trae `align-self: start` para la columna sticky de
+       escritorio. En una caja fija impide que se estire entre top y bottom:
+       el panel tomaba el alto de su contenido (~1.700px sobre un viewport de
+       713px), así que no scrolleaba por dentro y el pie con "Ver N productos"
+       quedaba fuera de la pantalla, inalcanzable. */
+    align-self: stretch;
+    /* Sin relleno inferior: el pie pegajoso ocupa esa franja. Con él, el pie
+       se anclaba 20px por encima del borde y asomaba contenido por debajo. */
+    padding: 0 20px;
     background: var(--bg-elev);
     border-left: 1px solid var(--line);
     box-shadow: var(--shadow-2);
@@ -1258,7 +1279,7 @@
     position: sticky;
     bottom: 0;
     margin: auto -20px 0;
-    padding: 14px 20px;
+    padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
     background: var(--bg-elev);
     border-top: 1px solid var(--line);
   }
@@ -1339,6 +1360,16 @@
 
   /* El orden se elige en la hoja inferior, no en el select del toolbar. */
   .cat-sort-select { display: none; }
+
+  /* El widget de chat (Brevo, inyectado en root.jsx) se ancla en
+     `bottom: 20px` con z-index 9999 y en móvil es una píldora ancha: se
+     comía la barra de filtros y la de selección. Se sube por encima de
+     ellas. El selector lleva un id, así que gana a `.brevo-conversations
+     --side-bottom` por especificidad y no hace falta !important. */
+  body:has(.cat-mobile-bar) #brevo-conversations,
+  body:has(.bulk-bar) #brevo-conversations {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
 
   /* ---------- Hoja de orden ---------- */
   .sort-sheet {
