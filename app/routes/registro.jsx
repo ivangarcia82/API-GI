@@ -1,16 +1,39 @@
 import {useState} from 'react';
-import {Form, useActionData} from 'react-router';
+import {Form, useActionData, useLoaderData} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {Button} from '~/components/gi/ui';
 import {ROUTES} from '~/lib/site-content';
+import {listAdvisors} from '~/lib/admin/operations';
+import {MARKETING_HANDLE, UNKNOWN_ADVISOR} from '~/lib/auth/advisor-choice';
 import {validateStep} from './registro.validation.js';
 
 export {action} from './auth.signup.jsx';
 
 export const meta = () => [{title: 'Crear cuenta · Generando Ideas'}];
 
+/**
+ * Feeds the "¿quién es tu ejecutivo de venta?" select. Degrades to an empty
+ * list rather than failing the page: no advisor list must never block signup.
+ * @param {import('./+types/registro').Route.LoaderArgs} args
+ */
+export async function loader({context}) {
+  let advisors = [];
+  try {
+    advisors = await listAdvisors(context.env);
+  } catch (err) {
+    console.error('[registro] advisor list failed (non-fatal):', err);
+  }
+  return {advisors};
+}
+
 export default function Registro() {
   const actionData = useActionData();
+  // `?? {}` sostiene el render si el loader no corrió (p.ej. en tests de otros
+  // pasos); la lista vacía tiene su propio camino más abajo.
+  const {advisors = []} = useLoaderData() ?? {};
+  // Blindaje del contrato del select: marketing es el respaldo, nunca una
+  // opción. El loader ya lo filtra; esto lo sostiene si eso cambiara.
+  const asesores = advisors.filter((a) => a.handle !== MARKETING_HANDLE);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     name: '',
@@ -22,12 +45,26 @@ export default function Registro() {
     razonSocial: '',
     needs: '',
     volume: '',
+    esCliente: '',
+    advisor: '',
     terms: false,
   });
   const [errores, setErrores] = useState({});
   const [revisandoEmail, setRevisandoEmail] = useState(false);
   const [verPassword, setVerPassword] = useState(false);
   const setField = (k, v) => setForm((f) => ({...f, [k]: v}));
+
+  // Responder la pregunta reinicia el asesor, para que un "sí -> elijo a Laura
+  // -> no" no deje colgado un handle que ya no aplica. Si no hay lista que
+  // ofrecer, un "sí" equivale a no conocer al asesor: así el registro no se
+  // atora esperando una elección imposible.
+  function setEsCliente(valor) {
+    setForm((f) => ({
+      ...f,
+      esCliente: valor,
+      advisor: valor === 'si' && asesores.length === 0 ? UNKNOWN_ADVISOR : '',
+    }));
+  }
 
   async function continuar() {
     const errs = validateStep(step, form);
@@ -94,6 +131,8 @@ export default function Registro() {
           <input type="hidden" name="phone" value={form.phone} />
           <input type="hidden" name="volume" value={form.volume} />
           <input type="hidden" name="needs" value={form.needs} />
+          <input type="hidden" name="esCliente" value={form.esCliente} />
+          <input type="hidden" name="advisor" value={form.advisor} />
 
           {step === 1 && (
             <>
@@ -257,6 +296,78 @@ export default function Registro() {
                   </span>
                 )}
               </div>
+
+              <div style={{height: 1, background: 'var(--line)', margin: '4px 0'}} />
+
+              <fieldset className="field" style={{border: 'none', padding: 0, margin: 0}}>
+                <legend style={{padding: 0, marginBottom: 8}}>
+                  ¿Ya eres cliente de Generando Ideas?
+                </legend>
+                <div style={{display: 'flex', gap: 20, flexWrap: 'wrap'}}>
+                  {[
+                    {id: 'reg-cliente-si', value: 'si', texto: 'Sí, ya soy cliente'},
+                    {id: 'reg-cliente-no', value: 'no', texto: 'No, es mi primera vez'},
+                  ].map((op) => (
+                    <label
+                      key={op.value}
+                      htmlFor={op.id}
+                      style={{display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer'}}
+                    >
+                      <input
+                        id={op.id}
+                        type="radio"
+                        /* El valor viaja en el mirror oculto `esCliente`; este
+                           name solo agrupa los radios para el teclado. */
+                        name="esClienteRadio"
+                        value={op.value}
+                        checked={form.esCliente === op.value}
+                        onChange={() => setEsCliente(op.value)}
+                      />
+                      <span>{op.texto}</span>
+                    </label>
+                  ))}
+                </div>
+                {errores.esCliente && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                    {errores.esCliente}
+                  </span>
+                )}
+              </fieldset>
+
+              {form.esCliente === 'si' && asesores.length > 0 && (
+                <div className="field">
+                  <label htmlFor="reg-advisor">Tu ejecutivo de venta asignado</label>
+                  <select
+                    id="reg-advisor"
+                    className="input"
+                    value={form.advisor}
+                    onChange={(e) => setField('advisor', e.target.value)}
+                  >
+                    <option value="">Selecciona…</option>
+                    {asesores.map((a) => (
+                      <option key={a.handle} value={a.handle}>
+                        {a.puesto ? `${a.nombre} — ${a.puesto}` : a.nombre}
+                      </option>
+                    ))}
+                    <option value={UNKNOWN_ADVISOR}>No conozco a mi asesor asignado</option>
+                  </select>
+                  <span className="help-msg">
+                    Así dirigimos tus cotizaciones a la persona correcta desde el primer día.
+                  </span>
+                  {errores.advisor && (
+                    <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                      {errores.advisor}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {form.esCliente === 'si' && asesores.length === 0 && (
+                <span className="help-msg">
+                  No pudimos cargar la lista de ejecutivos en este momento. Te asignaremos con
+                  nuestro equipo y ellos te canalizarán con tu asesor.
+                </span>
+              )}
             </>
           )}
 

@@ -12,6 +12,9 @@ import {
   createDraftOrder,
   getCustomerAdvisor,
   getVariantInventory,
+  listAdvisors,
+  resolveAdvisorGid,
+  setCustomerAdvisor,
 } from './operations.js';
 
 beforeEach(() => {
@@ -263,5 +266,226 @@ describe('getVariantInventory', () => {
     adminFetch.mockRejectedValue(new Error('Access denied for inventoryQuantity'));
     expect(await getVariantInventory({}, 'gid://shopify/ProductVariant/1')).toBeNull();
     warn.mockRestore();
+  });
+});
+
+function advisorNode(handle, nombre, puesto, status = 'ACTIVE') {
+  return {
+    handle,
+    displayName: nombre,
+    capabilities: status === null ? null : {publishable: {status}},
+    fields: [
+      {key: 'nombre', value: nombre},
+      {key: 'puesto', value: puesto},
+      {key: 'correo', value: `${handle}@generandoideas.com`},
+    ],
+  };
+}
+
+describe('listAdvisors', () => {
+  it('shapes active entries as {handle, nombre, puesto}', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {nodes: [advisorNode('laura-vega', 'Laura Vega', 'Inside Sales Executive')]},
+    });
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors).toEqual([
+      {handle: 'laura-vega', nombre: 'Laura Vega', puesto: 'Inside Sales Executive'},
+    ]);
+  });
+
+  it('excludes the marketing fallback entry from the pickable list', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('marketing', 'Marketing', 'Marketing'),
+          advisorNode('laura-vega', 'Laura Vega', 'Inside Sales Executive'),
+        ],
+      },
+    });
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors.map((a) => a.handle)).toEqual(['laura-vega']);
+  });
+
+  it('excludes DRAFT entries', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('ariana-flores', 'Ariana Flores', 'Inside Sales Executive', 'DRAFT'),
+          advisorNode('laura-vega', 'Laura Vega', 'Inside Sales Executive'),
+        ],
+      },
+    });
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors.map((a) => a.handle)).toEqual(['laura-vega']);
+  });
+
+  it('keeps entries whose publishable capability is absent', async () => {
+    // Shopify only reports a status when the definition enables the
+    // publishable capability. A missing status must not empty the whole select.
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {nodes: [advisorNode('laura-vega', 'Laura Vega', 'Inside Sales', null)]},
+    });
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors.map((a) => a.handle)).toEqual(['laura-vega']);
+  });
+
+  it('sorts by name so accented names land in the right place', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('noe-sanchez', 'Noé Sánchez', 'Account Executive'),
+          advisorNode('ailine-gamboa', 'Ailine Gamboa', 'Strategic Sales'),
+          advisorNode('martin-rocha', 'Martín Rocha', 'Customer Success'),
+        ],
+      },
+    });
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors.map((a) => a.nombre)).toEqual([
+      'Ailine Gamboa',
+      'Martín Rocha',
+      'Noé Sánchez',
+    ]);
+  });
+
+  it('falls back to the display name when the nombre field is missing', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          {
+            handle: 'sin-campos',
+            displayName: 'Sin Campos',
+            capabilities: {publishable: {status: 'ACTIVE'}},
+            fields: [],
+          },
+        ],
+      },
+    });
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors).toEqual([{handle: 'sin-campos', nombre: 'Sin Campos', puesto: ''}]);
+  });
+
+  it('returns an empty list when the response has no metaobjects', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({});
+
+    await expect(listAdvisors({})).resolves.toEqual([]);
+  });
+
+  it('returns a deterministic list in stub mode without calling adminFetch', async () => {
+    isStubMode.mockReturnValue(true);
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors.length).toBeGreaterThan(0);
+    expect(advisors.every((a) => a.handle && a.nombre)).toBe(true);
+    expect(advisors.some((a) => a.handle === 'marketing')).toBe(false);
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('resolveAdvisorGid', () => {
+  it('resolves a handle to its metaobject gid', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjectByHandle: {id: 'gid://shopify/Metaobject/194049835311'},
+    });
+
+    const gid = await resolveAdvisorGid({}, 'marketing');
+
+    expect(gid).toBe('gid://shopify/Metaobject/194049835311');
+    const [, , vars] = adminFetch.mock.calls[0];
+    expect(vars.handle).toEqual({type: 'ejecutiva_de_venta', handle: 'marketing'});
+  });
+
+  it('returns null for a handle that does not exist', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({metaobjectByHandle: null});
+
+    await expect(resolveAdvisorGid({}, 'no-existe')).resolves.toBeNull();
+  });
+
+  it('returns null without querying when no handle is given', async () => {
+    isStubMode.mockReturnValue(false);
+
+    await expect(resolveAdvisorGid({}, '')).resolves.toBeNull();
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns a deterministic gid in stub mode without calling adminFetch', async () => {
+    isStubMode.mockReturnValue(true);
+
+    await expect(resolveAdvisorGid({}, 'marketing')).resolves.toMatch(
+      /^gid:\/\/shopify\/Metaobject\/STUB-/,
+    );
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('setCustomerAdvisor', () => {
+  const ADVISOR_GID = 'gid://shopify/Metaobject/194049835311';
+
+  it('writes the metaobject reference to custom.ejecutiva_de_venta', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({metafieldsSet: {metafields: [{id: 'x'}], userErrors: []}});
+
+    await setCustomerAdvisor({}, GID, ADVISOR_GID);
+
+    const [, , vars] = adminFetch.mock.calls[0];
+    expect(vars.metafields).toEqual([
+      {
+        ownerId: GID,
+        namespace: 'custom',
+        key: 'ejecutiva_de_venta',
+        type: 'metaobject_reference',
+        value: ADVISOR_GID,
+      },
+    ]);
+  });
+
+  it('throws when Shopify reports userErrors', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metafieldsSet: {
+        metafields: [],
+        userErrors: [{field: ['value'], message: 'Value is invalid'}],
+      },
+    });
+
+    await expect(setCustomerAdvisor({}, GID, ADVISOR_GID)).rejects.toThrow(/Value is invalid/);
+  });
+
+  it('does nothing when either gid is missing', async () => {
+    isStubMode.mockReturnValue(false);
+
+    await setCustomerAdvisor({}, GID, null);
+    await setCustomerAdvisor({}, null, ADVISOR_GID);
+
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('is a no-op in stub mode', async () => {
+    isStubMode.mockReturnValue(true);
+
+    await setCustomerAdvisor({}, GID, ADVISOR_GID);
+
+    expect(adminFetch).not.toHaveBeenCalled();
   });
 });

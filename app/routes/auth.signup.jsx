@@ -3,6 +3,7 @@ import {assertSameOrigin} from '~/lib/http/csrf';
 import {getDb} from '~/lib/db/client';
 import {createUser, EmailTakenError} from '~/lib/auth/users';
 import {linkSignupCustomer} from '~/lib/auth/signup-link';
+import {advisorHandleFromForm} from '~/lib/auth/advisor-choice';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
 
 /**
@@ -21,6 +22,13 @@ export async function action({request, context}) {
   const phone = String(form.get('phone') ?? '') || null;
   const volume = String(form.get('volume') ?? '') || null;
   const needs = String(form.get('needs') ?? '') || null;
+  // La elección del asesor viaja como handle, nunca como gid: el servidor lo
+  // resuelve contra Shopify, así que un form manipulado no puede apuntar el
+  // metafield a otro objeto.
+  const advisorHandle = advisorHandleFromForm({
+    esCliente: String(form.get('esCliente') ?? ''),
+    advisor: String(form.get('advisor') ?? ''),
+  });
 
   if (!email || password.length < 8) {
     return data({error: 'Correo y contraseña (mínimo 8 caracteres) son obligatorios.'}, {status: 400});
@@ -49,8 +57,9 @@ export async function action({request, context}) {
     throw err;
   }
 
-  // Link to Shopify (best-effort; reconciled later if it fails).
-  const shopifyGid = await linkSignupCustomer(db, context.env, user);
+  // Link to Shopify (best-effort; reconciled later if it fails). The advisor
+  // metaobject is assigned as part of the same step.
+  const shopifyGid = await linkSignupCustomer(db, context.env, user, advisorHandle);
   user.shopifyCustomerGid = shopifyGid;
 
   // Send the verification email (best-effort; signup succeeds even if it fails).

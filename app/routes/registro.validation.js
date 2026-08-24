@@ -18,6 +18,14 @@ export function validateStep(step, form) {
   if (step === 2) {
     if (!String(form.company ?? '').trim()) errores.company = 'Ingresa el nombre de la empresa.';
     if (!String(form.volume ?? '')) errores.volume = 'Selecciona un volumen estimado.';
+    if (!String(form.esCliente ?? '')) {
+      errores.esCliente = 'Indícanos si ya eres cliente.';
+    } else if (form.esCliente === 'si' && !String(form.advisor ?? '')) {
+      // "No conozco a mi asesor asignado" es un valor propio del select, así que
+      // cuenta como respuesta; lo único que se rechaza es dejarlo en blanco.
+      errores.advisor =
+        'Elige a tu ejecutivo de venta o selecciona "No conozco a mi asesor asignado".';
+    }
   }
 
   return errores;

@@ -192,3 +192,145 @@ export async function getVariantInventory(env, variantId) {
     return null;
   }
 }
+
+// --- Asignación de ejecutiva de venta en el registro -------------------------
+// El asesor vive en el CUSTOMER, en custom.ejecutiva_de_venta (metaobject_reference
+// validado contra la definición ejecutiva_de_venta). `listAdvisors` alimenta el
+// select del registro y `setCustomerAdvisor` escribe la elección. El entry
+// `marketing` es el respaldo: nunca se ofrece, solo se asigna.
+
+const ADVISOR_TYPE = 'ejecutiva_de_venta';
+
+/** Handle del entry de respaldo; se filtra de la lista seleccionable. */
+const ADVISOR_FALLBACK_HANDLE = 'marketing';
+
+const ADVISORS_LIST = `
+  query advisors($type: String!) {
+    metaobjects(type: $type, first: 250, sortKey: "display_name") {
+      nodes {
+        handle
+        displayName
+        capabilities { publishable { status } }
+        fields { key value }
+      }
+    }
+  }
+`;
+
+const ADVISOR_BY_HANDLE = `
+  query metaobjectByHandle($handle: MetaobjectHandleInput!) {
+    metaobjectByHandle(handle: $handle) { id }
+  }
+`;
+
+const CUSTOMER_ADVISOR_SET = `
+  mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+    metafieldsSet(metafields: $metafields) {
+      metafields { id }
+      userErrors { field message }
+    }
+  }
+`;
+
+const STUB_ADVISORS = [
+  {handle: 'asesor-stub-uno', nombre: 'Asesor Stub Uno', puesto: 'Account Executive'},
+  {handle: 'asesor-stub-dos', nombre: 'Asesor Stub Dos', puesto: 'Inside Sales Executive'},
+];
+
+/**
+ * Advisors the customer may pick during signup: published entries only, with the
+ * `marketing` fallback removed. Sorted by name with Spanish collation so accents
+ * land where a Spanish speaker expects them.
+ *
+ * Note: Shopify's `metaobjects(query:)` has no `status` field — passing
+ * "status:active" is silently ignored and returns drafts too, so the DRAFT
+ * filter has to happen here. An entry with no publishable capability keeps its
+ * place rather than disappearing.
+ *
+ * @param {Record<string, any>} env
+ * @returns {Promise<Array<{handle: string, nombre: string, puesto: string}>>}
+ */
+export async function listAdvisors(env) {
+  if (isStubMode(env)) return STUB_ADVISORS.map((a) => ({...a}));
+
+  const data = await adminFetch(env, ADVISORS_LIST, {type: ADVISOR_TYPE});
+  const nodes =
+    data && data.metaobjects && Array.isArray(data.metaobjects.nodes)
+      ? data.metaobjects.nodes
+      : [];
+
+  return nodes
+    .filter((node) => {
+      if (!node || !node.handle) return false;
+      if (node.handle === ADVISOR_FALLBACK_HANDLE) return false;
+      const status =
+        node.capabilities && node.capabilities.publishable
+          ? node.capabilities.publishable.status
+          : null;
+      return status !== 'DRAFT';
+    })
+    .map((node) => {
+      const fields = {};
+      for (const f of node.fields || []) {
+        if (f && f.key != null) fields[f.key] = f.value;
+      }
+      return {
+        handle: node.handle,
+        nombre: fields.nombre || node.displayName || node.handle,
+        puesto: fields.puesto || '',
+      };
+    })
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+}
+
+/**
+ * Resolve an advisor handle to its metaobject gid. The signup action only ever
+ * receives a handle from the browser and resolves it here, so a tampered form
+ * can't point the metafield at an arbitrary object.
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} handle
+ * @returns {Promise<string|null>}
+ */
+export async function resolveAdvisorGid(env, handle) {
+  if (!handle) return null;
+  if (isStubMode(env)) return `gid://shopify/Metaobject/STUB-${handle}`;
+
+  const data = await adminFetch(env, ADVISOR_BY_HANDLE, {
+    handle: {type: ADVISOR_TYPE, handle},
+  });
+  const node = data ? data.metaobjectByHandle : null;
+  return node && node.id ? node.id : null;
+}
+
+/**
+ * Point a customer's custom.ejecutiva_de_venta at an advisor metaobject.
+ * No-op when either gid is missing or in stub mode. Requires write_customers.
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} customerGid
+ * @param {string|null|undefined} advisorGid
+ * @returns {Promise<void>}
+ */
+export async function setCustomerAdvisor(env, customerGid, advisorGid) {
+  if (!customerGid || !advisorGid) return;
+  if (isStubMode(env)) return;
+
+  const data = await adminFetch(env, CUSTOMER_ADVISOR_SET, {
+    metafields: [
+      {
+        ownerId: customerGid,
+        namespace: 'custom',
+        key: 'ejecutiva_de_venta',
+        type: 'metaobject_reference',
+        value: advisorGid,
+      },
+    ],
+  });
+  const result = data ? data.metafieldsSet : null;
+  if (result && result.userErrors && result.userErrors.length) {
+    throw new Error(
+      `setCustomerAdvisor userErrors: ${result.userErrors
+        .map((e) => e.message)
+        .join('; ')}`,
+    );
+  }
+}
