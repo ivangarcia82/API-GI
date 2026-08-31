@@ -80,6 +80,11 @@ export function GiFooter() {
                     Aviso de privacidad
                   </a>
                 </li>
+                <li>
+                  <a href={ROUTES.terms} target="_blank" rel="noopener noreferrer">
+                    Términos y condiciones
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
