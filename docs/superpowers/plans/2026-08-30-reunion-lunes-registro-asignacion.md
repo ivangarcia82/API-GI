@@ -1,5 +1,20 @@
 # Reunión del lunes — implementación
 
+> **Estado: ejecutado el 2026-08-30.** Las 14 tareas están implementadas y
+> commiteadas en `feat/ux-comprador-b2b` (una tarea por commit, salvo la 7 y la 8
+> que comparten uno). Suite: 534 pruebas en verde, lint limpio. Las casillas de
+> abajo se dejan sin marcar a propósito: el registro real es el historial de git.
+>
+> **Desviaciones respecto a lo planeado**, ambas encontradas al ejecutar:
+> 1. Los dos selects del paso 3 quedaron **sin** `required` nativo. El botón de
+>    ese paso es `submit`, así que la validación del navegador se adelantaba a
+>    `validateStep` y mostraba su propio mensaje en inglés. En los pasos 1 y 2 no
+>    ocurre porque ahí el botón es `type="button"`.
+> 2. El `action` valida además que `area`, `heardAbout` y `location` estén en su
+>    catálogo, devolviendo 400 si no. No estaba en la tarea 13, pero era la razón
+>    de existir de `registro.catalogos.js` — sin eso el catálogo compartido no
+>    protegía de nada. Un valor vacío se sigue aceptando y se guarda `NULL`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Copiar al manager en las cotizaciones con ejecutivo, endurecer y ampliar el registro (campos, aviso de privacidad, términos y newsletter) y sacar la asignación de asesor del alta para que marketing la valide en el admin de Shopify.
