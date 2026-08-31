@@ -161,13 +161,14 @@ describe('buildSearchQuery', () => {
     expect(buildSearchQuery({q: 'mochila', cat: 'oficina'})).toBe('mochila');
   });
 
-  it('añade los accesos rápidos como tags', () => {
-    expect(buildSearchQuery({q: 'mochila', cat: '', nuevos: true})).toBe('mochila AND tag:"nuevo"');
-    expect(buildSearchQuery({q: '', cat: '', ofertas: true})).toBe('tag:"oferta"');
+  it('los accesos rápidos tampoco viajan en la búsqueda', () => {
+    // Igual que la categoría: tag: no filtra. Van por colección.
+    expect(buildSearchQuery({q: 'mochila', cat: '', nuevos: true})).toBe('mochila');
+    expect(buildSearchQuery({q: '', cat: '', ofertas: true})).toBe('*');
   });
 
-  it('los accesos rápidos siguen en la búsqueda, sin la categoría', () => {
-    expect(buildSearchQuery({q: '', cat: 'textil', ofertas: true})).toBe('tag:"oferta"');
+  it('ni la categoría ni los accesos rápidos ensucian la búsqueda', () => {
+    expect(buildSearchQuery({q: '', cat: 'textil', ofertas: true})).toBe('*');
   });
 
   it('escapa las comillas del texto del usuario', () => {
@@ -338,6 +339,7 @@ describe('resolveCatalogSource', () => {
     expect(resolveCatalogSource({cat: 'bebidas', q: ''})).toEqual({
       modo: 'coleccion',
       handle: 'bebidas',
+      clave: 'cat',
     });
   });
 
@@ -370,5 +372,59 @@ describe('appliedFilters', () => {
     expect(out.material).toEqual(['PLÁSTICO']);
     expect(out.precioMin).toBe(10);
     expect(out.q).toBe('termo');
+  });
+});
+
+describe('una sola colección a la vez', () => {
+  it('Novedades y Ofertas se resuelven por colección', () => {
+    expect(resolveCatalogSource({nuevos: true})).toEqual({
+      modo: 'coleccion',
+      handle: 'nuevos',
+      clave: 'nuevos',
+    });
+    expect(resolveCatalogSource({ofertas: true})).toEqual({
+      modo: 'coleccion',
+      handle: 'ofertas',
+      clave: 'ofertas',
+    });
+  });
+
+  it('la categoría gana sobre los accesos rápidos', () => {
+    // Sólo cabe una colección por consulta: manda la intención más concreta.
+    expect(resolveCatalogSource({cat: 'bebidas', nuevos: true, ofertas: true})).toEqual({
+      modo: 'coleccion',
+      handle: 'bebidas',
+      clave: 'cat',
+    });
+  });
+
+  it('Novedades gana sobre Ofertas cuando se piden las dos', () => {
+    expect(resolveCatalogSource({nuevos: true, ofertas: true}).handle).toBe('nuevos');
+  });
+
+  it('con texto libre no se aplica ninguna colección', () => {
+    expect(resolveCatalogSource({q: 'termo', cat: 'bebidas', nuevos: true})).toEqual({
+      modo: 'busqueda',
+    });
+  });
+
+  it('los chips borran lo que se pidió y no cupo', () => {
+    const out = appliedFilters({cat: 'bebidas', nuevos: true, ofertas: true, q: ''});
+    expect(out.cat).toBe('bebidas');
+    expect(out.nuevos).toBe(false);
+    expect(out.ofertas).toBe(false);
+  });
+
+  it('con texto libre se borran las tres', () => {
+    const out = appliedFilters({cat: 'bebidas', nuevos: true, ofertas: true, q: 'termo'});
+    expect(out.cat).toBe('');
+    expect(out.nuevos).toBe(false);
+    expect(out.ofertas).toBe(false);
+    expect(out.q).toBe('termo');
+  });
+
+  it('conserva Ofertas cuando es lo único pedido', () => {
+    const out = appliedFilters({cat: '', nuevos: false, ofertas: true, q: ''});
+    expect(out.ofertas).toBe(true);
   });
 });

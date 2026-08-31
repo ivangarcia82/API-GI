@@ -219,44 +219,60 @@ function handleToTag(handle) {
  * `productFilters` porque ahí el filtro `tag` se ignora en silencio (un tag
  * inexistente devuelve el resultado sin filtrar).
  */
-export function buildSearchQuery({q = '', nuevos = false, ofertas = false} = {}) {
-  const partes = [];
-  // Las comillas del usuario romperían la sintaxis `tag:"..."` que añadimos.
-  if (q) partes.push(q.replace(/"/g, '\\"'));
-  // Novedades y Ofertas siguen aquí y arrastran la misma imprecisión que tenía
-  // la categoría: son un sesgo de relevancia, no un filtro. Se aceptan porque
-  // son accesos rápidos, no una promesa de exhaustividad.
-  if (nuevos) partes.push('tag:"nuevo"');
-  if (ofertas) partes.push('tag:"oferta"');
+export function buildSearchQuery({q = ''} = {}) {
+  // Sólo el texto libre. Categoría, Novedades y Ofertas NO viajan aquí: como
+  // `tag:"..."` no filtra, prometerlas desde la búsqueda era mentir. Las tres
+  // se resuelven por colección — ver resolveCatalogSource.
+  // Las comillas del usuario romperían cualquier sintaxis que añadiéramos.
+  const texto = String(q ?? '').trim().replace(/"/g, '\\"');
   // `*` recupera el catálogo completo y respeta igualmente los productFilters.
-  return partes.length ? partes.join(' AND ') : '*';
+  return texto || '*';
 }
+
+/* Categoría, Novedades y Ofertas son las tres COLECCIONES de la tienda, y sólo
+   se puede consultar una por carga. El orden marca cuál gana cuando el usuario
+   pide varias: la categoría expresa la intención más concreta; los otros dos
+   son accesos rápidos. */
+const COLECCIONES = [
+  {clave: 'cat', handle: (f) => f.cat},
+  {clave: 'nuevos', handle: () => 'nuevos'},
+  {clave: 'ofertas', handle: () => 'ofertas'},
+];
 
 /**
  * De dónde salen los productos de esta carga.
  *
- * `collection.products(filters:)` filtra la categoría de verdad, pero NO acepta
- * texto libre; `search` acepta texto pero no sabe filtrar por categoría. No se
- * pueden combinar, así que cuando hay texto la categoría cede — y `chipsFilters`
- * la quita de los chips para que la pantalla nunca prometa un filtro que no está
- * aplicando.
+ * `collection.products(filters:)` filtra de verdad, pero NO acepta texto libre;
+ * `search` acepta texto pero no sabe filtrar por colección — `tag:"..."` dentro
+ * de la consulta sólo pesa en la relevancia. No se pueden combinar, así que hay
+ * una jerarquía: si hay texto manda la búsqueda; si no, manda la primera
+ * colección pedida. `appliedFilters` borra las que no se aplican para que la
+ * pantalla nunca prometa un filtro que la consulta no está aplicando.
  *
  * @param {object} filters
- * @returns {{modo: 'coleccion', handle: string} | {modo: 'busqueda'}}
+ * @returns {{modo: 'coleccion', handle: string, clave: string} | {modo: 'busqueda'}}
  */
 export function resolveCatalogSource(filters) {
-  if (filters.cat && !filters.q) return {modo: 'coleccion', handle: filters.cat};
+  if (filters.q) return {modo: 'busqueda'};
+  for (const c of COLECCIONES) {
+    if (filters[c.clave]) return {modo: 'coleccion', handle: c.handle(filters), clave: c.clave};
+  }
   return {modo: 'busqueda'};
 }
 
 /**
  * Los filtros tal como se están aplicando de verdad, para pintar los chips.
+ * Todo lo que se pidió y no cupo se borra en vez de quedarse mintiendo.
  * @param {object} filters
  */
 export function appliedFilters(filters) {
   const fuente = resolveCatalogSource(filters);
-  if (fuente.modo === 'busqueda' && filters.cat) return {...filters, cat: ''};
-  return filters;
+  const out = {...filters};
+  for (const c of COLECCIONES) {
+    if (fuente.modo === 'coleccion' && c.clave === fuente.clave) continue;
+    out[c.clave] = c.clave === 'cat' ? '' : false;
+  }
+  return out;
 }
 
 /**
