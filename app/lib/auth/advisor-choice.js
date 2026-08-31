@@ -1,9 +1,7 @@
-// Pura y sin dependencias: traduce lo que eligió el usuario en el registro al
-// handle del metaobject `ejecutiva_de_venta` que se le asignará en Shopify.
-//
-// Regla: solo un cliente existente que además señala a alguien concreto se
-// queda con ese asesor. Todo lo demás (cliente nuevo, "no conozco a mi asesor",
-// select vacío, o la pregunta sin responder) cae en `marketing`.
+// Pura y sin dependencias: qué ejecutiva de venta dijo el usuario que le
+// atiende. NO asigna nada — desde la reunión del lunes (2026-08-30) el alta
+// deja al cliente sin asesor y marketing valida la asignación en el admin de
+// Shopify, filtrando por el tag `lead-pendiente`.
 
 /** Handle del entry de respaldo. Nunca se ofrece como opción en el select. */
 export const MARKETING_HANDLE = 'marketing';
@@ -13,11 +11,11 @@ export const UNKNOWN_ADVISOR = '__desconocido__';
 
 /**
  * @param {{esCliente?: string, advisor?: string}} form
- * @returns {string} handle del metaobject a asignar
+ * @returns {string|null} handle reclamado, o null si no reclamó a nadie
  */
-export function advisorHandleFromForm({esCliente, advisor} = {}) {
-  if (esCliente !== 'si') return MARKETING_HANDLE;
+export function claimedAdvisorHandle({esCliente, advisor} = {}) {
+  if (esCliente !== 'si') return null;
   const handle = String(advisor ?? '').trim();
-  if (!handle || handle === UNKNOWN_ADVISOR) return MARKETING_HANDLE;
+  if (!handle || handle === UNKNOWN_ADVISOR || handle === MARKETING_HANDLE) return null;
   return handle;
 }
