@@ -3,7 +3,13 @@ import {assertSameOrigin} from '~/lib/http/csrf';
 import {getDb} from '~/lib/db/client';
 import {createUser, EmailTakenError} from '~/lib/auth/users';
 import {linkSignupCustomer} from '~/lib/auth/signup-link';
-import {advisorHandleFromForm} from '~/lib/auth/advisor-choice';
+import {claimedAdvisorHandle} from '~/lib/auth/advisor-choice';
+import {
+  AREAS,
+  COMO_NOS_CONOCISTE,
+  UBICACIONES,
+  esOpcionValida,
+} from './registro.catalogos.js';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
 
 /**
@@ -22,10 +28,19 @@ export async function action({request, context}) {
   const phone = String(form.get('phone') ?? '') || null;
   const volume = String(form.get('volume') ?? '') || null;
   const needs = String(form.get('needs') ?? '') || null;
-  // La elección del asesor viaja como handle, nunca como gid: el servidor lo
-  // resuelve contra Shopify, así que un form manipulado no puede apuntar el
-  // metafield a otro objeto.
-  const advisorHandle = advisorHandleFromForm({
+  const position = String(form.get('position') ?? '') || null;
+  const area = String(form.get('area') ?? '') || null;
+  const heardAbout = String(form.get('heardAbout') ?? '') || null;
+  const location = String(form.get('location') ?? '') || null;
+  const esCliente = String(form.get('esCliente') ?? '') || null;
+  const newsletterOptIn = String(form.get('newsletter') ?? '') === '1';
+  const privacyOk = String(form.get('privacy') ?? '') === '1';
+  const termsOk = String(form.get('terms') ?? '') === '1';
+
+  // El asesor viaja como handle y ya NO se asigna: marketing valida la
+  // asignación en el admin de Shopify. Aquí sólo se guarda lo que el usuario
+  // reclamó, para que el aviso a marketing pueda mostrarlo.
+  const advisorHandle = claimedAdvisorHandle({
     esCliente: String(form.get('esCliente') ?? ''),
     advisor: String(form.get('advisor') ?? ''),
   });
@@ -33,6 +48,27 @@ export async function action({request, context}) {
   if (!email || password.length < 8) {
     return data({error: 'Correo y contraseña (mínimo 8 caracteres) son obligatorios.'}, {status: 400});
   }
+
+  // El navegador ya lo valida, pero el action es la única puerta que cuenta:
+  // hasta hoy el checkbox ni siquiera llegaba al servidor.
+  if (!privacyOk || !termsOk) {
+    return data(
+      {error: 'Debes aceptar el aviso de privacidad y los términos y condiciones.'},
+      {status: 400},
+    );
+  }
+
+  // Un valor fuera de catálogo sólo puede venir de un formulario manipulado:
+  // los selects no ofrecen nada más. Vacío sí se acepta (queda NULL).
+  const fueraDeCatalogo =
+    (area && !esOpcionValida(area, AREAS)) ||
+    (heardAbout && !esOpcionValida(heardAbout, COMO_NOS_CONOCISTE)) ||
+    (location && !esOpcionValida(location, UBICACIONES));
+  if (fueraDeCatalogo) {
+    return data({error: 'Alguna de las opciones seleccionadas no es válida.'}, {status: 400});
+  }
+
+  const now = new Date().toISOString();
 
   const db = getDb(context.env);
 
@@ -48,6 +84,16 @@ export async function action({request, context}) {
       phone,
       volume,
       needs,
+      position,
+      area,
+      heardAbout,
+      location,
+      esCliente,
+      advisorHandle,
+      privacyAcceptedAt: now,
+      termsAcceptedAt: now,
+      newsletterOptIn,
+      newsletterOptInAt: newsletterOptIn ? now : null,
       role: 'quoter',
     });
   } catch (err) {
@@ -57,9 +103,10 @@ export async function action({request, context}) {
     throw err;
   }
 
-  // Link to Shopify (best-effort; reconciled later if it fails). The advisor
-  // metaobject is assigned as part of the same step.
-  const shopifyGid = await linkSignupCustomer(db, context.env, user, advisorHandle);
+  // Link to Shopify (best-effort; reconciled later if it fails). Ya no se
+  // asigna asesor: el customer queda etiquetado como `lead-pendiente` y
+  // marketing valida la asignación en el admin.
+  const shopifyGid = await linkSignupCustomer(db, context.env, user, {newsletterOptIn});
   user.shopifyCustomerGid = shopifyGid;
 
   // Send the verification email (best-effort; signup succeeds even if it fails).
