@@ -211,3 +211,45 @@ export async function fetchCollectionCards(storefront, handles) {
     image: pickCollectionImage(c),
   }));
 }
+
+/* Ruta estricta de la categoría. `search(query:"tag:...")` no filtra —sólo pesa
+   en la relevancia— así que la categoría se resuelve por colección, que sí
+   respeta el filtro. A cambio no acepta texto libre ni expone un total. */
+export const GI_CATALOG_COLLECTION_QUERY = `#graphql
+  ${GI_PRODUCT_CARD_FRAGMENT}
+  query GiCatalogCollection(
+    $handle: String!
+    $productFilters: [ProductFilter!]
+    $sortKey: ProductCollectionSortKeys
+    $reverse: Boolean
+    $first: Int
+    $last: Int
+    $startCursor: String
+    $endCursor: String
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    collection(handle: $handle) {
+      handle
+      title
+      products(
+        filters: $productFilters
+        sortKey: $sortKey
+        reverse: $reverse
+        first: $first
+        last: $last
+        before: $startCursor
+        after: $endCursor
+      ) {
+        filters {
+          id
+          label
+          type
+          values { id label count input }
+        }
+        nodes { ...GiProductCard }
+        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
+      }
+    }
+  }
+`;

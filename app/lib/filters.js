@@ -8,8 +8,14 @@
  *  - `products(query:)` acepta texto pero no facetas.
  *  - `collection.products(filters:)` acepta facetas pero no texto.
  *  - `search(query:, productFilters:)` acepta AMBOS: es el motor que usamos.
- *  - El filtro `tag` pasado como ProductFilter se IGNORA en silencio, así que
- *    la categoría viaja dentro de `query` como `tag:"..."`.
+ *  - El filtro `tag` pasado como ProductFilter se IGNORA en silencio.
+ *  - `tag:"..."` dentro de `query` TAMPOCO filtra: sólo pesa en la relevancia.
+ *    Comprobado el 2026-08-31 producto a producto: con la categoría sola los
+ *    24 primeros son correctos por casualidad, pero al añadir cualquier filtro
+ *    que amplíe el conjunto (PLÁSTICO, color, disponibilidad) se cuelan hasta
+ *    17 de 24 productos de otras categorías. Por eso la categoría ya NO viaja
+ *    en `query`: se resuelve con `collection.products(filters:)`, que sí es
+ *    estricto.
  *  - Filtros del mismo tipo se combinan con O; de tipos distintos, con Y.
  */
 
@@ -213,15 +219,44 @@ function handleToTag(handle) {
  * `productFilters` porque ahí el filtro `tag` se ignora en silencio (un tag
  * inexistente devuelve el resultado sin filtrar).
  */
-export function buildSearchQuery({q = '', cat = '', nuevos = false, ofertas = false} = {}) {
+export function buildSearchQuery({q = '', nuevos = false, ofertas = false} = {}) {
   const partes = [];
   // Las comillas del usuario romperían la sintaxis `tag:"..."` que añadimos.
   if (q) partes.push(q.replace(/"/g, '\\"'));
-  if (cat) partes.push(`tag:"${handleToTag(cat)}"`);
+  // Novedades y Ofertas siguen aquí y arrastran la misma imprecisión que tenía
+  // la categoría: son un sesgo de relevancia, no un filtro. Se aceptan porque
+  // son accesos rápidos, no una promesa de exhaustividad.
   if (nuevos) partes.push('tag:"nuevo"');
   if (ofertas) partes.push('tag:"oferta"');
   // `*` recupera el catálogo completo y respeta igualmente los productFilters.
   return partes.length ? partes.join(' AND ') : '*';
+}
+
+/**
+ * De dónde salen los productos de esta carga.
+ *
+ * `collection.products(filters:)` filtra la categoría de verdad, pero NO acepta
+ * texto libre; `search` acepta texto pero no sabe filtrar por categoría. No se
+ * pueden combinar, así que cuando hay texto la categoría cede — y `chipsFilters`
+ * la quita de los chips para que la pantalla nunca prometa un filtro que no está
+ * aplicando.
+ *
+ * @param {object} filters
+ * @returns {{modo: 'coleccion', handle: string} | {modo: 'busqueda'}}
+ */
+export function resolveCatalogSource(filters) {
+  if (filters.cat && !filters.q) return {modo: 'coleccion', handle: filters.cat};
+  return {modo: 'busqueda'};
+}
+
+/**
+ * Los filtros tal como se están aplicando de verdad, para pintar los chips.
+ * @param {object} filters
+ */
+export function appliedFilters(filters) {
+  const fuente = resolveCatalogSource(filters);
+  if (fuente.modo === 'busqueda' && filters.cat) return {...filters, cat: ''};
+  return filters;
 }
 
 /**

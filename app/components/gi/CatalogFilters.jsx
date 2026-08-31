@@ -257,7 +257,11 @@ export function CatalogFilters({
           disabled={cargando}
           aria-live="polite"
         >
-          {cargando ? 'Buscando…' : `Ver ${totalCount.toLocaleString('es-MX')} productos`}
+          {cargando
+            ? 'Buscando…'
+            : totalCount == null
+              ? 'Ver productos'
+              : `Ver ${totalCount.toLocaleString('es-MX')} productos`}
         </button>
       </div>
     </aside>

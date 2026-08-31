@@ -11,7 +11,7 @@ import {
   SortSheet,
 } from '~/components/gi/CatalogFilters';
 import {useApp, useToast} from '~/lib/AppContext';
-import {GI_CATALOG_SEARCH_QUERY} from '~/lib/giFragments';
+import {GI_CATALOG_SEARCH_QUERY, GI_CATALOG_COLLECTION_QUERY} from '~/lib/giFragments';
 import {normalizeProduct, HOME_CATEGORIES} from '~/lib/gi';
 import {
   SORTS,
@@ -22,6 +22,8 @@ import {
   groupColorValues,
   activeChips,
   hasActiveFilters,
+  resolveCatalogSource,
+  appliedFilters,
 } from '~/lib/filters';
 
 export const meta = () => [
@@ -56,14 +58,15 @@ export async function loader({context, request}) {
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
   const sortDef = SORTS[filtros.sort];
 
+  const fuente = resolveCatalogSource(filtros);
   const consultaBase = {
     query: buildSearchQuery(filtros),
     sortKey: sortDef.sortKey,
     reverse: sortDef.reverse,
   };
 
-  const buscar = (variables, etiqueta) =>
-    storefront.query(GI_CATALOG_SEARCH_QUERY, {variables}).catch((error) => {
+  const buscar = (variables, etiqueta, consulta = GI_CATALOG_SEARCH_QUERY) =>
+    storefront.query(consulta, {variables}).catch((error) => {
       console.error(`[catalogo] búsqueda (${etiqueta}) falló:`, error);
       return null;
     });
@@ -71,29 +74,48 @@ export async function loader({context, request}) {
   /* Una familia de color se traduce a un OR de los tonos crudos que existan
      ahora mismo ("Verde" → VERDE, VERDE PISTACHO, VERDE AQUA…), y esos tonos
      sólo se conocen leyendo la faceta. De ahí el huevo y la gallina: para
-     construir el filtro hace falta una respuesta previa.
-     Esa consulta de vocabulario pide `first: 1` porque sus productos se
-     descartan — las facetas vienen igual sea cual sea el tamaño de página. */
+     construir el filtro hace falta una respuesta previa. */
   let colorValues = [];
   if (filtros.color.length) {
-    const vocabulario = await buscar(
-      {...consultaBase, productFilters: null, first: 1},
-      'vocabulario de color',
-    );
-    colorValues = vocabulario?.search?.productFilters?.find((f) => f.id === FACET.color)?.values || [];
+    const vocabulario =
+      fuente.modo === 'coleccion'
+        ? await buscar(
+            {handle: fuente.handle, productFilters: null, first: 1, sortKey: 'RELEVANCE', reverse: false},
+            'vocabulario de color (colección)',
+            GI_CATALOG_COLLECTION_QUERY,
+          )
+        : await buscar({...consultaBase, productFilters: null, first: 1}, 'vocabulario de color');
+    const facetas =
+      vocabulario?.collection?.products?.filters ?? vocabulario?.search?.productFilters ?? [];
+    colorValues = facetas.find((f) => f.id === FACET.color)?.values || [];
   }
 
-  const res = await buscar(
-    {
-      ...consultaBase,
-      productFilters: buildProductFilters(filtros, groupColorValues(colorValues)),
-      ...paginationVariables,
-    },
-    'resultados',
-  );
+  const productFilters = buildProductFilters(filtros, groupColorValues(colorValues));
 
-  const resultado = res?.search;
-  const facetasCrudas = resultado?.productFilters || [];
+  /* La categoría se resuelve por colección porque `search(query:"tag:...")` no
+     filtra: sólo pesa en la relevancia, y al cruzarla con cualquier otro filtro
+     se cuelan productos de otras categorías. La colección no acepta texto libre,
+     así que en cuanto hay `q` se vuelve a `search` y la categoría deja de
+     aplicarse — `appliedFilters` la quita de los chips para no mentir. */
+  const res =
+    fuente.modo === 'coleccion'
+      ? await buscar(
+          {
+            handle: fuente.handle,
+            productFilters,
+            sortKey: sortDef.sortKey === 'PRICE' ? 'PRICE' : 'RELEVANCE',
+            reverse: sortDef.reverse,
+            ...paginationVariables,
+          },
+          'resultados (colección)',
+          GI_CATALOG_COLLECTION_QUERY,
+        )
+      : await buscar({...consultaBase, productFilters, ...paginationVariables}, 'resultados');
+
+  const coleccion = res?.collection;
+  const resultado = fuente.modo === 'coleccion' ? coleccion?.products : res?.search;
+  const facetasCrudas =
+    (fuente.modo === 'coleccion' ? resultado?.filters : resultado?.productFilters) || [];
 
   /* Todas las facetas salen de la consulta ya filtrada para que sus conteos
      reflejen lo aplicado. La de color es la excepción aparente: Shopify no
@@ -105,8 +127,10 @@ export async function loader({context, request}) {
 
   return {
     products: resultado ? {nodes: resultado.nodes || [], pageInfo: resultado.pageInfo} : EMPTY,
-    totalCount: resultado?.totalCount ?? 0,
-    filtros,
+    // La colección no expone total: se marca como desconocido en vez de
+    // enseñar un 0 que sería falso.
+    totalCount: fuente.modo === 'coleccion' ? null : (resultado?.totalCount ?? 0),
+    filtros: appliedFilters(filtros),
     facetas: {
       colores,
       materiales: listaDe(facetasCrudas, FACET.material),
@@ -157,6 +181,10 @@ const paginationLinkStyle = {
 
 export default function Catalogo() {
   const {products, totalCount, filtros, facetas} = useLoaderData();
+  /* La ruta de colección no expone un total. Se escribe "productos" a secas en
+     vez de inventar un número o enseñar un 0 que sería mentira. */
+  const totalTexto =
+    totalCount == null ? 'Productos' : `${totalCount.toLocaleString('es-MX')} productos`;
   const [, setParams] = useSearchParams();
   const navigate = useNavigate();
   const navigation = useNavigation();
@@ -298,7 +326,7 @@ export default function Catalogo() {
           {titulo}
         </h1>
         <p style={{color: 'var(--ink-3)', margin: 0, fontSize: 16}}>
-          {totalCount.toLocaleString('es-MX')} productos
+          {totalTexto}
           {hayFiltros ? ' con los filtros aplicados' : ' en el catálogo'}. Combina
           categoría, color, precio y acabados.
         </p>
@@ -354,7 +382,7 @@ export default function Catalogo() {
             </form>
             <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
               <span className="cat-results-meta">
-                {cargando ? 'Buscando…' : `${totalCount.toLocaleString('es-MX')} productos`}
+                {cargando ? 'Buscando…' : totalTexto}
               </span>
               <select
                 className="input cat-sort-select"

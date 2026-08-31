@@ -6,6 +6,8 @@ import {
   parseFilterParams,
   buildSearchQuery,
   buildProductFilters,
+  resolveCatalogSource,
+  appliedFilters,
   toggleMulti,
   activeChips,
   SORTS,
@@ -151,12 +153,12 @@ describe('buildSearchQuery', () => {
     expect(buildSearchQuery({q: 'mochila', cat: ''})).toBe('mochila');
   });
 
-  it('traduce la categoría a un filtro por tag', () => {
-    expect(buildSearchQuery({q: '', cat: 'mochilas-y-maletas'})).toBe('tag:"mochilas y maletas"');
-  });
-
-  it('combina texto y categoría con AND — el caso que estaba roto', () => {
-    expect(buildSearchQuery({q: 'mochila', cat: 'oficina'})).toBe('mochila AND tag:"oficina"');
+  it('ya NO mete la categoría en la búsqueda', () => {
+    // `tag:"..."` dentro de query no filtra, sólo pesa en la relevancia: con
+    // cualquier otro filtro se colaban productos de otras categorías. La
+    // categoría se resuelve ahora por colección.
+    expect(buildSearchQuery({q: '', cat: 'mochilas-y-maletas'})).toBe('*');
+    expect(buildSearchQuery({q: 'mochila', cat: 'oficina'})).toBe('mochila');
   });
 
   it('añade los accesos rápidos como tags', () => {
@@ -164,10 +166,8 @@ describe('buildSearchQuery', () => {
     expect(buildSearchQuery({q: '', cat: '', ofertas: true})).toBe('tag:"oferta"');
   });
 
-  it('combina categoría y accesos rápidos', () => {
-    expect(buildSearchQuery({q: '', cat: 'textil', ofertas: true})).toBe(
-      'tag:"textil" AND tag:"oferta"',
-    );
+  it('los accesos rápidos siguen en la búsqueda, sin la categoría', () => {
+    expect(buildSearchQuery({q: '', cat: 'textil', ofertas: true})).toBe('tag:"oferta"');
   });
 
   it('escapa las comillas del texto del usuario', () => {
@@ -330,5 +330,45 @@ describe('COLOR_FAMILIES', () => {
     for (const fam of COLOR_FAMILIES) {
       expect(colorFamilyOf(fam.label)).toBe(fam.id);
     }
+  });
+});
+
+describe('resolveCatalogSource', () => {
+  it('usa la colección cuando hay categoría y no hay texto', () => {
+    expect(resolveCatalogSource({cat: 'bebidas', q: ''})).toEqual({
+      modo: 'coleccion',
+      handle: 'bebidas',
+    });
+  });
+
+  it('vuelve a la búsqueda cuando hay texto, aunque haya categoría', () => {
+    // La colección no acepta texto libre: uno de los dos tiene que ceder.
+    expect(resolveCatalogSource({cat: 'bebidas', q: 'termo'})).toEqual({modo: 'busqueda'});
+  });
+
+  it('usa la búsqueda cuando no hay categoría', () => {
+    expect(resolveCatalogSource({cat: '', q: ''})).toEqual({modo: 'busqueda'});
+    expect(resolveCatalogSource({cat: '', q: 'termo'})).toEqual({modo: 'busqueda'});
+  });
+});
+
+describe('appliedFilters', () => {
+  it('quita la categoría de los chips cuando no se está aplicando', () => {
+    // La pantalla nunca debe prometer un filtro que la consulta no aplica.
+    const f = {cat: 'bebidas', q: 'termo', color: []};
+    expect(appliedFilters(f).cat).toBe('');
+  });
+
+  it('conserva la categoría cuando sí se aplica', () => {
+    const f = {cat: 'bebidas', q: '', color: []};
+    expect(appliedFilters(f).cat).toBe('bebidas');
+  });
+
+  it('no toca el resto del estado', () => {
+    const f = {cat: 'bebidas', q: 'termo', material: ['PLÁSTICO'], precioMin: 10};
+    const out = appliedFilters(f);
+    expect(out.material).toEqual(['PLÁSTICO']);
+    expect(out.precioMin).toBe(10);
+    expect(out.q).toBe('termo');
   });
 });
