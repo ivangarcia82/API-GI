@@ -15,6 +15,8 @@ import {escapeHtml, itemsTableHtml} from './emailParts.js';
  */
 export function buildAdvisorEmail({advisorEmail, managerEmail, quote, user, items, invoiceUrl}) {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  // Las cotizaciones anteriores al folio siguen mostrando su UUID.
+  const folio = quote.folio || quote.id;
 
   const invoiceBlock = invoiceUrl
     ? `<p><a href="${escapeHtml(invoiceUrl)}">Ver cotización en Shopify</a></p>`
@@ -30,7 +32,7 @@ export function buildAdvisorEmail({advisorEmail, managerEmail, quote, user, item
 
   const html = `
     <div style="font-family:Arial,sans-serif;color:#1a1a1a">
-      <h2>Nueva cotización ${escapeHtml(quote.id)}</h2>
+      <h2>Nueva cotización ${escapeHtml(folio)}</h2>
       <p>
         <strong>Cliente:</strong> ${escapeHtml(fullName || user.email)}<br/>
         <strong>Empresa:</strong> ${escapeHtml(user.company || '—')}<br/>
@@ -46,7 +48,7 @@ export function buildAdvisorEmail({advisorEmail, managerEmail, quote, user, item
     to: advisorEmail,
     // Sólo se copia al manager cuando lo hay: Resend rechaza cc: undefined.
     ...(managerEmail ? {cc: managerEmail} : {}),
-    subject: `Nueva cotización ${quote.id} — ${fullName || user.email}`,
+    subject: `Nueva cotización ${folio} — ${fullName || user.email}`,
     html,
   };
 }

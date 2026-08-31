@@ -24,7 +24,7 @@ export function buildCustomerEmail({quote, user, items, quoteUrl}) {
   <h1 style="font-size:20px">Recibimos tu cotización</h1>
   <p>Hola ${escapeHtml(greeting)},</p>
   <p>Recibimos tu solicitud. Un asesor la revisará y te contactará con la propuesta formal.</p>
-  <p><strong>Folio:</strong> ${escapeHtml(quote.id)}</p>
+  <p><strong>Folio:</strong> ${escapeHtml(quote.folio || quote.id)}</p>
   ${deadlineBlock}
   ${itemsTableHtml(items, {totalLabel: 'Total estimado'})}
   <p style="margin:24px 0">
@@ -37,7 +37,7 @@ export function buildCustomerEmail({quote, user, items, quoteUrl}) {
 
   return {
     to: user.email,
-    subject: `Recibimos tu cotización ${quote.id} — Generando Ideas`,
+    subject: `Recibimos tu cotización ${quote.folio || quote.id} — Generando Ideas`,
     html,
   };
 }

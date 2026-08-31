@@ -74,6 +74,15 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_quotes_user ON quotes(user_id)`,
   `CREATE INDEX IF NOT EXISTS idx_quote_items_quote ON quote_items(quote_id)`,
 
+  // Consecutivo del folio de cotización, una fila por serie y año. El conteo
+  // reinicia cada año, así que el año forma parte de la llave.
+  `CREATE TABLE IF NOT EXISTS folio_counters (
+    serie TEXT NOT NULL,
+    year  INTEGER NOT NULL,
+    last  INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (serie, year)
+  )`,
+
   `CREATE TABLE IF NOT EXISTS wishlist (
     user_id    TEXT NOT NULL REFERENCES users(id),
     product_id TEXT NOT NULL,
@@ -101,6 +110,9 @@ export async function migrate(db) {
   // Idempotent column additions for databases created before the column
   // existed (CREATE TABLE IF NOT EXISTS won't alter an existing table).
   await addColumnIfMissing(db, 'quote_items', 'image', 'TEXT');
+  // Folio legible; NULL en las cotizaciones anteriores al cambio, que siguen
+  // mostrando su UUID. No se numeran hacia atrás: ya circularon así.
+  await addColumnIfMissing(db, 'quotes', 'folio', 'TEXT');
   await addColumnIfMissing(db, 'users', 'phone', 'TEXT');
   await addColumnIfMissing(db, 'users', 'volume', 'TEXT');
   await addColumnIfMissing(db, 'users', 'needs', 'TEXT');

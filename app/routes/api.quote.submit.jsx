@@ -5,7 +5,7 @@ import {findById, setShopifyGid} from '~/lib/auth/users';
 import {isStubMode} from '~/lib/admin/client';
 import {createCustomer, createDraftOrder} from '~/lib/admin/operations';
 import {notifyQuoteSubmitted} from '~/lib/quotes/notify';
-import {getOrCreateDraftQuote, getQuoteWithItems} from '~/lib/quotes/repo';
+import {getOrCreateDraftQuote, getQuoteWithItems, markSubmitted} from '~/lib/quotes/repo';
 import {buildDraftOrderInput} from '~/lib/quotes/draftInput';
 
 export async function action({request, context}) {
@@ -82,24 +82,15 @@ export async function action({request, context}) {
     return Response.json({error: message}, {status: 502});
   }
 
-  // Collapse the status write + any bookkeeping into one libSQL round-trip.
-  await db.batch(
-    [
-      {
-        sql: `UPDATE quotes
-              SET status='submitted', shopify_draft_order_gid=?, shopify_invoice_url=?, updated_at=?
-              WHERE id=?`,
-        args: [gid ?? null, invoiceUrl ?? null, new Date().toISOString(), quote.id],
-      },
-    ],
-    'write',
-  );
+  // Vía markSubmitted, no con un UPDATE propio: ahí vive la reserva del folio.
+  // Duplicar el SQL aquí ya había dejado esta ruta sin folio una vez.
+  const {folio} = await markSubmitted(db, quote.id, {gid, invoiceUrl});
 
   // Best-effort notifications: the internal copy (advisor, or the sales inbox
   // when the customer has none) and the buyer's confirmation. The quote is
   // already submitted and persisted, so notifyQuoteSubmitted never throws.
   await notifyQuoteSubmitted(env, {
-    quote: {id: quote.id, notes: quote.notes, deadline: quote.deadline},
+    quote: {id: quote.id, folio, notes: quote.notes, deadline: quote.deadline},
     user,
     items,
     invoiceUrl, // raw url; goes to internal staff only, never to the buyer
@@ -109,5 +100,5 @@ export async function action({request, context}) {
 
   // Never surface a stub invoice URL to the user.
   const safeInvoiceUrl = isStubMode(env) ? null : invoiceUrl;
-  return Response.json({folio: quote.id, draftOrderGid: gid, invoiceUrl: safeInvoiceUrl});
+  return Response.json({folio, draftOrderGid: gid, invoiceUrl: safeInvoiceUrl});
 }

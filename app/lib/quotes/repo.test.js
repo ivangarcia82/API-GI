@@ -106,3 +106,48 @@ describe('quotes/repo', () => {
     expect(q2.id).not.toBe(q.id);
   });
 });
+
+describe('folio al enviar', () => {
+  let db;
+  beforeEach(async () => {
+    db = await makeDb();
+  });
+
+  it('asigna folio al marcar como enviada', async () => {
+    const q = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, q.id, {gid: null, invoiceUrl: null});
+    const {quote} = await getQuoteWithItems(db, q.id);
+    expect(quote.folio).toMatch(/^GIV\.CDMX\.\d{8}$/);
+  });
+
+  it('un borrador todavía no tiene folio', async () => {
+    const q = await getOrCreateDraftQuote(db, USER);
+    const {quote} = await getQuoteWithItems(db, q.id);
+    expect(quote.folio).toBeNull();
+  });
+
+  it('cotizaciones distintas reciben folios distintos y consecutivos', async () => {
+    const a = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, a.id, {gid: null, invoiceUrl: null});
+    // El mismo usuario puede abrir otro borrador: el índice único sólo aplica
+    // mientras el anterior siga en estado 'draft'.
+    const b = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, b.id, {gid: null, invoiceUrl: null});
+
+    const {quote: qa} = await getQuoteWithItems(db, a.id);
+    const {quote: qb} = await getQuoteWithItems(db, b.id);
+    expect(qa.folio).not.toBe(qb.folio);
+    expect(Number(qb.folio.slice(-4))).toBe(Number(qa.folio.slice(-4)) + 1);
+  });
+
+  it('reenviar la misma cotización no le cambia el folio', async () => {
+    // Si un reintento renumerara, el cliente tendría dos documentos con folios
+    // distintos para la misma cotización.
+    const q = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, q.id, {gid: null, invoiceUrl: null});
+    const {quote: primero} = await getQuoteWithItems(db, q.id);
+    await markSubmitted(db, q.id, {gid: 'gid://x/1', invoiceUrl: 'https://x/1'});
+    const {quote: segundo} = await getQuoteWithItems(db, q.id);
+    expect(segundo.folio).toBe(primero.folio);
+  });
+});

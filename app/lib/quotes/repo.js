@@ -1,6 +1,7 @@
 // Server-only: persistence for quotes and quote items (Turso / libSQL).
-// Quote shape: {id,userId,status,notes,deadline,shopifyDraftOrderGid,shopifyInvoiceUrl}
+// Quote shape: {id,userId,status,folio,notes,deadline,shopifyDraftOrderGid,shopifyInvoiceUrl}
 // Item shape:  {id,quoteId,variantId,productHandle,title,qty,baseUnitPrice,technique,surface,size,decorationTotal,effectiveUnitPrice}
+import {nextFolio} from './folio.js';
 
 function nowIso() {
   return new Date().toISOString();
@@ -17,6 +18,7 @@ function mapQuoteRow(r) {
     id: r.id,
     userId: r.user_id,
     status: r.status,
+    folio: r.folio ?? null,
     notes: r.notes ?? null,
     deadline: r.deadline ?? null,
     shopifyDraftOrderGid: r.shopify_draft_order_gid ?? null,
@@ -165,10 +167,21 @@ export async function listUserQuotes(db, userId) {
 }
 
 export async function markSubmitted(db, quoteId, {gid, invoiceUrl}) {
+  // El folio se reserva sólo la primera vez. Un reintento de envío no puede
+  // renumerar: el cliente acabaría con dos documentos para la misma cotización.
+  const previo = await db.execute({
+    sql: `SELECT folio FROM quotes WHERE id=? LIMIT 1`,
+    args: [quoteId],
+  });
+  const yaTiene = previo.rows[0] && previo.rows[0].folio;
+  const folio = yaTiene || (await nextFolio(db));
+
   await db.execute({
     sql: `UPDATE quotes
-          SET status='submitted', shopify_draft_order_gid=?, shopify_invoice_url=?, updated_at=?
+          SET status='submitted', folio=?, shopify_draft_order_gid=?, shopify_invoice_url=?, updated_at=?
           WHERE id=?`,
-    args: [gid ?? null, invoiceUrl ?? null, nowIso(), quoteId],
+    args: [folio, gid ?? null, invoiceUrl ?? null, nowIso(), quoteId],
   });
+
+  return {folio};
 }
