@@ -7,6 +7,7 @@ import {
   getCustomerAdvisor as realGetCustomerAdvisor,
 } from '../admin/operations.js';
 import {sendEmail as realSendEmail} from '../email/resend.js';
+import {managerFor as realManagerFor} from '../quotes/managers.js';
 import {MARKETING_HANDLE} from './advisor-choice.js';
 import {buildSignupAdvisorEmail, shopifyCustomerAdminUrl} from './signup-advisor-email.js';
 
@@ -50,13 +51,14 @@ async function resolveRecipient(env, customerGid, getCustomerAdvisor, getAdvisor
  * @param {{user: {email: string, firstName?: string|null, lastName?: string|null,
  *   company?: string|null, phone?: string|null, shopifyCustomerGid?: string|null,
  *   advisorHandle?: string|null, esCliente?: string|null}}} params
- * @param {{getCustomerAdvisor?: Function, getAdvisorByHandle?: Function, sendEmail?: Function}} [deps]
+ * @param {{getCustomerAdvisor?: Function, getAdvisorByHandle?: Function, sendEmail?: Function, managerFor?: Function}} [deps]
  * @returns {Promise<{sent: boolean, to: string|null}>}
  */
 export async function notifyAdvisorOfSignup(env, {user}, deps = {}) {
   const getCustomerAdvisor = deps.getCustomerAdvisor ?? realGetCustomerAdvisor;
   const getAdvisorByHandle = deps.getAdvisorByHandle ?? realGetAdvisorByHandle;
   const sendEmail = deps.sendEmail ?? realSendEmail;
+  const managerFor = deps.managerFor ?? realManagerFor;
 
   const recipient = await resolveRecipient(
     env,
@@ -73,17 +75,24 @@ export async function notifyAdvisorOfSignup(env, {user}, deps = {}) {
   }
 
   // El handle sirve para filtrar, pero marketing decide mejor leyendo el
-  // nombre. Best-effort: si no se resuelve, se manda el handle tal cual.
+  // nombre. De la misma consulta sale el correo del asesor, que es la llave de
+  // la matriz de líderes — así el CC no cuesta una llamada extra.
+  // Best-effort: si no se resuelve, se manda el handle y no se copia a nadie.
   let claimedAdvisor = null;
+  let cc = null;
   if (user.advisorHandle) {
     claimedAdvisor = user.advisorHandle;
     try {
       const reclamado = await getAdvisorByHandle(env, user.advisorHandle);
       if (reclamado && reclamado.nombre) claimedAdvisor = reclamado.nombre;
+      if (reclamado && reclamado.correo) cc = managerFor(reclamado.correo);
     } catch (err) {
       console.error('[signup.notify] claimed advisor lookup failed:', err);
     }
   }
+
+  // Un mismo buzón en Para y en CC sólo duplica el correo.
+  if (cc && cc === recipient.correo) cc = null;
 
   const message = buildSignupAdvisorEmail({
     advisorTo: recipient.correo,
@@ -95,6 +104,7 @@ export async function notifyAdvisorOfSignup(env, {user}, deps = {}) {
     ),
     claimedAdvisor,
     esCliente: user.esCliente ?? null,
+    cc,
   });
 
   try {

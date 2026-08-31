@@ -35,6 +35,7 @@ function row(label, value) {
  *   user: {email: string, firstName?: string|null, lastName?: string|null, company?: string|null, phone?: string|null},
  *   customerAdminUrl: string|null,
  *   claimedAdvisor?: string|null,
+ *   cc?: string|null,
  *   esCliente?: string|null,
  * }} args
  * @returns {{to: string, subject: string, html: string}}
@@ -46,6 +47,7 @@ export function buildSignupAdvisorEmail({
   customerAdminUrl,
   claimedAdvisor,
   esCliente,
+  cc,
 }) {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
   const quien = fullName || user.email;
@@ -73,6 +75,8 @@ export function buildSignupAdvisorEmail({
 
   return {
     to: advisorTo,
+    // Sólo cuando lo hay: Resend rechaza cc: undefined.
+    ...(cc ? {cc} : {}),
     subject: `Nuevo registro ${DASH} ${quien}`,
     html,
   };

@@ -280,6 +280,23 @@ Lo que sí cambia es el cuerpo (`signup-advisor-email.js`): se añaden el asesor
 el usuario dijo tener y si se declaró cliente, que es la información sobre la que
 marketing va a decidir. Sin eso el correo no le sirve para validar nada.
 
+#### 5.3-bis Copia al líder del asesor reclamado
+
+**Añadido el 2026-08-31.** El aviso de registro sigue yendo a marketing y
+disparándose al verificar el correo, no al registrarse — eso se decidió dejar
+como estaba, asumiendo que quien nunca confirma no le llega a nadie (hueco #1 de
+la nota del 24 de agosto).
+
+Lo que sí cambia: cuando la persona dice ser cliente de un ejecutivo concreto, se
+copia al líder de ese ejecutivo, para que pueda corregir a marketing si el
+reclamo no cuadra con su cartera. El CC sale de la misma matriz de
+`quotes/managers.js`.
+
+No cuesta ninguna consulta extra: `getAdvisorByHandle`, que ya se llamaba para
+resolver el nombre, devuelve también el `correo`, que es justo la llave de la
+matriz. Si el asesor no está en la matriz, o el líder resulta ser el propio
+destinatario, no se copia a nadie.
+
 #### 5.4 Las cotizaciones no cambian
 
 Un lead pendiente no tiene ejecutivo, así que `notifyQuoteSubmitted` cae en el

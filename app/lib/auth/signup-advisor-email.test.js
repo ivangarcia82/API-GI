@@ -138,3 +138,22 @@ describe('buildSignupAdvisorEmail · reclamo de asesor', () => {
     expect(msg.html).toContain('—');
   });
 });
+
+describe('buildSignupAdvisorEmail · copia al líder', () => {
+  const base = {
+    advisorTo: 'marketing@generandoideas.com',
+    user: {email: 'ana@acme.mx', firstName: 'Ana', lastName: 'Pérez'},
+    customerAdminUrl: null,
+    claimedAdvisor: 'Laura Vega',
+    esCliente: 'si',
+  };
+
+  it('incluye cc cuando hay líder a quien copiar', () => {
+    const msg = buildSignupAdvisorEmail({...base, cc: 'sjimenez@generandoideas.com'});
+    expect(msg.cc).toBe('sjimenez@generandoideas.com');
+  });
+
+  it('omite la clave cc cuando no hay líder', () => {
+    expect('cc' in buildSignupAdvisorEmail({...base, cc: null})).toBe(false);
+  });
+});
