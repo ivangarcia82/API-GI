@@ -187,3 +187,12 @@ describe('formato de cotización · propiedad', () => {
     expect(html).not.toContain('<script>alert(1)</script>');
   });
 });
+
+describe('formato de cotización · pie fiscal', () => {
+  it('imprime razón social, domicilio y RFC', async () => {
+    const html = await render();
+    expect(html).toContain('Estrategia en Suministros Internacionales');
+    expect(html).toContain('Cda. Antonio Maceo 67');
+    expect(html).toContain('RFC: ESI130515FI3');
+  });
+});

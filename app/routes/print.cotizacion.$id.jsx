@@ -231,8 +231,8 @@ export async function loader({params, context}) {
 
     <div class="pie">
       <div class="lema">YOUR ONE STOP SOLUTION.</div>
-      <div class="sub">Estrategia en Suministros Internacionales</div>
-      <div class="dir">Cda. Antonio Maceo 67, Col. Escandón I Secc. Alc. Miguel Hidalgo, C.P. 11800 CDMX, México.</div>
+      <div class="sub">${esc(BRAND.legalName)}</div>
+      <div class="dir">${esc(BRAND.address)} RFC: ${esc(BRAND.rfc)}</div>
       <div><a href="mailto:${esc(BRAND.email)}">${esc(BRAND.email)}</a> · <a href="https://www.generandoideas.com">www.generandoideas.com</a></div>
     </div>
   </div>

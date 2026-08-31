@@ -60,8 +60,12 @@ export const IMAGES = {
 // ---------------------------------------------------------------------------
 export const BRAND = {
   name: 'Generando Ideas',
+  legalName: 'Estrategia en Suministros Internacionales',
   phone: '(55) 7098 8100',
   email: 'marketing@generandoideas.com',
+  rfc: 'ESI130515FI3',
+  address:
+    'Cda. Antonio Maceo 67, Col. Escandón I Secc. Alc. Miguel Hidalgo, C.P. 11800 CDMX, México.',
 };
 
 // ---------------------------------------------------------------------------
