@@ -8,6 +8,7 @@ import {getQuoteWithItems} from '~/lib/quotes/repo';
 import {findById} from '~/lib/auth/users';
 import {getCustomerAdvisor} from '~/lib/admin/operations';
 import {NOTAS_IMPORTANTES} from '~/lib/quotes/notasImportantes';
+import {folioVisible} from '~/lib/quotes/folio';
 import {BRAND} from '~/lib/site-content';
 
 const NARANJA = '#ff8300';
@@ -100,7 +101,7 @@ export async function loader({params, context}) {
     .join('');
 
   const customer = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
-  const folio = quote.folio || quote.id;
+  const folio = folioVisible(quote);
 
   const notas = NOTAS_IMPORTANTES.map((n) => `<li>${esc(n)}</li>`).join('');
 

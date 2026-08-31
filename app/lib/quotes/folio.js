@@ -6,7 +6,9 @@
 //
 // Se asigna al ENVIAR, no al crear el borrador, para que la serie quede sin
 // huecos: un carrito abandonado no gasta número.
-import {getDb} from '../db/client.js';
+//
+// Sin imports de servidor a propósito: `folioVisible` lo usan componentes de
+// cliente, y traerse aquí el cliente de libSQL lo metería en el bundle.
 
 /** Serie fija. El año va aparte porque el conteo reinicia cada 1 de enero. */
 export const SERIE = 'GIV.CDMX.';
@@ -48,11 +50,15 @@ export async function nextFolio(db, {year = new Date().getFullYear()} = {}) {
   return formatFolio({year, n});
 }
 
+
 /**
- * Igual que nextFolio pero resolviendo la conexión desde el env, para llamarlo
- * donde sólo se tiene el contexto de la petición.
- * @param {Record<string, any>} env
+ * Lo que se le enseña al cliente. Las cotizaciones anteriores al folio no se
+ * numeran hacia atrás —ya circularon con su uuid— así que caen a él.
+ * @param {{id?: string, folio?: string|null}|null|undefined} quote
+ * @returns {string}
  */
-export async function nextFolioForEnv(env) {
-  return nextFolio(getDb(env));
+export function folioVisible(quote) {
+  if (!quote) return '';
+  const folio = String(quote.folio ?? '').trim();
+  return folio || String(quote.id ?? '');
 }

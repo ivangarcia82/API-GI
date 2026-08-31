@@ -1,4 +1,9 @@
-import {addCustomerTags, createCustomer, getAdvisorByHandle} from '../admin/operations.js';
+import {
+  addCustomerTags,
+  createCustomer,
+  getAdvisorByHandle,
+  setCustomerRequestedAdvisor,
+} from '../admin/operations.js';
 import {buildSignupNote} from './signup-note.js';
 import {setShopifyGid} from './users.js';
 
@@ -32,10 +37,12 @@ export async function linkSignupCustomer(db, env, user, {newsletterOptIn = false
   // Sólo cuando la persona señaló a alguien concreto, así que la mayoría de
   // altas no paga esta consulta. Best-effort: la nota cae al handle si falla.
   let advisorName = null;
+  let advisorGid = null;
   if (user.advisorHandle) {
     try {
       const reclamado = await getAdvisorByHandle(env, user.advisorHandle);
       if (reclamado && reclamado.nombre) advisorName = reclamado.nombre;
+      if (reclamado && reclamado.gid) advisorGid = reclamado.gid;
     } catch (err) {
       console.error('[signup] claimed advisor lookup failed for note:', err);
     }
@@ -70,6 +77,21 @@ export async function linkSignupCustomer(db, env, user, {newsletterOptIn = false
         err && err.message
       } — customer linked, tag manually in admin.`,
     );
+  }
+
+  // El reclamo va a `ejecutiva_solicitada`, NO a `ejecutiva_de_venta`: hasta
+  // que marketing valide, el cliente sigue sin asesor. Best-effort como el
+  // resto del enlace.
+  if (advisorGid) {
+    try {
+      await setCustomerRequestedAdvisor(env, gid, advisorGid);
+    } catch (err) {
+      console.warn(
+        `[signup] requested advisor metafield failed for user ${user.id}: ${
+          err && err.message
+        } — el reclamo sigue en la nota del cliente.`,
+      );
+    }
   }
 
   return gid;

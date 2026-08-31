@@ -1,6 +1,7 @@
 // Pure helper: build the advisor notification email payload (no I/O).
 // Returns {to, subject, html} ready for sendEmail.
 import {escapeHtml, itemsTableHtml} from './emailParts.js';
+import {folioVisible} from './folio.js';
 
 /**
  * @param {{
@@ -15,8 +16,7 @@ import {escapeHtml, itemsTableHtml} from './emailParts.js';
  */
 export function buildAdvisorEmail({advisorEmail, managerEmail, quote, user, items, invoiceUrl}) {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-  // Las cotizaciones anteriores al folio siguen mostrando su UUID.
-  const folio = quote.folio || quote.id;
+  const folio = folioVisible(quote);
 
   const invoiceBlock = invoiceUrl
     ? `<p><a href="${escapeHtml(invoiceUrl)}">Ver cotización en Shopify</a></p>`

@@ -8,6 +8,7 @@ import {getCustomerAdvisor} from '~/lib/admin/operations';
 import {formatPrice} from '~/lib/gi';
 import {useApp, useToast} from '~/lib/AppContext';
 import {Button} from '~/components/gi/ui';
+import {folioVisible} from '~/lib/quotes/folio';
 
 export const meta = () => [{title: 'Cotización · Generando Ideas'}];
 
@@ -68,7 +69,7 @@ export default function CotizacionDetail() {
         <div>
           <div className="quote-row-label">Folio</div>
           <h1 style={{fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 'clamp(18px,2.4vw,26px)', margin: '4px 0 0', wordBreak: 'break-all'}}>
-            {quote.id}
+            {folioVisible(quote)}
           </h1>
         </div>
         <span className={`quote-status quote-status--${quote.status}`}>

@@ -247,6 +247,12 @@ const ADVISOR_BY_HANDLE = `
   }
 `;
 
+/** Asignación oficial: la escribe marketing al validar. */
+const ADVISOR_KEY = 'ejecutiva_de_venta';
+
+/** Lo que el usuario dijo al registrarse. Todavía no es una asignación. */
+const REQUESTED_ADVISOR_KEY = 'ejecutiva_solicitada';
+
 const CUSTOMER_ADVISOR_SET = `
   mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
     metafieldsSet(metafields: $metafields) {
@@ -374,6 +380,36 @@ export async function resolveAdvisorGid(env, handle) {
  * @returns {Promise<void>}
  */
 export async function setCustomerAdvisor(env, customerGid, advisorGid) {
+  return setAdvisorMetafield(env, customerGid, advisorGid, {
+    key: ADVISOR_KEY,
+    label: 'setCustomerAdvisor',
+  });
+}
+
+/**
+ * Guardar el ejecutivo que el usuario DIJO tener al registrarse. Va en un
+ * campo distinto de la asignación oficial a propósito: mientras marketing no
+ * valide, el cliente sigue sin asesor y sus cotizaciones caen en ventas@.
+ * Validar consiste en copiar este valor a `ejecutiva_de_venta`.
+ *
+ * Para que se vea como campo en la ficha del cliente hace falta crear la
+ * definición `custom.ejecutiva_solicitada` (metaobject_reference validado
+ * contra `ejecutiva_de_venta`) en Configuración → Datos personalizados.
+ *
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} customerGid
+ * @param {string|null|undefined} advisorGid
+ * @returns {Promise<void>}
+ */
+export async function setCustomerRequestedAdvisor(env, customerGid, advisorGid) {
+  return setAdvisorMetafield(env, customerGid, advisorGid, {
+    key: REQUESTED_ADVISOR_KEY,
+    label: 'setCustomerRequestedAdvisor',
+  });
+}
+
+/** Escritura compartida: mismo shape, distinta llave. */
+async function setAdvisorMetafield(env, customerGid, advisorGid, {key, label}) {
   if (!customerGid || !advisorGid) return;
   if (isStubMode(env)) return;
 
@@ -382,7 +418,7 @@ export async function setCustomerAdvisor(env, customerGid, advisorGid) {
       {
         ownerId: customerGid,
         namespace: 'custom',
-        key: 'ejecutiva_de_venta',
+        key,
         type: 'metaobject_reference',
         value: advisorGid,
       },
@@ -391,9 +427,7 @@ export async function setCustomerAdvisor(env, customerGid, advisorGid) {
   const result = data ? data.metafieldsSet : null;
   if (result && result.userErrors && result.userErrors.length) {
     throw new Error(
-      `setCustomerAdvisor userErrors: ${result.userErrors
-        .map((e) => e.message)
-        .join('; ')}`,
+      `${label} userErrors: ${result.userErrors.map((e) => e.message).join('; ')}`,
     );
   }
 }

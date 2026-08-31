@@ -3,6 +3,7 @@ import {Icon} from '~/components/gi/Icon';
 import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {listUserQuotes} from '~/lib/quotes/repo';
+import {folioVisible} from '~/lib/quotes/folio';
 
 export const meta = () => [{title: 'Mis cotizaciones · Generando Ideas'}];
 
@@ -44,7 +45,7 @@ export default function CotizacionesIndex() {
             <Link key={q.id} to={`/account/cotizaciones/${q.id}`} className="quote-row">
               <div className="quote-row-main">
                 <div className="quote-row-label">Folio</div>
-                <div className="quote-row-folio">{q.id}</div>
+                <div className="quote-row-folio">{folioVisible(q)}</div>
               </div>
               <span className={`quote-status quote-status--${q.status}`}>
                 {STATUS_LABEL[q.status] || q.status}

@@ -5,11 +5,13 @@ const setShopifyGid = vi.fn();
 const addCustomerTags = vi.fn();
 const setCustomerAdvisor = vi.fn();
 const getAdvisorByHandle = vi.fn();
+const setCustomerRequestedAdvisor = vi.fn();
 
 vi.mock('../admin/operations.js', () => ({
   createCustomer: (...a) => createCustomer(...a),
   addCustomerTags: (...a) => addCustomerTags(...a),
   getAdvisorByHandle: (...a) => getAdvisorByHandle(...a),
+  setCustomerRequestedAdvisor: (...a) => setCustomerRequestedAdvisor(...a),
   // Se mockea sólo para poder afirmar que NADIE la llama desde el alta.
   setCustomerAdvisor: (...a) => setCustomerAdvisor(...a),
 }));
@@ -30,6 +32,8 @@ beforeEach(() => {
   setCustomerAdvisor.mockReset();
   getAdvisorByHandle.mockReset();
   getAdvisorByHandle.mockResolvedValue(null);
+  setCustomerRequestedAdvisor.mockReset();
+  setCustomerRequestedAdvisor.mockResolvedValue(undefined);
   createCustomer.mockResolvedValue({gid: 'gid://shopify/Customer/7'});
   addCustomerTags.mockResolvedValue(undefined);
 });
@@ -129,5 +133,52 @@ describe('linkSignupCustomer · nota del registro', () => {
   it('no consulta al Admin API cuando no hubo reclamo de asesor', async () => {
     await linkSignupCustomer(db, env, user);
     expect(getAdvisorByHandle).not.toHaveBeenCalled();
+  });
+});
+
+describe('linkSignupCustomer · reclamo en el metafield', () => {
+  const conReclamo = {...user, advisorHandle: 'laura-vega'};
+
+  it('guarda el reclamo en ejecutiva_solicitada', async () => {
+    getAdvisorByHandle.mockResolvedValueOnce({
+      gid: 'gid://shopify/Metaobject/3',
+      nombre: 'Laura Vega',
+    });
+    await linkSignupCustomer(db, env, conReclamo);
+    expect(setCustomerRequestedAdvisor).toHaveBeenCalledWith(
+      env,
+      'gid://shopify/Customer/7',
+      'gid://shopify/Metaobject/3',
+    );
+  });
+
+  it('sigue sin asignar el ejecutivo oficial', async () => {
+    getAdvisorByHandle.mockResolvedValueOnce({
+      gid: 'gid://shopify/Metaobject/3',
+      nombre: 'Laura Vega',
+    });
+    await linkSignupCustomer(db, env, conReclamo);
+    expect(setCustomerAdvisor).not.toHaveBeenCalled();
+  });
+
+  it('no escribe nada cuando no hubo reclamo', async () => {
+    await linkSignupCustomer(db, env, user);
+    expect(setCustomerRequestedAdvisor).not.toHaveBeenCalled();
+  });
+
+  it('no escribe nada si el handle no resuelve a un metaobject', async () => {
+    getAdvisorByHandle.mockResolvedValueOnce(null);
+    await linkSignupCustomer(db, env, conReclamo);
+    expect(setCustomerRequestedAdvisor).not.toHaveBeenCalled();
+  });
+
+  it('devuelve el gid aunque escribir el metafield falle', async () => {
+    getAdvisorByHandle.mockResolvedValueOnce({gid: 'gid://m/3', nombre: 'Laura Vega'});
+    setCustomerRequestedAdvisor.mockRejectedValueOnce(new Error('metafield down'));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await expect(linkSignupCustomer(db, env, conReclamo)).resolves.toBe(
+      'gid://shopify/Customer/7',
+    );
+    warn.mockRestore();
   });
 });

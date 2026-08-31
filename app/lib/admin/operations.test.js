@@ -17,6 +17,7 @@ import {
   resolveAdvisorGid,
   setCustomerAdvisor,
   addCustomerTags,
+  setCustomerRequestedAdvisor,
 } from './operations.js';
 
 beforeEach(() => {
@@ -680,5 +681,50 @@ describe('listAdvisors · líderes fuera del select', () => {
     });
 
     expect(await listAdvisors({})).toEqual([]);
+  });
+});
+
+describe('setCustomerRequestedAdvisor', () => {
+  beforeEach(() => {
+    isStubMode.mockReturnValue(false);
+  });
+
+  it('escribe el reclamo en ejecutiva_solicitada, no en ejecutiva_de_venta', async () => {
+    adminFetch.mockResolvedValueOnce({metafieldsSet: {metafields: [{id: 'm1'}], userErrors: []}});
+    await setCustomerRequestedAdvisor(
+      {PRIVATE_ADMIN_API_TOKEN: 't'},
+      'gid://shopify/Customer/7',
+      'gid://shopify/Metaobject/3',
+    );
+    const [campo] = adminFetch.mock.calls[0][2].metafields;
+    expect(campo).toEqual({
+      ownerId: 'gid://shopify/Customer/7',
+      namespace: 'custom',
+      key: 'ejecutiva_solicitada',
+      type: 'metaobject_reference',
+      value: 'gid://shopify/Metaobject/3',
+    });
+  });
+
+  it('no llama al Admin API sin gid de cliente o de asesor', async () => {
+    await setCustomerRequestedAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, null, 'gid://m/1');
+    await setCustomerRequestedAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1', null);
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('lanza cuando Shopify devuelve userErrors', async () => {
+    adminFetch.mockResolvedValueOnce({
+      metafieldsSet: {metafields: [], userErrors: [{field: 'value', message: 'inválido'}]},
+    });
+    await expect(
+      setCustomerRequestedAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1', 'gid://m/1'),
+    ).rejects.toThrow(/setCustomerRequestedAdvisor userErrors/);
+  });
+
+  it('sigue sin tocar ejecutiva_de_venta: eso lo hace marketing al validar', async () => {
+    adminFetch.mockResolvedValueOnce({metafieldsSet: {metafields: [], userErrors: []}});
+    await setCustomerRequestedAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1', 'gid://m/1');
+    const keys = adminFetch.mock.calls[0][2].metafields.map((m) => m.key);
+    expect(keys).not.toContain('ejecutiva_de_venta');
   });
 });

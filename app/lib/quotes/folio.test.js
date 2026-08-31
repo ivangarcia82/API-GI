@@ -1,7 +1,7 @@
 import {describe, it, expect, beforeEach} from 'vitest';
 import {createClient} from '@libsql/client';
 import {migrate} from '../db/migrate.js';
-import {formatFolio, nextFolio} from './folio.js';
+import {folioVisible, formatFolio, nextFolio} from './folio.js';
 
 describe('formatFolio', () => {
   it('arma el folio con la serie fija, el año y cuatro dígitos', () => {
@@ -47,5 +47,28 @@ describe('nextFolio', () => {
   it('usa el año en curso cuando no se le indica uno', async () => {
     const folio = await nextFolio(db);
     expect(folio).toContain(String(new Date().getFullYear()));
+  });
+});
+
+describe('folioVisible', () => {
+  it('muestra el folio cuando lo hay', () => {
+    expect(folioVisible({id: 'uuid-largo', folio: 'GIV.CDMX.20260007'})).toBe(
+      'GIV.CDMX.20260007',
+    );
+  });
+
+  it('cae al id en cotizaciones anteriores al folio', () => {
+    // No se numeran hacia atrás: ya circularon con su uuid.
+    expect(folioVisible({id: 'uuid-viejo', folio: null})).toBe('uuid-viejo');
+    expect(folioVisible({id: 'uuid-viejo'})).toBe('uuid-viejo');
+  });
+
+  it('ignora un folio en blanco', () => {
+    expect(folioVisible({id: 'uuid-viejo', folio: '   '})).toBe('uuid-viejo');
+  });
+
+  it('devuelve cadena vacía sin cotización', () => {
+    expect(folioVisible(null)).toBe('');
+    expect(folioVisible({})).toBe('');
   });
 });
