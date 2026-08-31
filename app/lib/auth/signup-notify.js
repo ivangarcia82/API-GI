@@ -1,0 +1,107 @@
+// Server-only. Best-effort aviso al asesor cuando un usuario verifica su correo.
+// Espeja lib/quotes/notify.js: nunca lanza, `deps` inyectable para tests. Para
+// cuando llegamos aquí la cuenta ya quedó verificada, así que ningún fallo de
+// este módulo puede propagarse — pero todos se registran con su destinatario.
+import {
+  getAdvisorByHandle as realGetAdvisorByHandle,
+  getCustomerAdvisor as realGetCustomerAdvisor,
+} from '../admin/operations.js';
+import {sendEmail as realSendEmail} from '../email/resend.js';
+import {MARKETING_HANDLE} from './advisor-choice.js';
+import {buildSignupAdvisorEmail, shopifyCustomerAdminUrl} from './signup-advisor-email.js';
+
+/**
+ * Quién recibe el aviso: el asesor que el usuario eligió al registrarse. Si no
+ * hay ninguno resoluble —incluido el caso raro de que el alta nunca alcanzara a
+ * crear el customer en Shopify— el lead cae en el entry `marketing`, que es la
+ * misma regla que aplica la asignación del metaobject.
+ * @returns {Promise<{correo: string, nombre: string}|null>}
+ */
+async function resolveRecipient(env, customerGid, getCustomerAdvisor, getAdvisorByHandle) {
+  // Sin customer no hay metafield que leer: ir directo al respaldo evita una
+  // llamada al Admin API que solo puede volver vacía.
+  if (customerGid) {
+    try {
+      const advisor = await getCustomerAdvisor(env, customerGid);
+      if (advisor && advisor.email) {
+        return {correo: advisor.email, nombre: (advisor.fields && advisor.fields.nombre) || ''};
+      }
+    } catch (err) {
+      console.error('[signup.notify] advisor lookup failed; trying marketing:', err);
+    }
+  }
+
+  try {
+    const fallback = await getAdvisorByHandle(env, MARKETING_HANDLE);
+    if (fallback && fallback.correo) {
+      return {correo: fallback.correo, nombre: fallback.nombre || ''};
+    }
+  } catch (err) {
+    console.error('[signup.notify] marketing fallback lookup failed:', err);
+  }
+
+  return null;
+}
+
+/**
+ * Avisa al asesor asignado que un usuario nuevo verificó su correo.
+ *
+ * @param {Record<string, any>} env
+ * @param {{user: {email: string, firstName?: string|null, lastName?: string|null,
+ *   company?: string|null, phone?: string|null, shopifyCustomerGid?: string|null,
+ *   advisorHandle?: string|null, esCliente?: string|null}}} params
+ * @param {{getCustomerAdvisor?: Function, getAdvisorByHandle?: Function, sendEmail?: Function}} [deps]
+ * @returns {Promise<{sent: boolean, to: string|null}>}
+ */
+export async function notifyAdvisorOfSignup(env, {user}, deps = {}) {
+  const getCustomerAdvisor = deps.getCustomerAdvisor ?? realGetCustomerAdvisor;
+  const getAdvisorByHandle = deps.getAdvisorByHandle ?? realGetAdvisorByHandle;
+  const sendEmail = deps.sendEmail ?? realSendEmail;
+
+  const recipient = await resolveRecipient(
+    env,
+    user.shopifyCustomerGid,
+    getCustomerAdvisor,
+    getAdvisorByHandle,
+  );
+
+  if (!recipient) {
+    console.warn(
+      `[signup.notify] no advisor nor marketing address for ${user.email}; nobody notified.`,
+    );
+    return {sent: false, to: null};
+  }
+
+  // El handle sirve para filtrar, pero marketing decide mejor leyendo el
+  // nombre. Best-effort: si no se resuelve, se manda el handle tal cual.
+  let claimedAdvisor = null;
+  if (user.advisorHandle) {
+    claimedAdvisor = user.advisorHandle;
+    try {
+      const reclamado = await getAdvisorByHandle(env, user.advisorHandle);
+      if (reclamado && reclamado.nombre) claimedAdvisor = reclamado.nombre;
+    } catch (err) {
+      console.error('[signup.notify] claimed advisor lookup failed:', err);
+    }
+  }
+
+  const message = buildSignupAdvisorEmail({
+    advisorTo: recipient.correo,
+    advisorName: recipient.nombre,
+    user,
+    customerAdminUrl: shopifyCustomerAdminUrl(
+      env && env.PUBLIC_STORE_DOMAIN,
+      user.shopifyCustomerGid,
+    ),
+    claimedAdvisor,
+    esCliente: user.esCliente ?? null,
+  });
+
+  try {
+    await sendEmail(env, message);
+    return {sent: true, to: recipient.correo};
+  } catch (err) {
+    console.error(`[signup.notify] email to ${recipient.correo} failed:`, err);
+    return {sent: false, to: recipient.correo};
+  }
+}
