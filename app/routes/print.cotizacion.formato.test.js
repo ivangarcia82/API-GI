@@ -1,0 +1,189 @@
+import {describe, it, expect, vi, beforeEach} from 'vitest';
+
+const requireUser = vi.fn();
+const getQuoteWithItems = vi.fn();
+const findById = vi.fn();
+const getCustomerAdvisor = vi.fn();
+
+vi.mock('~/lib/auth/guard', () => ({requireUser: (...a) => requireUser(...a)}));
+vi.mock('~/lib/db/client', () => ({getDb: () => ({__db: true})}));
+vi.mock('~/lib/quotes/repo', () => ({
+  getQuoteWithItems: (...a) => getQuoteWithItems(...a),
+}));
+vi.mock('~/lib/auth/users', () => ({findById: (...a) => findById(...a)}));
+vi.mock('~/lib/admin/operations', () => ({
+  getCustomerAdvisor: (...a) => getCustomerAdvisor(...a),
+}));
+
+import {loader} from './print.cotizacion.$id.jsx';
+import {NOTAS_IMPORTANTES} from '~/lib/quotes/notasImportantes';
+
+const context = {env: {}};
+
+const ITEMS = [
+  {
+    title: 'Taza cerámica',
+    qty: 300,
+    technique: 'SERIGRAFÍA',
+    size: '4 x 4',
+    effectiveUnitPrice: 29.97,
+    image: 'https://cdn.shopify.com/taza.jpg',
+  },
+  {
+    title: 'Libreta A5',
+    qty: 100,
+    technique: 'Sin decorado',
+    effectiveUnitPrice: 55,
+    image: null,
+  },
+];
+
+beforeEach(() => {
+  requireUser.mockReset().mockResolvedValue({userId: 'u1'});
+  getQuoteWithItems.mockReset().mockResolvedValue({
+    quote: {
+      id: 'uuid-largo-e-ilegible',
+      userId: 'u1',
+      folio: 'GIV.CDMX.20260007',
+      notes: null,
+      deadline: null,
+    },
+    items: ITEMS,
+  });
+  findById.mockReset().mockResolvedValue({
+    firstName: 'Mariana',
+    lastName: 'Ruiz',
+    email: 'mariana@acme.mx',
+    company: 'Acme Corp',
+    shopifyCustomerGid: 'gid://shopify/Customer/1',
+  });
+  getCustomerAdvisor.mockReset().mockResolvedValue({
+    email: 'nsanchez@generandoideas.com',
+    fields: {
+      nombre: 'Noé Sánchez',
+      puesto: 'Strategic Sales | Account Executive',
+      telefono: '+52 55 8058 7192',
+    },
+  });
+});
+
+async function render() {
+  const res = await loader({params: {id: 'q1'}, context});
+  return res.text();
+}
+
+describe('formato de cotización · identidad y folio', () => {
+  it('muestra el folio corto y no el uuid interno', async () => {
+    const html = await render();
+    expect(html).toContain('GIV.CDMX.20260007');
+    expect(html).not.toContain('uuid-largo-e-ilegible');
+  });
+
+  it('cae al id cuando la cotización es anterior al folio', async () => {
+    getQuoteWithItems.mockResolvedValueOnce({
+      quote: {id: 'uuid-viejo', userId: 'u1', folio: null, notes: null, deadline: null},
+      items: ITEMS,
+    });
+    expect(await render()).toContain('uuid-viejo');
+  });
+
+  it('lleva el logo en el encabezado y el lema en el pie', async () => {
+    const html = await render();
+    expect(html).toContain('/brand/gi-logo-horizontal.svg');
+    expect(html).toContain('YOUR ONE STOP SOLUTION');
+    expect(html).toContain('www.generandoideas.com');
+  });
+});
+
+describe('formato de cotización · contenido', () => {
+  it('imprime las cinco notas importantes', async () => {
+    const html = await render();
+    for (const nota of NOTAS_IMPORTANTES) {
+      // El HTML escapa comillas y acentos quedan tal cual; basta un fragmento.
+      expect(html).toContain(nota.slice(0, 40));
+    }
+  });
+
+  it('ya no promete respuesta en 24 horas', async () => {
+    expect(await render()).not.toContain('24 horas');
+  });
+
+  it('numera las filas y pinta la imagen cuando existe', async () => {
+    const html = await render();
+    expect(html).toContain('https://cdn.shopify.com/taza.jpg');
+    // La segunda partida no trae imagen: no debe romper la fila.
+    expect(html).toContain('sin-img');
+  });
+
+  it('muestra el decorado bajo el título, y lo omite si no hay', async () => {
+    const html = await render();
+    expect(html).toContain('SERIGRAFÍA 4 x 4');
+    expect(html).not.toContain('Sin decorado');
+  });
+
+  it('calcula subtotal, IVA y total', async () => {
+    const html = await render();
+    const subtotal = 300 * 29.97 + 100 * 55;
+    expect(html).toContain(
+      subtotal.toLocaleString('es-MX', {style: 'currency', currency: 'MXN'}),
+    );
+    expect(html).toContain('I.V.A.');
+  });
+});
+
+describe('formato de cotización · bloque Atte.', () => {
+  it('firma con el ejecutivo asignado', async () => {
+    const html = await render();
+    expect(html).toContain('Noé Sánchez');
+    expect(html).toContain('Strategic Sales | Account Executive');
+    expect(html).toContain('nsanchez@generandoideas.com');
+  });
+
+  it('cae al equipo comercial cuando el cliente no tiene asesor', async () => {
+    getCustomerAdvisor.mockResolvedValueOnce({email: null, fields: {}});
+    const html = await render();
+    expect(html).toContain('Equipo comercial');
+    expect(html).toContain('marketing@generandoideas.com');
+  });
+
+  it('no impide imprimir si el Admin API falla', async () => {
+    getCustomerAdvisor.mockRejectedValueOnce(new Error('admin down'));
+    const html = await render();
+    expect(html).toContain('Equipo comercial');
+    expect(html).toContain('GIV.CDMX.20260007');
+  });
+});
+
+describe('formato de cotización · propiedad', () => {
+  it('devuelve 404 con la cotización de otra persona', async () => {
+    getQuoteWithItems.mockResolvedValueOnce({
+      quote: {id: 'q1', userId: 'otro', folio: 'GIV.CDMX.20260001'},
+      items: [],
+    });
+    await expect(loader({params: {id: 'q1'}, context})).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it('devuelve 404 cuando la cotización no existe', async () => {
+    getQuoteWithItems.mockResolvedValueOnce({quote: null, items: []});
+    await expect(loader({params: {id: 'nope'}, context})).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it('escapa el contenido que viene del usuario', async () => {
+    getQuoteWithItems.mockResolvedValueOnce({
+      quote: {
+        id: 'q1',
+        userId: 'u1',
+        folio: 'GIV.CDMX.20260007',
+        notes: '<script>alert(1)</script>',
+        deadline: null,
+      },
+      items: ITEMS,
+    });
+    const html = await render();
+    expect(html).not.toContain('<script>alert(1)</script>');
+  });
+});
