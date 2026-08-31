@@ -15,6 +15,16 @@ const STATEMENTS = [
     phone                TEXT,
     volume               TEXT,
     needs                TEXT,
+    position             TEXT,
+    area                 TEXT,
+    heard_about          TEXT,
+    location             TEXT,
+    es_cliente           TEXT,
+    advisor_handle       TEXT,
+    privacy_accepted_at  TEXT,
+    terms_accepted_at    TEXT,
+    newsletter_opt_in    INTEGER,
+    newsletter_opt_in_at TEXT,
     role                 TEXT NOT NULL DEFAULT 'quoter',
     shopify_customer_gid TEXT,
     email_verified_at    TEXT,
@@ -94,6 +104,22 @@ export async function migrate(db) {
   await addColumnIfMissing(db, 'users', 'phone', 'TEXT');
   await addColumnIfMissing(db, 'users', 'volume', 'TEXT');
   await addColumnIfMissing(db, 'users', 'needs', 'TEXT');
+  // Perfil ampliado, consentimiento legal y newsletter (reunión 2026-08-30).
+  // Todas nullable: las filas anteriores se quedan vacías y nadie las rellena.
+  for (const [col, tipo] of [
+    ['position', 'TEXT'],
+    ['area', 'TEXT'],
+    ['heard_about', 'TEXT'],
+    ['location', 'TEXT'],
+    ['es_cliente', 'TEXT'],
+    ['advisor_handle', 'TEXT'],
+    ['privacy_accepted_at', 'TEXT'],
+    ['terms_accepted_at', 'TEXT'],
+    ['newsletter_opt_in', 'INTEGER'],
+    ['newsletter_opt_in_at', 'TEXT'],
+  ]) {
+    await addColumnIfMissing(db, 'users', col, tipo);
+  }
   // Idempotent rename for databases created before the column was renamed
   // from `rfc` to `razon_social`. No-op on new databases (rfc never existed).
   await renameColumnIfPresent(db, 'users', 'rfc', 'razon_social');

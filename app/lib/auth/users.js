@@ -1,5 +1,7 @@
 // Server-only. User repository over libSQL. User shape:
-// {id,email,firstName,lastName,company,razonSocial,role,shopifyCustomerGid,
+// {id,email,firstName,lastName,company,razonSocial,phone,volume,needs,position,area,
+//  heardAbout,location,esCliente,advisorHandle,privacyAcceptedAt,termsAcceptedAt,
+//  newsletterOptIn,newsletterOptInAt,role,shopifyCustomerGid,
 //  sessionVersion,emailVerifiedAt,createdAt,updatedAt}
 import {hashPassword} from './password.js';
 
@@ -26,6 +28,17 @@ function rowToUser(row) {
     phone: row.phone ?? null,
     volume: row.volume ?? null,
     needs: row.needs ?? null,
+    position: row.position ?? null,
+    area: row.area ?? null,
+    heardAbout: row.heard_about ?? null,
+    location: row.location ?? null,
+    esCliente: row.es_cliente ?? null,
+    advisorHandle: row.advisor_handle ?? null,
+    privacyAcceptedAt: row.privacy_accepted_at ?? null,
+    termsAcceptedAt: row.terms_accepted_at ?? null,
+    // NULL en filas anteriores a la columna: se lee como "no suscrito".
+    newsletterOptIn: Boolean(row.newsletter_opt_in),
+    newsletterOptInAt: row.newsletter_opt_in_at ?? null,
     role: row.role,
     shopifyCustomerGid: row.shopify_customer_gid ?? null,
     sessionVersion: Number(row.session_version),
@@ -36,6 +49,8 @@ function rowToUser(row) {
 }
 
 const SELECT_COLS = `id, email, first_name, last_name, company, razon_social, phone, volume, needs, role,
+  position, area, heard_about, location, es_cliente, advisor_handle,
+  privacy_accepted_at, terms_accepted_at, newsletter_opt_in, newsletter_opt_in_at,
   shopify_customer_gid, session_version, email_verified_at, created_at, updated_at`;
 
 // Detects the libSQL UNIQUE-constraint violation surfaced by Turso.
@@ -44,7 +59,11 @@ function isUniqueViolation(err) {
   return msg.includes('UNIQUE') || msg.includes('CONSTRAINT');
 }
 
-export async function createUser(db, env, {email, password, firstName, lastName, company, razonSocial, phone, volume, needs, role}) {
+export async function createUser(db, env, {
+  email, password, firstName, lastName, company, razonSocial, phone, volume, needs, role,
+  position, area, heardAbout, location, esCliente, advisorHandle,
+  privacyAcceptedAt, termsAcceptedAt, newsletterOptIn, newsletterOptInAt,
+}) {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   const normalizedEmail = normalizeEmail(email);
@@ -54,8 +73,11 @@ export async function createUser(db, env, {email, password, firstName, lastName,
       sql: `INSERT INTO users
         (id, email, password_hash, password_salt, password_iterations,
          session_version, first_name, last_name, company, razon_social, phone, volume, needs, role,
+         position, area, heard_about, location, es_cliente, advisor_handle,
+         privacy_accepted_at, terms_accepted_at, newsletter_opt_in, newsletter_opt_in_at,
          shopify_customer_gid, email_verified_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)`,
       args: [
         id,
         normalizedEmail,
@@ -70,6 +92,16 @@ export async function createUser(db, env, {email, password, firstName, lastName,
         volume ?? null,
         needs ?? null,
         role ?? 'quoter',
+        position ?? null,
+        area ?? null,
+        heardAbout ?? null,
+        location ?? null,
+        esCliente ?? null,
+        advisorHandle ?? null,
+        privacyAcceptedAt ?? null,
+        termsAcceptedAt ?? null,
+        newsletterOptIn ? 1 : 0,
+        newsletterOptInAt ?? null,
         now,
         now,
       ],
@@ -88,6 +120,16 @@ export async function createUser(db, env, {email, password, firstName, lastName,
     phone: phone ?? null,
     volume: volume ?? null,
     needs: needs ?? null,
+    position: position ?? null,
+    area: area ?? null,
+    heardAbout: heardAbout ?? null,
+    location: location ?? null,
+    esCliente: esCliente ?? null,
+    advisorHandle: advisorHandle ?? null,
+    privacyAcceptedAt: privacyAcceptedAt ?? null,
+    termsAcceptedAt: termsAcceptedAt ?? null,
+    newsletterOptIn: Boolean(newsletterOptIn),
+    newsletterOptInAt: newsletterOptInAt ?? null,
     role: role ?? 'quoter',
     shopifyCustomerGid: null,
     sessionVersion: 1,
