@@ -13,14 +13,14 @@ export function isEmailStubMode(env) {
 /**
  * Send an email. Returns {stub:boolean, id:string|null}.
  * @param {Record<string, any>} env
- * @param {{to: string, subject: string, html: string}} msg
+ * @param {{to: string, subject: string, html: string, replyTo?: string, cc?: string}} msg
  * @returns {Promise<{stub: boolean, id: string|null}>}
  */
-export async function sendEmail(env, {to, subject, html, replyTo}) {
+export async function sendEmail(env, {to, subject, html, replyTo, cc}) {
   if (isEmailStubMode(env)) {
     console.warn(
       '[email][STUB] sendEmail invoked (no RESEND_API_KEY). ' +
-        `to=${to} subject=${JSON.stringify(subject)} — email NOT sent.`,
+        `to=${to}${cc ? ` cc=${cc}` : ''} subject=${JSON.stringify(subject)} — email NOT sent.`,
     );
     return {stub: true, id: null};
   }
@@ -37,6 +37,8 @@ export async function sendEmail(env, {to, subject, html, replyTo}) {
       subject,
       html,
       ...(replyTo ? {reply_to: replyTo} : {}),
+      // Sólo cuando la hay: Resend rechaza cc: undefined.
+      ...(cc ? {cc} : {}),
     }),
   });
   const json = await res.json().catch(() => ({}));

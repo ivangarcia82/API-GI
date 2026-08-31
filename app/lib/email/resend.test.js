@@ -49,6 +49,34 @@ describe('email/resend', () => {
     });
   });
 
+  it('incluye cc en el cuerpo cuando se proporciona', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({id: 'msg_1'}),
+    });
+    await sendEmail(
+      {RESEND_API_KEY: 'sk', EMAIL_FROM: 'GI <no-reply@x.com>'},
+      {to: 'a@b.com', subject: 's', html: 'h', cc: 'jefe@generandoideas.com'},
+    );
+    const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(body.cc).toBe('jefe@generandoideas.com');
+  });
+
+  it('omite la clave cc por completo cuando no hay copia', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({id: 'msg_2'}),
+    });
+    await sendEmail(
+      {RESEND_API_KEY: 'sk', EMAIL_FROM: 'GI <no-reply@x.com>'},
+      {to: 'a@b.com', subject: 's', html: 'h'},
+    );
+    const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect('cc' in body).toBe(false);
+  });
+
   it('throws when the Resend API returns a non-OK response', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,
