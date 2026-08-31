@@ -9,8 +9,8 @@ const base = {
   company: 'Acme', razonSocial: 'Acme S.A. de C.V.',
   position: 'Compradora', area: AREAS[0], volume: 'Menos de $50,000 MXN',
   esCliente: 'no', advisor: '',
-  heardAbout: COMO_NOS_CONOCISTE[0], location: UBICACIONES[0],
-  privacy: true, terms: true,
+  heardAbout: 'Buscador', heardAboutDetail: 'Google', location: UBICACIONES[0],
+  legal: true,
 };
 
 describe('validateStep', () => {
@@ -93,17 +93,28 @@ describe('validateStep · paso 3', () => {
     expect(validateStep(3, {...base, heardAbout: 'Inventado'}).heardAbout).toBeTruthy();
   });
 
+  it('exige el detalle cuando el origen lo despliega', () => {
+    expect(
+      validateStep(3, {...base, heardAbout: 'Buscador', heardAboutDetail: ''}).heardAbout,
+    ).toBeTruthy();
+  });
+
+  it('acepta un origen que no despliega detalle', () => {
+    expect(
+      validateStep(3, {...base, heardAbout: 'Recomendación', heardAboutDetail: ''}),
+    ).toEqual({});
+  });
+
   it('exige ubicación, del catálogo', () => {
     expect(validateStep(3, {...base, location: ''}).location).toBeTruthy();
     expect(validateStep(3, {...base, location: 'Narnia'}).location).toBeTruthy();
   });
 
-  it('exige aceptar el aviso de privacidad', () => {
-    expect(validateStep(3, {...base, privacy: false}).privacy).toBeTruthy();
-  });
-
-  it('exige aceptar los términos', () => {
-    expect(validateStep(3, {...base, terms: false}).terms).toBeTruthy();
+  it('exige la aceptación legal, que cubre ambos documentos', () => {
+    const err = validateStep(3, {...base, legal: false}).legal;
+    expect(err).toBeTruthy();
+    expect(err).toMatch(/privacidad/i);
+    expect(err).toMatch(/términos/i);
   });
 
   it('no exige newsletter', () => {

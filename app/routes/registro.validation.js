@@ -1,7 +1,13 @@
 // Validación por paso del wizard de registro. Pura y sin dependencias para
 // poder probarla sin DOM; el chequeo de disponibilidad del correo es aparte
 // porque requiere servidor.
-import {AREAS, COMO_NOS_CONOCISTE, UBICACIONES, esOpcionValida} from './registro.catalogos.js';
+import {
+  AREAS,
+  UBICACIONES,
+  componerOrigen,
+  esOpcionValida,
+  esOrigenValido,
+} from './registro.catalogos.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -37,15 +43,17 @@ export function validateStep(step, form) {
   }
 
   if (step === 3) {
-    if (!esOpcionValida(form.heardAbout, COMO_NOS_CONOCISTE)) {
+    if (!esOrigenValido(componerOrigen(form.heardAbout, form.heardAboutDetail))) {
       errores.heardAbout = 'Cuéntanos cómo nos conociste.';
     }
     if (!esOpcionValida(form.location, UBICACIONES)) {
       errores.location = 'Selecciona dónde te encuentras.';
     }
-    // El newsletter es opcional a propósito: sólo estos dos bloquean el alta.
-    if (!form.privacy) errores.privacy = 'Debes aceptar el aviso de privacidad.';
-    if (!form.terms) errores.terms = 'Debes aceptar los términos y condiciones.';
+    // Una sola casilla cubre ambos documentos. El newsletter es aparte y
+    // opcional a propósito: nunca bloquea el alta.
+    if (!form.legal) {
+      errores.legal = 'Debes aceptar el aviso de privacidad y los términos y condiciones.';
+    }
   }
 
   return errores;

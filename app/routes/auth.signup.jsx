@@ -4,12 +4,7 @@ import {getDb} from '~/lib/db/client';
 import {createUser, EmailTakenError} from '~/lib/auth/users';
 import {linkSignupCustomer} from '~/lib/auth/signup-link';
 import {claimedAdvisorHandle} from '~/lib/auth/advisor-choice';
-import {
-  AREAS,
-  COMO_NOS_CONOCISTE,
-  UBICACIONES,
-  esOpcionValida,
-} from './registro.catalogos.js';
+import {AREAS, UBICACIONES, esOpcionValida, esOrigenValido} from './registro.catalogos.js';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
 
 /**
@@ -34,8 +29,9 @@ export async function action({request, context}) {
   const location = String(form.get('location') ?? '') || null;
   const esCliente = String(form.get('esCliente') ?? '') || null;
   const newsletterOptIn = String(form.get('newsletter') ?? '') === '1';
-  const privacyOk = String(form.get('privacy') ?? '') === '1';
-  const termsOk = String(form.get('terms') ?? '') === '1';
+  // Una sola casilla cubre ambos documentos; se guarda una fecha por cada uno
+  // para que la evidencia siga siendo por documento si mañana se separan.
+  const legalOk = String(form.get('legal') ?? '') === '1';
 
   // El asesor viaja como handle y ya NO se asigna: marketing valida la
   // asignación en el admin de Shopify. Aquí sólo se guarda lo que el usuario
@@ -51,7 +47,7 @@ export async function action({request, context}) {
 
   // El navegador ya lo valida, pero el action es la única puerta que cuenta:
   // hasta hoy el checkbox ni siquiera llegaba al servidor.
-  if (!privacyOk || !termsOk) {
+  if (!legalOk) {
     return data(
       {error: 'Debes aceptar el aviso de privacidad y los términos y condiciones.'},
       {status: 400},
@@ -62,7 +58,7 @@ export async function action({request, context}) {
   // los selects no ofrecen nada más. Vacío sí se acepta (queda NULL).
   const fueraDeCatalogo =
     (area && !esOpcionValida(area, AREAS)) ||
-    (heardAbout && !esOpcionValida(heardAbout, COMO_NOS_CONOCISTE)) ||
+    (heardAbout && !esOrigenValido(heardAbout)) ||
     (location && !esOpcionValida(location, UBICACIONES));
   if (fueraDeCatalogo) {
     return data({error: 'Alguna de las opciones seleccionadas no es válida.'}, {status: 400});

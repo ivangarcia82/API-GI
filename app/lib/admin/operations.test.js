@@ -271,7 +271,7 @@ describe('getVariantInventory', () => {
   });
 });
 
-function advisorNode(handle, nombre, puesto, status = 'ACTIVE') {
+function advisorNode(handle, nombre, puesto, status = 'ACTIVE', correo) {
   return {
     handle,
     displayName: nombre,
@@ -279,13 +279,13 @@ function advisorNode(handle, nombre, puesto, status = 'ACTIVE') {
     fields: [
       {key: 'nombre', value: nombre},
       {key: 'puesto', value: puesto},
-      {key: 'correo', value: `${handle}@generandoideas.com`},
+      {key: 'correo', value: correo ?? `${handle}@generandoideas.com`},
     ],
   };
 }
 
 describe('listAdvisors', () => {
-  it('shapes active entries as {handle, nombre, puesto}', async () => {
+  it('shapes active entries as {handle, nombre, puesto, correo}', async () => {
     isStubMode.mockReturnValue(false);
     adminFetch.mockResolvedValue({
       metaobjects: {nodes: [advisorNode('laura-vega', 'Laura Vega', 'Inside Sales Executive')]},
@@ -294,7 +294,12 @@ describe('listAdvisors', () => {
     const advisors = await listAdvisors({});
 
     expect(advisors).toEqual([
-      {handle: 'laura-vega', nombre: 'Laura Vega', puesto: 'Inside Sales Executive'},
+      {
+        handle: 'laura-vega',
+        nombre: 'Laura Vega',
+        puesto: 'Inside Sales Executive',
+        correo: 'laura-vega@generandoideas.com',
+      },
     ]);
   });
 
@@ -381,7 +386,9 @@ describe('listAdvisors', () => {
 
     const advisors = await listAdvisors({});
 
-    expect(advisors).toEqual([{handle: 'sin-campos', nombre: 'Sin Campos', puesto: ''}]);
+    expect(advisors).toEqual([
+      {handle: 'sin-campos', nombre: 'Sin Campos', puesto: '', correo: ''},
+    ]);
   });
 
   it('returns an empty list when the response has no metaobjects', async () => {
@@ -640,5 +647,38 @@ describe('createCustomer · nota del registro', () => {
     });
     await createCustomer({PRIVATE_ADMIN_API_TOKEN: 't'}, {email: 'a@b.mx'});
     expect('note' in adminFetch.mock.calls[0][2].input).toBe(false);
+  });
+});
+
+describe('listAdvisors · líderes fuera del select', () => {
+  it('excluye a quien lidera a alguien en la matriz de managers', async () => {
+    // Un cliente lo es de alguien del equipo, no de su líder. La exclusión sale
+    // de la matriz para no mantener una lista de nombres aparte.
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('jesus-rios', 'Jesús Ríos', 'Sales Manager', 'ACTIVE', 'jrios@generandoideas.com'),
+          advisorNode('laura-vega', 'Laura Vega', 'Inside Sales', 'ACTIVE', 'lvega@generandoideas.com'),
+        ],
+      },
+    });
+
+    const advisors = await listAdvisors({});
+
+    expect(advisors.map((a) => a.handle)).toEqual(['laura-vega']);
+  });
+
+  it('ignora mayúsculas al comparar el correo del líder', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('seide', 'Seide Jiménez', 'Manager', 'ACTIVE', 'SJimenez@GenerandoIdeas.com'),
+        ],
+      },
+    });
+
+    expect(await listAdvisors({})).toEqual([]);
   });
 });

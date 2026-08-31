@@ -5,7 +5,13 @@ import {Button} from '~/components/gi/ui';
 import {ROUTES} from '~/lib/site-content';
 import {listAdvisors} from '~/lib/admin/operations';
 import {MARKETING_HANDLE, UNKNOWN_ADVISOR} from '~/lib/auth/advisor-choice';
-import {AREAS, COMO_NOS_CONOCISTE, UBICACIONES} from './registro.catalogos.js';
+import {
+  AREAS,
+  COMO_NOS_CONOCISTE,
+  COMO_NOS_CONOCISTE_DETALLE,
+  UBICACIONES,
+  componerOrigen,
+} from './registro.catalogos.js';
 import {validateStep} from './registro.validation.js';
 
 export {action} from './auth.signup.jsx';
@@ -51,9 +57,9 @@ export default function Registro() {
     position: '',
     area: '',
     heardAbout: '',
+    heardAboutDetail: '',
     location: '',
-    privacy: false,
-    terms: false,
+    legal: false,
     newsletter: false,
   });
   const [errores, setErrores] = useState({});
@@ -167,10 +173,15 @@ export default function Registro() {
           <input type="hidden" name="advisor" value={form.advisor} />
           <input type="hidden" name="position" value={form.position} />
           <input type="hidden" name="area" value={form.area} />
-          <input type="hidden" name="heardAbout" value={form.heardAbout} />
+          {/* El origen viaja ya compuesto ("Buscador › Google"): el servidor
+              valida la pareja completa contra el catálogo. */}
+          <input
+            type="hidden"
+            name="heardAbout"
+            value={componerOrigen(form.heardAbout, form.heardAboutDetail)}
+          />
           <input type="hidden" name="location" value={form.location} />
-          <input type="hidden" name="privacy" value={form.privacy ? '1' : ''} />
-          <input type="hidden" name="terms" value={form.terms ? '1' : ''} />
+          <input type="hidden" name="legal" value={form.legal ? '1' : ''} />
           <input type="hidden" name="newsletter" value={form.newsletter ? '1' : ''} />
 
           {step === 1 && (
@@ -435,7 +446,7 @@ export default function Registro() {
                     <option value="">Selecciona…</option>
                     {asesores.map((a) => (
                       <option key={a.handle} value={a.handle}>
-                        {a.puesto ? `${a.nombre} — ${a.puesto}` : a.nombre}
+                        {a.nombre}
                       </option>
                     ))}
                     <option value={UNKNOWN_ADVISOR}>No conozco a mi asesor asignado</option>
@@ -471,7 +482,11 @@ export default function Registro() {
                   id="reg-heard-about"
                   className="input"
                   value={form.heardAbout}
-                  onChange={(e) => setField('heardAbout', e.target.value)}
+                  onChange={(e) =>
+                    // Cambiar de nivel limpia el detalle: un "Buscador › Google"
+                    // que pasa a "Redes sociales" no puede conservar Google.
+                    setForm((f) => ({...f, heardAbout: e.target.value, heardAboutDetail: ''}))
+                  }
                 >
                   <option value="">Selecciona…</option>
                   {COMO_NOS_CONOCISTE.map((o) => (
@@ -484,6 +499,22 @@ export default function Registro() {
                   </span>
                 )}
               </div>
+              {COMO_NOS_CONOCISTE_DETALLE[form.heardAbout] && (
+                <div className="field">
+                  <label htmlFor="reg-heard-about-detalle">¿Cuál?</label>
+                  <select
+                    id="reg-heard-about-detalle"
+                    className="input"
+                    value={form.heardAboutDetail}
+                    onChange={(e) => setField('heardAboutDetail', e.target.value)}
+                  >
+                    <option value="">Selecciona…</option>
+                    {COMO_NOS_CONOCISTE_DETALLE[form.heardAbout].map((o) => (
+                      <option key={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="field">
                 <label htmlFor="reg-location">¿Dónde te encuentras ubicado?</label>
                 <select
@@ -518,12 +549,14 @@ export default function Registro() {
 
               <div style={{height: 1, background: 'var(--line)', margin: '16px 0 4px'}} />
 
-              <label htmlFor="reg-privacy" style={estiloCheck}>
+              {/* Una sola casilla cubre ambos documentos, con los dos enlaces
+                  dentro. El servidor sigue guardando una fecha por documento. */}
+              <label htmlFor="reg-legal" style={estiloCheck}>
                 <input
-                  id="reg-privacy"
+                  id="reg-legal"
                   type="checkbox"
-                  checked={form.privacy}
-                  onChange={(e) => setField('privacy', e.target.checked)}
+                  checked={form.legal}
+                  onChange={(e) => setField('legal', e.target.checked)}
                   style={{marginTop: 3}}
                 />
                 <span>
@@ -535,26 +568,8 @@ export default function Registro() {
                     style={{color: 'var(--accent)', textDecoration: 'underline'}}
                   >
                     Aviso de privacidad
-                  </a>
-                  .
-                </span>
-              </label>
-              {errores.privacy && (
-                <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
-                  {errores.privacy}
-                </span>
-              )}
-
-              <label htmlFor="reg-terms" style={estiloCheck}>
-                <input
-                  id="reg-terms"
-                  type="checkbox"
-                  checked={form.terms}
-                  onChange={(e) => setField('terms', e.target.checked)}
-                  style={{marginTop: 3}}
-                />
-                <span>
-                  Acepto los{' '}
+                  </a>{' '}
+                  y los{' '}
                   <a
                     href={ROUTES.terms}
                     target="_blank"
@@ -566,9 +581,9 @@ export default function Registro() {
                   .
                 </span>
               </label>
-              {errores.terms && (
+              {errores.legal && (
                 <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
-                  {errores.terms}
+                  {errores.legal}
                 </span>
               )}
 

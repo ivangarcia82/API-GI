@@ -29,8 +29,7 @@ function signupRequest(fields = {}) {
   const body = new FormData();
   body.set('email', 'ana@empresa.mx');
   body.set('password', 'secreto123');
-  body.set('privacy', '1');
-  body.set('terms', '1');
+  body.set('legal', '1');
   for (const [k, v] of Object.entries(fields)) body.set(k, v);
   return new Request('https://gi.test/registro', {method: 'POST', body});
 }
@@ -54,12 +53,11 @@ beforeEach(() => {
   linkSignupCustomer.mockResolvedValue('gid://shopify/Customer/7');
 });
 
-describe('signup action · aceptaciones legales', () => {
-  it('rechaza sin aviso de privacidad', async () => {
+describe('signup action · aceptación legal', () => {
+  it('rechaza sin la aceptación', async () => {
     const body = new FormData();
     body.set('email', 'ana@empresa.mx');
     body.set('password', 'secreto123');
-    body.set('terms', '1');
     const res = await action({
       request: new Request('https://gi.test/registro', {method: 'POST', body}),
       context,
@@ -68,20 +66,7 @@ describe('signup action · aceptaciones legales', () => {
     expect(createUser).not.toHaveBeenCalled();
   });
 
-  it('rechaza sin términos', async () => {
-    const body = new FormData();
-    body.set('email', 'ana@empresa.mx');
-    body.set('password', 'secreto123');
-    body.set('privacy', '1');
-    const res = await action({
-      request: new Request('https://gi.test/registro', {method: 'POST', body}),
-      context,
-    });
-    expect((await read(res)).status).toBe(400);
-    expect(createUser).not.toHaveBeenCalled();
-  });
-
-  it('guarda la fecha de ambas aceptaciones', async () => {
+  it('guarda una fecha por documento aunque la casilla sea una', async () => {
     await action({request: signupRequest(), context});
     expect(created().privacyAcceptedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(created().termsAcceptedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
@@ -94,7 +79,7 @@ describe('signup action · perfil', () => {
       request: signupRequest({
         position: 'Compradora',
         area: 'Compras',
-        heardAbout: 'Google o buscador',
+        heardAbout: 'Buscador › Google',
         location: 'Jalisco',
         esCliente: 'no',
       }),
@@ -103,10 +88,24 @@ describe('signup action · perfil', () => {
     expect(created()).toMatchObject({
       position: 'Compradora',
       area: 'Compras',
-      heardAbout: 'Google o buscador',
+      heardAbout: 'Buscador › Google',
       location: 'Jalisco',
       esCliente: 'no',
     });
+  });
+
+  it('rechaza un origen sin el detalle que su nivel exige', async () => {
+    const res = await action({request: signupRequest({heardAbout: 'Buscador'}), context});
+    expect((await read(res)).status).toBe(400);
+    expect(createUser).not.toHaveBeenCalled();
+  });
+
+  it('rechaza un detalle que no pertenece a su nivel', async () => {
+    const res = await action({
+      request: signupRequest({heardAbout: 'Buscador › LinkedIn'}),
+      context,
+    });
+    expect((await read(res)).status).toBe(400);
   });
 
   it('rechaza un valor fuera del catálogo', async () => {

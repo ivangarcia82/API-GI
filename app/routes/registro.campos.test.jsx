@@ -93,36 +93,61 @@ describe('registro · paso 3', () => {
     );
   });
 
-  it('tiene dos aceptaciones legales separadas y un newsletter opcional', async () => {
+  it('tiene una sola casilla legal, con ambos enlaces, y un newsletter opcional', async () => {
     await irAPaso3();
-    expect(screen.getByRole('checkbox', {name: /aviso de privacidad/i})).toBeInTheDocument();
-    expect(
-      screen.getByRole('checkbox', {name: /términos y condiciones/i}),
-    ).toBeInTheDocument();
+    const legal = screen.getByRole('checkbox', {name: /aviso de privacidad.*términos/is});
+    expect(legal).toBeInTheDocument();
+    expect(screen.getByRole('link', {name: 'Aviso de privacidad'})).toBeInTheDocument();
+    expect(screen.getByRole('link', {name: 'Términos y condiciones'})).toBeInTheDocument();
     expect(screen.getByRole('checkbox', {name: /novedades/i})).not.toBeRequired();
   });
 
-  it('bloquea el envío mientras falte una aceptación legal', async () => {
+  it('bloquea el envío sin la aceptación legal', async () => {
     await irAPaso3();
     fireEvent.change(screen.getByLabelText('¿Cómo nos conociste?'), {
-      target: {value: COMO_NOS_CONOCISTE[0]},
+      target: {value: 'Recomendación'},
     });
     fireEvent.change(screen.getByLabelText('¿Dónde te encuentras ubicado?'), {
       target: {value: UBICACIONES[0]},
     });
-    fireEvent.click(screen.getByRole('checkbox', {name: /aviso de privacidad/i}));
     fireEvent.click(screen.getByRole('button', {name: /crear cuenta/i}));
     expect(
-      await screen.findByText('Debes aceptar los términos y condiciones.'),
+      await screen.findByText(/Debes aceptar el aviso de privacidad y los términos/i),
     ).toBeInTheDocument();
   });
 
   it('bloquea el envío sin origen ni ubicación', async () => {
     await irAPaso3();
-    fireEvent.click(screen.getByRole('checkbox', {name: /aviso de privacidad/i}));
-    fireEvent.click(screen.getByRole('checkbox', {name: /términos y condiciones/i}));
+    fireEvent.click(screen.getByRole('checkbox', {name: /aviso de privacidad.*términos/is}));
     fireEvent.click(screen.getByRole('button', {name: /crear cuenta/i}));
     expect(await screen.findByText('Cuéntanos cómo nos conociste.')).toBeInTheDocument();
     expect(screen.getByText('Selecciona dónde te encuentras.')).toBeInTheDocument();
+  });
+
+  it('el origen despliega un segundo select y lo limpia al cambiar de nivel', async () => {
+    await irAPaso3();
+    const origen = screen.getByLabelText('¿Cómo nos conociste?');
+    expect(screen.queryByLabelText('¿Cuál?')).toBeNull();
+
+    fireEvent.change(origen, {target: {value: 'Buscador'}});
+    const detalle = screen.getByLabelText('¿Cuál?');
+    expect(detalle).toHaveTextContent('Google');
+    expect(detalle).toHaveTextContent('App de IA');
+
+    fireEvent.change(detalle, {target: {value: 'Google'}});
+    expect(detalle).toHaveValue('Google');
+
+    // Cambiar de nivel no puede dejar "Google" colgado bajo Redes sociales.
+    fireEvent.change(origen, {target: {value: 'Redes sociales'}});
+    expect(screen.getByLabelText('¿Cuál?')).toHaveValue('');
+    expect(screen.getByLabelText('¿Cuál?')).toHaveTextContent('LinkedIn');
+  });
+
+  it('un origen sin detalle no despliega el segundo select', async () => {
+    await irAPaso3();
+    fireEvent.change(screen.getByLabelText('¿Cómo nos conociste?'), {
+      target: {value: 'Recomendación'},
+    });
+    expect(screen.queryByLabelText('¿Cuál?')).toBeNull();
   });
 });

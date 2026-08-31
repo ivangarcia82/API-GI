@@ -4,6 +4,7 @@
 // mutation (purchasingEntity.customerId + originalUnitPriceWithCurrency); it is
 // consumed in Phase 4. env is always passed explicitly.
 
+import {MANAGERS} from '../quotes/managers.js';
 import {adminFetch, isStubMode} from './client.js';
 
 const CUSTOMER_CREATE = `
@@ -219,6 +220,9 @@ const ADVISOR_TYPE = 'ejecutiva_de_venta';
 /** Handle del entry de respaldo; se filtra de la lista seleccionable. */
 const ADVISOR_FALLBACK_HANDLE = 'marketing';
 
+/** Correos de quienes lideran a alguien: no aparecen en el select del registro. */
+const LIDERES = new Set(Object.values(MANAGERS).map((c) => c.trim().toLowerCase()));
+
 const ADVISORS_LIST = `
   query advisors($type: String!) {
     metaobjects(type: $type, first: 250, sortKey: "display_name") {
@@ -253,8 +257,8 @@ const CUSTOMER_ADVISOR_SET = `
 `;
 
 const STUB_ADVISORS = [
-  {handle: 'asesor-stub-uno', nombre: 'Asesor Stub Uno', puesto: 'Account Executive'},
-  {handle: 'asesor-stub-dos', nombre: 'Asesor Stub Dos', puesto: 'Inside Sales Executive'},
+  {handle: 'asesor-stub-uno', nombre: 'Asesor Stub Uno', puesto: 'Account Executive', correo: 'stub1@example.com'},
+  {handle: 'asesor-stub-dos', nombre: 'Asesor Stub Dos', puesto: 'Inside Sales Executive', correo: 'stub2@example.com'},
 ];
 
 /**
@@ -268,7 +272,7 @@ const STUB_ADVISORS = [
  * place rather than disappearing.
  *
  * @param {Record<string, any>} env
- * @returns {Promise<Array<{handle: string, nombre: string, puesto: string}>>}
+ * @returns {Promise<Array<{handle: string, nombre: string, puesto: string, correo: string}>>}
  */
 export async function listAdvisors(env) {
   if (isStubMode(env)) return STUB_ADVISORS.map((a) => ({...a}));
@@ -298,8 +302,13 @@ export async function listAdvisors(env) {
         handle: node.handle,
         nombre: fields.nombre || node.displayName || node.handle,
         puesto: fields.puesto || '',
+        correo: (fields.correo || '').trim().toLowerCase(),
       };
     })
+    // Un líder no se ofrece como asesor: quien ya eres cliente lo es de alguien
+    // de su equipo, no de él. Se deriva de la matriz para que no haya que
+    // mantener una lista de nombres aparte.
+    .filter((a) => !LIDERES.has(a.correo))
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 }
 
