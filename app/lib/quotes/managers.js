@@ -10,8 +10,37 @@
 
 /** @type {Record<string, string>} correo del ejecutivo -> correo de su manager */
 export const MANAGERS = {
-  // Pendiente: vaciar aquí la matriz que entregue Iván.
-  // 'laura@generandoideas.com': 'antonio@generandoideas.com',
+  // Equipo de Sandra Jiménez
+  'gamaro@generandoideas.com': 'sjimenez@generandoideas.com',
+  'lvega@generandoideas.com': 'sjimenez@generandoideas.com',
+  'mromero@generandoideas.com': 'sjimenez@generandoideas.com',
+  'mperez@generandoideas.com': 'sjimenez@generandoideas.com',
+
+  // Equipo de A. Quiroz
+  'areynoso@generandoideas.com': 'aquiroz@generandoideas.com',
+  'tguirre@generandoideas.com': 'aquiroz@generandoideas.com',
+  'nanchez@generandoideas.com': 'aquiroz@generandoideas.com',
+
+  // Equipo de J. Ríos
+  'wgarcia@generandoideas.com': 'jrios@generandoideas.com',
+  'zchino@generandoideas.com': 'jrios@generandoideas.com',
+  'sperez@generandoideas.com': 'jrios@generandoideas.com',
+  // Llegó como "Mquintanilla@"; la llave va en minúsculas porque la búsqueda
+  // normaliza antes de comparar (ver managerFor y su prueba de normalización).
+  'mquintanilla@generandoideas.com': 'jrios@generandoideas.com',
+  'agamboa@generandoideas.com': 'jrios@generandoideas.com',
+  'aespinosa@generandoideas.com': 'jrios@generandoideas.com',
+  'emorales@generandoideas.com': 'jrios@generandoideas.com',
+  'eaguilar@generandoideas.com': 'jrios@generandoideas.com',
+  'gapia@generandoideas.com': 'jrios@generandoideas.com',
+  'cbernal@generandoideas.com': 'jrios@generandoideas.com',
+  'bcedillo@generandoideas.com': 'jrios@generandoideas.com',
+
+  // Mérida
+  'merida3@generandoideas.com': 'merida2@generandoideas.com',
+
+  // Sonora
+  'sonora2@generandoideas.com': 'sonora@generandoideas.com',
 };
 
 /**

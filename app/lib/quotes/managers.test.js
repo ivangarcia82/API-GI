@@ -52,4 +52,31 @@ describe('MANAGERS', () => {
       expect(String(valor).trim()).not.toBe('');
     }
   });
+
+  it('todas las direcciones, de ambos lados, son de generandoideas.com', () => {
+    // Atrapa un typo al pegar la matriz: un dominio raro haría que el CC se
+    // fuera a una dirección inexistente y Resend lo rechazara en producción.
+    for (const [ejecutivo, lider] of Object.entries(MANAGERS)) {
+      expect(ejecutivo).toMatch(/^[^\s@]+@generandoideas\.com$/);
+      expect(lider).toMatch(/^[^\s@]+@generandoideas\.com$/);
+    }
+  });
+
+  it('resuelve el correo que llegó con mayúscula inicial', () => {
+    // La matriz se capturó con "Mquintanilla@"; se guardó en minúsculas porque
+    // managerFor normaliza. Si alguien "arregla" la llave a mayúsculas, esto
+    // truena.
+    expect(managerFor('Mquintanilla@generandoideas.com')).toBe('jrios@generandoideas.com');
+    expect(managerFor('mquintanilla@generandoideas.com')).toBe('jrios@generandoideas.com');
+  });
+
+  it('ningún líder es a su vez ejecutivo de otro', () => {
+    // Hoy los cinco líderes están fuera de la matriz como llaves. Si eso
+    // cambiara habría que decidir si el CC sube en cadena, y esta prueba obliga
+    // a tomar esa decisión a conciencia en vez de descubrirla en un correo.
+    const lideres = new Set(Object.values(MANAGERS));
+    for (const ejecutivo of Object.keys(MANAGERS)) {
+      expect(lideres.has(ejecutivo)).toBe(false);
+    }
+  });
 });

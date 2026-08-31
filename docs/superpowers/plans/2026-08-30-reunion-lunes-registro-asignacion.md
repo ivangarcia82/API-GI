@@ -57,7 +57,7 @@
 
 | Qué | Efecto mientras no llegue |
 | --- | --- |
-| Matriz correo de ejecutivo → correo de manager | `MANAGERS` queda vacío; ninguna cotización lleva CC. El módulo y sus pruebas quedan completos. |
+| ~~Matriz correo de ejecutivo → correo de manager~~ | **Entregada el 2026-08-31**: 20 ejecutivos en 5 equipos, cargada en `managers.js`. |
 | PDF de términos y condiciones | El enlace del footer y del registro dan 404. |
 | Número real de tiempo de entrega (Gil) | El bloque 6 del spec no se toca en este plan. |
 
