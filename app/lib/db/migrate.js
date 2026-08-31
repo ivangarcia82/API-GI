@@ -113,6 +113,14 @@ export async function migrate(db) {
   // Folio legible; NULL en las cotizaciones anteriores al cambio, que siguen
   // mostrando su UUID. No se numeran hacia atrás: ya circularon así.
   await addColumnIfMissing(db, 'quotes', 'folio', 'TEXT');
+  // Ejecutivo que atiende la cotización, para el portal del asesor. NULL en las
+  // anteriores al cambio: su lista arranca vacía salvo que se rellene.
+  await addColumnIfMissing(db, 'quotes', 'advisor_email', 'TEXT');
+  // Después de las altas de columna, no en STATEMENTS: en una base nueva la
+  // columna todavía no existe cuando corre ese bloque.
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_quotes_advisor ON quotes(advisor_email, created_at)`,
+  );
   await addColumnIfMissing(db, 'users', 'phone', 'TEXT');
   await addColumnIfMissing(db, 'users', 'volume', 'TEXT');
   await addColumnIfMissing(db, 'users', 'needs', 'TEXT');

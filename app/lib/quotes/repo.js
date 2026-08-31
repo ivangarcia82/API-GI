@@ -19,6 +19,7 @@ function mapQuoteRow(r) {
     userId: r.user_id,
     status: r.status,
     folio: r.folio ?? null,
+    advisorEmail: r.advisor_email ?? null,
     notes: r.notes ?? null,
     deadline: r.deadline ?? null,
     shopifyDraftOrderGid: r.shopify_draft_order_gid ?? null,
@@ -166,7 +167,7 @@ export async function listUserQuotes(db, userId) {
   return res.rows.map(mapQuoteRow);
 }
 
-export async function markSubmitted(db, quoteId, {gid, invoiceUrl}) {
+export async function markSubmitted(db, quoteId, {gid, invoiceUrl, advisorEmail = null}) {
   // El folio se reserva sólo la primera vez. Un reintento de envío no puede
   // renumerar: el cliente acabaría con dos documentos para la misma cotización.
   const previo = await db.execute({
@@ -178,10 +179,36 @@ export async function markSubmitted(db, quoteId, {gid, invoiceUrl}) {
 
   await db.execute({
     sql: `UPDATE quotes
-          SET status='submitted', folio=?, shopify_draft_order_gid=?, shopify_invoice_url=?, updated_at=?
+          SET status='submitted', folio=?, advisor_email=?,
+              shopify_draft_order_gid=?, shopify_invoice_url=?, updated_at=?
           WHERE id=?`,
-    args: [folio, gid ?? null, invoiceUrl ?? null, nowIso(), quoteId],
+    args: [
+      folio,
+      advisorEmail ? String(advisorEmail).trim().toLowerCase() : null,
+      gid ?? null,
+      invoiceUrl ?? null,
+      nowIso(),
+      quoteId,
+    ],
   });
 
   return {folio};
+}
+
+/**
+ * Cotizaciones asignadas a un ejecutivo, para su portal. Se filtra por correo
+ * normalizado porque es lo que guarda markSubmitted.
+ * @param {import('@libsql/client/web').Client} db
+ * @param {string} advisorEmail
+ */
+export async function listAdvisorQuotes(db, advisorEmail) {
+  const correo = String(advisorEmail ?? '').trim().toLowerCase();
+  if (!correo) return [];
+  const res = await db.execute({
+    sql: `SELECT * FROM quotes
+          WHERE advisor_email = ? AND status != 'draft'
+          ORDER BY created_at DESC`,
+    args: [correo],
+  });
+  return res.rows.map(mapQuoteRow);
 }

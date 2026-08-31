@@ -201,3 +201,33 @@ describe('notifyQuoteSubmitted · copia al manager', () => {
     expect('cc' in interno[1]).toBe(false);
   });
 });
+
+describe('notifyQuoteSubmitted · enlace del correo interno', () => {
+  it('manda al portal cuando hay ejecutivo asignado', async () => {
+    const sendEmail = vi.fn().mockResolvedValue({});
+    await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => ({email: 'lvega@generandoideas.com', fields: {}}),
+      managerFor: () => null,
+      sendEmail,
+    });
+    const interno = sendEmail.mock.calls.find(
+      ([, m]) => m.to === 'lvega@generandoideas.com',
+    );
+    expect(interno[1].html).toContain('/asesor/cotizaciones/q-123');
+    expect(interno[1].html).not.toContain('shop/invoice');
+  });
+
+  it('conserva el enlace de Shopify cuando cae en el buzón general', async () => {
+    const sendEmail = vi.fn().mockResolvedValue({});
+    await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => ({email: null, fields: {}}),
+      managerFor: () => null,
+      sendEmail,
+    });
+    const interno = sendEmail.mock.calls.find(
+      ([, m]) => m.to === 'ventas@generandoideas.com',
+    );
+    expect(interno[1].html).toContain('shop/invoice');
+    expect(interno[1].html).not.toContain('/asesor/cotizaciones/');
+  });
+});

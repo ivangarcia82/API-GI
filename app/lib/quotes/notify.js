@@ -84,10 +84,24 @@ export async function notifyQuoteSubmitted(
     origin,
   ).toString();
 
+  // Sólo tiene sentido mandar al portal a quien podrá abrirla: el ejecutivo
+  // asignado. El buzón general no tiene cuenta de asesor.
+  const portalUrl = advisorEmail
+    ? new URL(`/asesor/cotizaciones/${encodeURIComponent(quote.id)}`, origin).toString()
+    : null;
+
   const advisorSent = await trySend(
     env,
     sendEmail,
-    buildAdvisorEmail({advisorEmail: advisorTo, managerEmail, quote, user, items, invoiceUrl}),
+    buildAdvisorEmail({
+      advisorEmail: advisorTo,
+      managerEmail,
+      quote,
+      user,
+      items,
+      invoiceUrl,
+      portalUrl,
+    }),
     'advisor',
   );
 

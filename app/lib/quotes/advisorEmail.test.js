@@ -118,3 +118,35 @@ describe('buildAdvisorEmail · copia al manager', () => {
     expect('cc' in msg).toBe(false);
   });
 });
+
+describe('buildAdvisorEmail · botón al portal', () => {
+  const base = {
+    advisorEmail: 'lvega@generandoideas.com',
+    quote: {id: 'q-uuid-1', folio: 'GIV.CDMX.20260007'},
+    user: {email: 'cliente@empresa.mx'},
+    items: [],
+    invoiceUrl: 'https://shop.example/invoice/1',
+  };
+
+  it('enlaza al portal, no a Shopify, cuando hay ejecutivo asignado', () => {
+    const msg = buildAdvisorEmail({
+      ...base,
+      portalUrl: 'https://gi.test/asesor/cotizaciones/q-uuid-1',
+    });
+    expect(msg.html).toContain('https://gi.test/asesor/cotizaciones/q-uuid-1');
+    expect(msg.html).toContain('Ver cotización en el portal');
+    expect(msg.html).not.toContain('shop.example');
+  });
+
+  it('cae al enlace de Shopify cuando la cotización no tiene ejecutivo', () => {
+    // Ese correo va al buzón general, y ahí nadie puede abrirla en el portal.
+    const msg = buildAdvisorEmail({...base, portalUrl: null});
+    expect(msg.html).toContain('shop.example');
+    expect(msg.html).toContain('Ver cotización en Shopify');
+  });
+
+  it('sin portal ni factura no pinta ningún botón', () => {
+    const msg = buildAdvisorEmail({...base, portalUrl: null, invoiceUrl: null});
+    expect(msg.html).not.toContain('<a href');
+  });
+});

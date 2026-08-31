@@ -11,16 +11,30 @@ import {folioVisible} from './folio.js';
  *   user: {email: string, firstName?: string, lastName?: string, company?: string},
  *   items: Array<{title: string, qty: number, technique?: string, size?: string, effectiveUnitPrice: number}>,
  *   invoiceUrl: string|null,
+ *   portalUrl?: string|null,
  * }} args
  * @returns {{to: string, cc?: string, subject: string, html: string}}
  */
-export function buildAdvisorEmail({advisorEmail, managerEmail, quote, user, items, invoiceUrl}) {
+export function buildAdvisorEmail({
+  advisorEmail,
+  managerEmail,
+  quote,
+  user,
+  items,
+  invoiceUrl,
+  portalUrl,
+}) {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
   const folio = folioVisible(quote);
 
-  const invoiceBlock = invoiceUrl
-    ? `<p><a href="${escapeHtml(invoiceUrl)}">Ver cotización en Shopify</a></p>`
-    : '';
+  // El ejecutivo abre la cotización en el portal, con su formato y su detalle
+  // de decorado. Sólo cuando no hay portal al que mandarle —la cotización cayó
+  // en el buzón general y nadie la tiene asignada— se cae al enlace de Shopify.
+  const invoiceBlock = portalUrl
+    ? `<p><a href="${escapeHtml(portalUrl)}">Ver cotización en el portal</a></p>`
+    : invoiceUrl
+      ? `<p><a href="${escapeHtml(invoiceUrl)}">Ver cotización en Shopify</a></p>`
+      : '';
 
   const deadlineBlock = quote.deadline
     ? `<p><strong>Fecha objetivo:</strong> ${escapeHtml(quote.deadline)}</p>`

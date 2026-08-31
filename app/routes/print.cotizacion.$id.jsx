@@ -6,6 +6,7 @@ import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {getQuoteWithItems} from '~/lib/quotes/repo';
 import {findById} from '~/lib/auth/users';
+import {advisorCanSee} from '~/lib/quotes/advisorAccess';
 import {getCustomerAdvisor} from '~/lib/admin/operations';
 import {NOTAS_IMPORTANTES} from '~/lib/quotes/notasImportantes';
 import {folioVisible} from '~/lib/quotes/folio';
@@ -56,11 +57,18 @@ export async function loader({params, context}) {
   const sessionUser = await requireUser(context);
   const db = getDb(context.env);
   const {quote, items} = await getQuoteWithItems(db, params.id);
-  // Ownership: never leak another user's quote.
-  if (!quote || quote.userId !== sessionUser.userId) {
+  const sesion = await findById(db, sessionUser.userId).catch(() => null);
+
+  // La abre su dueño, o el ejecutivo al que se le asignó. Nadie más.
+  const esDueno = quote && quote.userId === sessionUser.userId;
+  const esSuAsesor = advisorCanSee(quote, sesion && sesion.email);
+  if (!quote || (!esDueno && !esSuAsesor)) {
     throw new Response('No encontrada', {status: 404});
   }
-  const user = await findById(db, sessionUser.userId).catch(() => null);
+
+  // Los datos del encabezado son SIEMPRE los del comprador, aunque quien
+  // imprima sea el ejecutivo.
+  const user = esDueno ? sesion : await findById(db, quote.userId).catch(() => null);
 
   // Best-effort: un fallo del Admin API no puede impedir imprimir la cotización.
   const advisor = await getCustomerAdvisor(

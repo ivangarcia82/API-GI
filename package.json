@@ -10,7 +10,9 @@
     "preview": "shopify hydrogen preview --build",
     "lint": "eslint --no-error-on-unmatched-pattern .",
     "codegen": "shopify hydrogen codegen && react-router typegen",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate": "node scripts/migrate.mjs",
+    "crear-asesores": "node scripts/crear-asesores.mjs"
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {

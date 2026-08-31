@@ -87,12 +87,9 @@ export async function action({request, context}) {
     return Response.json({error: message}, {status: 502});
   }
 
-  // Vía markSubmitted, no con un UPDATE propio: ahí vive la reserva del folio.
-  // Duplicar el SQL aquí ya había dejado esta ruta sin folio una vez.
-  const {folio} = await markSubmitted(db, quote.id, {gid, invoiceUrl});
-
-  // El asesor se resuelve UNA vez: sirve para marcar la draft order y se le
-  // pasa a la notificación por `deps`, que si no lo volvería a consultar.
+  // El asesor se resuelve UNA vez y alimenta tres cosas: la columna
+  // advisor_email de la cotización (el portal del ejecutivo), el metafield de
+  // la draft order (el filtro en el admin) y la notificación.
   let advisor = {email: null, gid: null, fields: {}};
   try {
     advisor = await getCustomerAdvisor(env, customerGid);
@@ -101,12 +98,20 @@ export async function action({request, context}) {
   }
 
   // Marca de ejecutivo en la draft order, para filtrar por asesor en el admin.
-  // Best-effort: la cotización ya está enviada y persistida.
+  // Best-effort: la draft order ya existe y la cotización se guarda igual.
   try {
     await setDraftOrderAdvisor(env, gid, advisor.gid);
   } catch (err) {
     console.error('[quote.submit] draft order advisor metafield failed:', err);
   }
+
+  // Vía markSubmitted, no con un UPDATE propio: ahí vive la reserva del folio.
+  // Duplicar el SQL aquí ya había dejado esta ruta sin folio una vez.
+  const {folio} = await markSubmitted(db, quote.id, {
+    gid,
+    invoiceUrl,
+    advisorEmail: advisor.email,
+  });
 
   // Best-effort notifications: the internal copy (advisor, or the sales inbox
   // when the customer has none) and the buyer's confirmation. The quote is

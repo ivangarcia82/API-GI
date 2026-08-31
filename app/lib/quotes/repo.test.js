@@ -9,6 +9,7 @@ import {
   getQuoteWithItems,
   listUserQuotes,
   markSubmitted,
+  listAdvisorQuotes,
 } from './repo.js';
 
 const USER = 'user-1';
@@ -149,5 +150,53 @@ describe('folio al enviar', () => {
     await markSubmitted(db, q.id, {gid: 'gid://x/1', invoiceUrl: 'https://x/1'});
     const {quote: segundo} = await getQuoteWithItems(db, q.id);
     expect(segundo.folio).toBe(primero.folio);
+  });
+});
+
+describe('asignación de ejecutivo a la cotización', () => {
+  let db;
+  beforeEach(async () => {
+    db = await makeDb();
+  });
+
+  it('guarda el correo del ejecutivo al enviar, normalizado', async () => {
+    const q = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, q.id, {
+      gid: null,
+      invoiceUrl: null,
+      advisorEmail: '  LVega@GenerandoIdeas.com ',
+    });
+    const {quote} = await getQuoteWithItems(db, q.id);
+    expect(quote.advisorEmail).toBe('lvega@generandoideas.com');
+  });
+
+  it('deja null cuando la cotización no tiene ejecutivo', async () => {
+    const q = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, q.id, {gid: null, invoiceUrl: null});
+    const {quote} = await getQuoteWithItems(db, q.id);
+    expect(quote.advisorEmail).toBeNull();
+  });
+
+  it('listAdvisorQuotes devuelve sólo las del ejecutivo', async () => {
+    const a = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, a.id, {gid: null, invoiceUrl: null, advisorEmail: 'lvega@gi.com'});
+    const b = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, b.id, {gid: null, invoiceUrl: null, advisorEmail: 'otro@gi.com'});
+
+    const suyas = await listAdvisorQuotes(db, 'lvega@gi.com');
+    expect(suyas.map((q) => q.id)).toEqual([a.id]);
+  });
+
+  it('listAdvisorQuotes ignora borradores y correos vacíos', async () => {
+    await getOrCreateDraftQuote(db, USER); // queda en draft, sin ejecutivo
+    expect(await listAdvisorQuotes(db, '')).toEqual([]);
+    expect(await listAdvisorQuotes(db, null)).toEqual([]);
+    expect(await listAdvisorQuotes(db, 'lvega@gi.com')).toEqual([]);
+  });
+
+  it('listAdvisorQuotes ignora mayúsculas del correo consultado', async () => {
+    const a = await getOrCreateDraftQuote(db, USER);
+    await markSubmitted(db, a.id, {gid: null, invoiceUrl: null, advisorEmail: 'lvega@gi.com'});
+    expect((await listAdvisorQuotes(db, 'LVega@GI.com')).map((q) => q.id)).toEqual([a.id]);
   });
 });
