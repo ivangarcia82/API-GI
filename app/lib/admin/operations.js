@@ -44,13 +44,17 @@ function isTakenError(userErrors) {
  * Create (or reuse) a Shopify customer. Idempotent: on a TAKEN userError it
  * looks up the existing customer by email and returns its gid.
  * @param {Record<string, any>} env
- * @param {{email: string, firstName?: string, lastName?: string, newsletterOptIn?: boolean}} args
+ * @param {{email: string, firstName?: string, lastName?: string, newsletterOptIn?: boolean, note?: string}} args
  * @returns {Promise<{gid: string}>}
  */
-export async function createCustomer(env, {email, firstName, lastName, newsletterOptIn}) {
+export async function createCustomer(env, {email, firstName, lastName, newsletterOptIn, note}) {
   const input = {email};
   if (firstName != null) input.firstName = firstName;
   if (lastName != null) input.lastName = lastName;
+  // Resumen del registro para que marketing decida la asignación sin salir del
+  // admin. Sólo se aplica al crear: en la rama de correo ya tomado no se pisa
+  // la nota de un cliente que ya existía.
+  if (note) input.note = note;
   if (newsletterOptIn) {
     // Espejo del alta al newsletter. La verdad vive en users.newsletter_opt_in;
     // esto es para que marketing pueda segmentar desde Shopify sin pedir un

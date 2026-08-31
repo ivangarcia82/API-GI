@@ -286,6 +286,24 @@ Un lead pendiente no tiene ejecutivo, así que `notifyQuoteSubmitted` cae en el
 fallback a `ventas@generandoideas.com` que ya existe (`notify.js:19-22`). No hace
 falta tocar nada, y por la sección 1.4 esas cotizaciones tampoco llevan CC.
 
+#### 5.4-bis La nota del registro en la ficha del cliente
+
+**Añadido el 2026-08-31**, al detectar el hueco: a Shopify sólo llegaban correo
+y nombre, así que marketing abría un cliente con tag `lead-pendiente` sin ver la
+empresa, el teléfono ni a quién dijo conocer — justo lo que necesita para
+decidir. El dato existía sólo en Turso y en el correo del alta.
+
+`linkSignupCustomer` escribe ahora un resumen en el campo `note` del customer
+(`app/lib/auth/signup-note.js`, puro). Se eligió `note` sobre metafields porque
+no requiere crear definiciones en la administración de Shopify: funciona desde
+el primer alta. El costo aceptado es que no se puede filtrar ni segmentar por
+esos valores; si algún día hace falta, los metafields se añaden encima sin
+quitar la nota.
+
+El nombre del asesor reclamado se resuelve con `getAdvisorByHandle` y cae al
+handle si falla. Sólo se consulta cuando la persona señaló a alguien concreto,
+así que la mayoría de las altas no paga esa llamada.
+
 #### 5.5 Lo que el sistema no impone
 
 **Que Antonio y Jesús sólo asignen dentro de su propio equipo queda como acuerdo

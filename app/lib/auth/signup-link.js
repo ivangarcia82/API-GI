@@ -1,4 +1,5 @@
-import {addCustomerTags, createCustomer} from '../admin/operations.js';
+import {addCustomerTags, createCustomer, getAdvisorByHandle} from '../admin/operations.js';
+import {buildSignupNote} from './signup-note.js';
 import {setShopifyGid} from './users.js';
 
 /**
@@ -20,10 +21,26 @@ export const LEAD_PENDING_TAG = 'lead-pendiente';
  * @param {import('@libsql/client/web').Client} db
  * @param {Record<string, any>} env
  * @param {{id: string, email: string, firstName?: string, lastName?: string}} user
+ * La ficha del customer lleva además una nota con el resumen del registro: en
+ * el admin sólo llegan correo y nombre, y marketing necesita ver la empresa y
+ * el asesor reclamado para decidir la asignación.
+ *
  * @param {{newsletterOptIn?: boolean}} [opciones]
  * @returns {Promise<string|null>}
  */
 export async function linkSignupCustomer(db, env, user, {newsletterOptIn = false} = {}) {
+  // Sólo cuando la persona señaló a alguien concreto, así que la mayoría de
+  // altas no paga esta consulta. Best-effort: la nota cae al handle si falla.
+  let advisorName = null;
+  if (user.advisorHandle) {
+    try {
+      const reclamado = await getAdvisorByHandle(env, user.advisorHandle);
+      if (reclamado && reclamado.nombre) advisorName = reclamado.nombre;
+    } catch (err) {
+      console.error('[signup] claimed advisor lookup failed for note:', err);
+    }
+  }
+
   let gid;
   try {
     ({gid} = await createCustomer(env, {
@@ -31,6 +48,7 @@ export async function linkSignupCustomer(db, env, user, {newsletterOptIn = false
       firstName: user.firstName,
       lastName: user.lastName,
       newsletterOptIn,
+      note: buildSignupNote({user, advisorName, advisorHandle: user.advisorHandle}),
     }));
     await setShopifyGid(db, user.id, gid);
   } catch (err) {

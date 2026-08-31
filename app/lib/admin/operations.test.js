@@ -621,3 +621,24 @@ describe('createCustomer · consentimiento de marketing', () => {
     expect('emailMarketingConsent' in adminFetch.mock.calls[0][2].input).toBe(false);
   });
 });
+
+describe('createCustomer · nota del registro', () => {
+  it('manda la nota cuando se proporciona', async () => {
+    adminFetch.mockResolvedValueOnce({
+      customerCreate: {customer: {id: 'gid://shopify/Customer/7'}, userErrors: []},
+    });
+    await createCustomer(
+      {PRIVATE_ADMIN_API_TOKEN: 't'},
+      {email: 'a@b.mx', note: 'Empresa: Acme'},
+    );
+    expect(adminFetch.mock.calls[0][2].input.note).toBe('Empresa: Acme');
+  });
+
+  it('omite note cuando no hay nota que escribir', async () => {
+    adminFetch.mockResolvedValueOnce({
+      customerCreate: {customer: {id: 'gid://shopify/Customer/7'}, userErrors: []},
+    });
+    await createCustomer({PRIVATE_ADMIN_API_TOKEN: 't'}, {email: 'a@b.mx'});
+    expect('note' in adminFetch.mock.calls[0][2].input).toBe(false);
+  });
+});

@@ -4,10 +4,12 @@ const createCustomer = vi.fn();
 const setShopifyGid = vi.fn();
 const addCustomerTags = vi.fn();
 const setCustomerAdvisor = vi.fn();
+const getAdvisorByHandle = vi.fn();
 
 vi.mock('../admin/operations.js', () => ({
   createCustomer: (...a) => createCustomer(...a),
   addCustomerTags: (...a) => addCustomerTags(...a),
+  getAdvisorByHandle: (...a) => getAdvisorByHandle(...a),
   // Se mockea sólo para poder afirmar que NADIE la llama desde el alta.
   setCustomerAdvisor: (...a) => setCustomerAdvisor(...a),
 }));
@@ -26,6 +28,8 @@ beforeEach(() => {
   setShopifyGid.mockReset();
   addCustomerTags.mockReset();
   setCustomerAdvisor.mockReset();
+  getAdvisorByHandle.mockReset();
+  getAdvisorByHandle.mockResolvedValue(null);
   createCustomer.mockResolvedValue({gid: 'gid://shopify/Customer/7'});
   addCustomerTags.mockResolvedValue(undefined);
 });
@@ -53,12 +57,15 @@ describe('linkSignupCustomer', () => {
 
   it('propaga el alta al newsletter a createCustomer', async () => {
     await linkSignupCustomer(db, env, user, {newsletterOptIn: true});
-    expect(createCustomer).toHaveBeenCalledWith(env, {
-      email: 'a@b.com',
-      firstName: 'A',
-      lastName: 'B',
-      newsletterOptIn: true,
-    });
+    expect(createCustomer).toHaveBeenCalledWith(
+      env,
+      expect.objectContaining({
+        email: 'a@b.com',
+        firstName: 'A',
+        lastName: 'B',
+        newsletterOptIn: true,
+      }),
+    );
   });
 
   it('no suscribe por omisión', async () => {
@@ -82,5 +89,45 @@ describe('linkSignupCustomer', () => {
     );
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
+  });
+});
+
+describe('linkSignupCustomer · nota del registro', () => {
+  const completo = {
+    ...user,
+    company: 'Acme Corp',
+    phone: '55 1234 5678',
+    area: 'Compras',
+    esCliente: 'si',
+    advisorHandle: 'laura-vega',
+    createdAt: '2026-08-31T09:00:00.000Z',
+  };
+
+  it('escribe el resumen del registro en la nota del customer', async () => {
+    await linkSignupCustomer(db, env, completo);
+    const nota = createCustomer.mock.calls[0][1].note;
+    expect(nota).toContain('Empresa: Acme Corp');
+    expect(nota).toContain('Área: Compras');
+    expect(nota).toContain('Alta: 2026-08-31');
+  });
+
+  it('resuelve el nombre del asesor reclamado para la nota', async () => {
+    getAdvisorByHandle.mockResolvedValueOnce({nombre: 'Laura Vega'});
+    await linkSignupCustomer(db, env, completo);
+    expect(getAdvisorByHandle).toHaveBeenCalledWith(env, 'laura-vega');
+    expect(createCustomer.mock.calls[0][1].note).toContain('Asesor que indicó: Laura Vega');
+  });
+
+  it('cae al handle si el asesor no se puede resolver', async () => {
+    getAdvisorByHandle.mockRejectedValueOnce(new Error('admin down'));
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await linkSignupCustomer(db, env, completo);
+    expect(createCustomer.mock.calls[0][1].note).toContain('Asesor que indicó: laura-vega');
+    err.mockRestore();
+  });
+
+  it('no consulta al Admin API cuando no hubo reclamo de asesor', async () => {
+    await linkSignupCustomer(db, env, user);
+    expect(getAdvisorByHandle).not.toHaveBeenCalled();
   });
 });
