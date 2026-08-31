@@ -46,7 +46,22 @@ if (isStubMode(env)) {
 
 const db = getDb(env);
 
-const advisors = await listAdvisors(env);
+// Buzones operativos: reciben cotizaciones cuando el cliente no tiene ejecutivo
+// (el respaldo `marketing` del metaobject, o `ventas@` cuando no hay metafield).
+// Necesitan cuenta porque el correo los manda al portal como a cualquier otro.
+const BUZONES = [
+  {correo: 'marketing@generandoideas.com', nombre: 'Marketing', puesto: 'Buzón de marketing'},
+  {
+    correo: (env.SALES_EMAIL || 'ventas@generandoideas.com').trim().toLowerCase(),
+    nombre: 'Ventas',
+    puesto: 'Buzón de ventas',
+  },
+];
+
+const advisors = [
+  ...(await listAdvisors(env)),
+  ...BUZONES.map((b) => ({handle: null, nombre: b.nombre, puesto: b.puesto, correo: b.correo})),
+];
 console.log(`Ejecutivos publicados en Shopify: ${advisors.length}`);
 
 let creados = 0;
@@ -56,7 +71,7 @@ let sinCorreo = 0;
 for (const a of advisors) {
   // listAdvisors ya trae el correo, pero un entry sin él no puede tener cuenta.
   let correo = a.correo;
-  if (!correo) {
+  if (!correo && a.handle) {
     const detalle = await getAdvisorByHandle(env, a.handle).catch(() => null);
     correo = detalle && detalle.correo ? detalle.correo.trim().toLowerCase() : '';
   }

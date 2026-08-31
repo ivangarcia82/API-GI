@@ -61,13 +61,6 @@ describe('notifyAdvisorOfSignup', () => {
     expect(html).toContain('Hola Ailine Gamboa');
   });
 
-  it('links to the customer in the Shopify admin', async () => {
-    await notifyAdvisorOfSignup(env, {user}, deps());
-
-    expect(sentMessage().html).toContain(
-      'https://admin.shopify.com/store/development-gi/customers/123',
-    );
-  });
 
   it('falls back to marketing when the customer has no advisor', async () => {
     getCustomerAdvisor.mockResolvedValue({email: null, fields: {}});

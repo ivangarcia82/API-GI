@@ -9,7 +9,7 @@ import {
 import {sendEmail as realSendEmail} from '../email/resend.js';
 import {managerFor as realManagerFor} from '../quotes/managers.js';
 import {MARKETING_HANDLE} from './advisor-choice.js';
-import {buildSignupAdvisorEmail, shopifyCustomerAdminUrl} from './signup-advisor-email.js';
+import {buildSignupAdvisorEmail} from './signup-advisor-email.js';
 
 /**
  * Quién recibe el aviso: el asesor que el usuario eligió al registrarse. Si no
@@ -106,10 +106,6 @@ export async function notifyAdvisorOfSignup(env, {user}, deps = {}) {
     advisorTo: recipient.correo,
     advisorName: recipient.nombre,
     user,
-    customerAdminUrl: shopifyCustomerAdminUrl(
-      env && env.PUBLIC_STORE_DOMAIN,
-      user.shopifyCustomerGid,
-    ),
     claimedAdvisor,
     esCliente: user.esCliente ?? null,
     cc: cc.length ? cc : null,

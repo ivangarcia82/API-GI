@@ -9,10 +9,9 @@ import {
   getCustomerAdvisor,
   setDraftOrderAdvisor,
 } from '~/lib/admin/operations';
-import {notifyQuoteSubmitted} from '~/lib/quotes/notify';
+import {notifyQuoteSubmitted, resolveAdvisorRecipient} from '~/lib/quotes/notify';
 import {getOrCreateDraftQuote, getQuoteWithItems, markSubmitted} from '~/lib/quotes/repo';
 import {buildDraftOrderInput} from '~/lib/quotes/draftInput';
-import {esAsesorReal} from '~/lib/quotes/asesorReal';
 
 export async function action({request, context}) {
   assertSameOrigin(request);
@@ -97,14 +96,15 @@ export async function action({request, context}) {
   } catch (err) {
     console.error('[quote.submit] advisor lookup failed:', err);
   }
-  // El entry `marketing` es el respaldo del metaobject, no un ejecutivo: no
-  // debe quedar como asignado ni en la cotización ni en la draft order.
-  const asesor = esAsesorReal(advisor) ? advisor : null;
+  // Quien recibe el correo interno es quien podrá abrir la cotización en el
+  // portal, así que es exactamente lo que se guarda como advisor_email: un
+  // ejecutivo, el buzón de marketing o el de ventas, según a quién le toque.
+  const destinatario = resolveAdvisorRecipient(advisor.email, env);
 
   // Marca de ejecutivo en la draft order, para filtrar por asesor en el admin.
   // Best-effort: la draft order ya existe y la cotización se guarda igual.
   try {
-    await setDraftOrderAdvisor(env, gid, asesor && asesor.gid);
+    await setDraftOrderAdvisor(env, gid, advisor.gid);
   } catch (err) {
     console.error('[quote.submit] draft order advisor metafield failed:', err);
   }
@@ -114,7 +114,7 @@ export async function action({request, context}) {
   const {folio} = await markSubmitted(db, quote.id, {
     gid,
     invoiceUrl,
-    advisorEmail: asesor && asesor.email,
+    advisorEmail: destinatario,
   });
 
   // Best-effort notifications: the internal copy (advisor, or the sales inbox
@@ -126,7 +126,6 @@ export async function action({request, context}) {
       quote: {id: quote.id, folio, notes: quote.notes, deadline: quote.deadline},
       user,
       items,
-      invoiceUrl, // raw url; goes to internal staff only, never to the buyer
       customerGid,
       origin: new URL(request.url).origin,
     },

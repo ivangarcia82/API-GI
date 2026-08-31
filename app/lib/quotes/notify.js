@@ -6,7 +6,6 @@ import {getCustomerAdvisor as realGetCustomerAdvisor} from '../admin/operations.
 import {sendEmail as realSendEmail} from '../email/resend.js';
 import {buildAdvisorEmail} from './advisorEmail.js';
 import {managerFor as realManagerFor} from './managers.js';
-import {esAsesorReal} from './asesorReal.js';
 import {buildCustomerEmail} from './customerEmail.js';
 
 const DEFAULT_SALES_EMAIL = 'ventas@generandoideas.com';
@@ -57,7 +56,6 @@ async function trySend(env, sendEmail, message, label) {
  *   quote: {id: string, notes?: string|null, deadline?: string|null},
  *   user: {email: string, firstName?: string, lastName?: string, company?: string},
  *   items: Array<Record<string, any>>,
- *   invoiceUrl: string|null,
  *   customerGid: string|null,
  *   origin: string,
  * }} params
@@ -66,7 +64,7 @@ async function trySend(env, sendEmail, message, label) {
  */
 export async function notifyQuoteSubmitted(
   env,
-  {quote, user, items, invoiceUrl, customerGid, origin},
+  {quote, user, items, customerGid, origin},
   deps = {},
 ) {
   const getCustomerAdvisor = deps.getCustomerAdvisor ?? realGetCustomerAdvisor;
@@ -86,11 +84,12 @@ export async function notifyQuoteSubmitted(
     origin,
   ).toString();
 
-  // Sólo tiene sentido mandar al portal a quien podrá abrirla. Ni el buzón
-  // general ni el entry `marketing` tienen cuenta de asesor.
-  const portalUrl = esAsesorReal(advisor)
-    ? new URL(`/asesor/cotizaciones/${encodeURIComponent(quote.id)}`, origin).toString()
-    : null;
+  // Siempre al portal, nunca a Shopify: quien reciba este correo es el mismo
+  // que queda en quotes.advisor_email, así que podrá abrirla.
+  const portalUrl = new URL(
+    `/asesor/cotizaciones/${encodeURIComponent(quote.id)}`,
+    origin,
+  ).toString();
 
   const advisorSent = await trySend(
     env,
@@ -101,7 +100,6 @@ export async function notifyQuoteSubmitted(
       quote,
       user,
       items,
-      invoiceUrl,
       portalUrl,
     }),
     'advisor',

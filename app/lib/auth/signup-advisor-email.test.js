@@ -1,8 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {
-  buildSignupAdvisorEmail,
-  shopifyCustomerAdminUrl,
-} from './signup-advisor-email.js';
+import {buildSignupAdvisorEmail} from './signup-advisor-email.js';
 
 const user = {
   email: 'mariana@empresa.mx',
@@ -17,32 +14,10 @@ function build(over = {}) {
     advisorTo: 'agamboa@generandoideas.com',
     advisorName: 'Ailine',
     user,
-    customerAdminUrl: null,
-    ...over,
+      ...over,
   });
 }
 
-describe('shopifyCustomerAdminUrl', () => {
-  it('builds the admin deep link from the store domain and customer gid', () => {
-    expect(
-      shopifyCustomerAdminUrl('development-gi.myshopify.com', 'gid://shopify/Customer/123'),
-    ).toBe('https://admin.shopify.com/store/development-gi/customers/123');
-  });
-
-  it('returns null without a customer gid', () => {
-    expect(shopifyCustomerAdminUrl('development-gi.myshopify.com', null)).toBeNull();
-  });
-
-  it('returns null without a store domain', () => {
-    expect(shopifyCustomerAdminUrl('', 'gid://shopify/Customer/123')).toBeNull();
-  });
-
-  it('returns null for a gid that is not a customer', () => {
-    expect(
-      shopifyCustomerAdminUrl('development-gi.myshopify.com', 'gid://shopify/Order/9'),
-    ).toBeNull();
-  });
-});
 
 describe('buildSignupAdvisorEmail', () => {
   it('addresses the advisor', () => {
@@ -85,12 +60,6 @@ describe('buildSignupAdvisorEmail', () => {
     expect(html).toContain('&lt;script&gt;');
   });
 
-  it('links to the customer in Shopify when the url is known', () => {
-    const url = 'https://admin.shopify.com/store/development-gi/customers/123';
-    const {html} = build({customerAdminUrl: url});
-    expect(html).toContain(url);
-    expect(html).toContain('Ver cliente en Shopify');
-  });
 
   it('omits the Shopify block entirely when there is no customer url', () => {
     expect(build({customerAdminUrl: null}).html).not.toContain('Ver cliente en Shopify');
@@ -101,8 +70,7 @@ describe('buildSignupAdvisorEmail · reclamo de asesor', () => {
   const base = {
     advisorTo: 'marketing@generandoideas.com',
     user: {email: 'ana@acme.mx', firstName: 'Ana', lastName: 'Pérez', company: 'Acme'},
-    customerAdminUrl: null,
-  };
+    };
 
   it('muestra el asesor que el usuario dijo tener', () => {
     const msg = buildSignupAdvisorEmail({
@@ -143,8 +111,7 @@ describe('buildSignupAdvisorEmail · copia al líder', () => {
   const base = {
     advisorTo: 'marketing@generandoideas.com',
     user: {email: 'ana@acme.mx', firstName: 'Ana', lastName: 'Pérez'},
-    customerAdminUrl: null,
-    claimedAdvisor: 'Laura Vega',
+      claimedAdvisor: 'Laura Vega',
     esCliente: 'si',
   };
 
@@ -155,5 +122,31 @@ describe('buildSignupAdvisorEmail · copia al líder', () => {
 
   it('omite la clave cc cuando no hay líder', () => {
     expect('cc' in buildSignupAdvisorEmail({...base, cc: null})).toBe(false);
+  });
+});
+
+describe('buildSignupAdvisorEmail · sin enlaces a Shopify', () => {
+  it('no lleva ningún enlace al admin de Shopify', () => {
+    const msg = buildSignupAdvisorEmail({
+      advisorTo: 'marketing@generandoideas.com',
+      user: {email: 'ana@acme.mx', firstName: 'Ana', company: 'Acme'},
+      claimedAdvisor: 'Laura Vega',
+      esCliente: 'si',
+    });
+    expect(msg.html).not.toMatch(/shopify/i);
+    expect(msg.html).not.toContain('admin.shopify.com');
+  });
+
+  it('conserva en el cuerpo lo que marketing necesita para decidir', () => {
+    const msg = buildSignupAdvisorEmail({
+      advisorTo: 'marketing@generandoideas.com',
+      user: {email: 'ana@acme.mx', firstName: 'Ana', company: 'Acme', phone: '5512345678'},
+      claimedAdvisor: 'Laura Vega',
+      esCliente: 'si',
+    });
+    expect(msg.html).toContain('ana@acme.mx');
+    expect(msg.html).toContain('Acme');
+    expect(msg.html).toContain('5512345678');
+    expect(msg.html).toContain('Laura Vega');
   });
 });

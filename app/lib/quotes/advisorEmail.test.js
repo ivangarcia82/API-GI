@@ -26,7 +26,7 @@ describe('buildAdvisorEmail', () => {
     expect(msg.subject).toContain('q-123');
   });
 
-  it('includes customer identity, items summary and the invoice link in the html', () => {
+  it('includes customer identity and items summary in the html', () => {
     const msg = buildAdvisorEmail({
       advisorEmail: 'maria@generandoideas.com',
       quote: QUOTE,
@@ -41,7 +41,6 @@ describe('buildAdvisorEmail', () => {
     expect(msg.html).toContain('SERIGRAFÍA 4 x 4');
     expect(msg.html).toContain('300');
     expect(msg.html).toContain('Pluma');
-    expect(msg.html).toContain('https://shop/invoice/1');
     // total = 300*29.97 + 50*12 = 9591.00
     expect(msg.html).toContain('9,591.00');
   });
@@ -138,15 +137,15 @@ describe('buildAdvisorEmail · botón al portal', () => {
     expect(msg.html).not.toContain('shop.example');
   });
 
-  it('cae al enlace de Shopify cuando la cotización no tiene ejecutivo', () => {
-    // Ese correo va al buzón general, y ahí nadie puede abrirla en el portal.
+  it('nunca enlaza a Shopify, ni siquiera sin portal', () => {
+    // Todos los buzones que reciben este correo tienen cuenta en el portal.
     const msg = buildAdvisorEmail({...base, portalUrl: null});
-    expect(msg.html).toContain('shop.example');
-    expect(msg.html).toContain('Ver cotización en Shopify');
+    expect(msg.html).not.toMatch(/shopify/i);
+    expect(msg.html).not.toContain('shop.example');
   });
 
-  it('sin portal ni factura no pinta ningún botón', () => {
-    const msg = buildAdvisorEmail({...base, portalUrl: null, invoiceUrl: null});
+  it('sin portal no pinta ningún botón', () => {
+    const msg = buildAdvisorEmail({...base, portalUrl: null});
     expect(msg.html).not.toContain('<a href');
   });
 });
