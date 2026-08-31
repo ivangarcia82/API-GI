@@ -12,9 +12,11 @@ import {
   createDraftOrder,
   getCustomerAdvisor,
   getVariantInventory,
+  getAdvisorByHandle,
   listAdvisors,
   resolveAdvisorGid,
   setCustomerAdvisor,
+  addCustomerTags,
 } from './operations.js';
 
 beforeEach(() => {
@@ -487,5 +489,135 @@ describe('setCustomerAdvisor', () => {
     await setCustomerAdvisor({}, GID, ADVISOR_GID);
 
     expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('getAdvisorByHandle', () => {
+  it('returns the advisor fields for a known handle', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjectByHandle: {
+        id: 'gid://shopify/Metaobject/1',
+        handle: 'ailine-gamboa',
+        displayName: 'Ailine Gamboa',
+        fields: [
+          {key: 'nombre', value: 'Ailine Gamboa'},
+          {key: 'puesto', value: 'Strategic Sales Jr. Executive'},
+          {key: 'correo', value: 'agamboa@generandoideas.com'},
+        ],
+      },
+    });
+
+    const advisor = await getAdvisorByHandle({}, 'ailine-gamboa');
+
+    expect(advisor).toEqual({
+      gid: 'gid://shopify/Metaobject/1',
+      handle: 'ailine-gamboa',
+      nombre: 'Ailine Gamboa',
+      puesto: 'Strategic Sales Jr. Executive',
+      correo: 'agamboa@generandoideas.com',
+    });
+  });
+
+  it('returns correo:null when the entry has no email', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjectByHandle: {
+        id: 'gid://shopify/Metaobject/2',
+        handle: 'sin-correo',
+        displayName: 'Sin Correo',
+        fields: [{key: 'nombre', value: 'Sin Correo'}],
+      },
+    });
+
+    const advisor = await getAdvisorByHandle({}, 'sin-correo');
+
+    expect(advisor.correo).toBeNull();
+    expect(advisor.nombre).toBe('Sin Correo');
+  });
+
+  it('returns null for a handle that does not exist', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({metaobjectByHandle: null});
+
+    await expect(getAdvisorByHandle({}, 'no-existe')).resolves.toBeNull();
+  });
+
+  it('returns null without querying when no handle is given', async () => {
+    isStubMode.mockReturnValue(false);
+
+    await expect(getAdvisorByHandle({}, '')).resolves.toBeNull();
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns a deterministic advisor with an email in stub mode', async () => {
+    isStubMode.mockReturnValue(true);
+
+    const advisor = await getAdvisorByHandle({}, 'marketing');
+
+    expect(advisor.handle).toBe('marketing');
+    expect(advisor.correo).toMatch(/@/);
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('addCustomerTags', () => {
+  beforeEach(() => {
+    isStubMode.mockReturnValue(false);
+  });
+
+  it('etiqueta al customer con la mutación tagsAdd', async () => {
+    adminFetch.mockResolvedValueOnce({tagsAdd: {userErrors: []}});
+    await addCustomerTags({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://shopify/Customer/7', [
+      'lead-pendiente',
+    ]);
+    const [, query, vars] = adminFetch.mock.calls[0];
+    expect(query).toMatch(/tagsAdd/);
+    expect(vars).toEqual({id: 'gid://shopify/Customer/7', tags: ['lead-pendiente']});
+  });
+
+  it('no llama al Admin API sin gid o sin etiquetas', async () => {
+    await addCustomerTags({PRIVATE_ADMIN_API_TOKEN: 't'}, null, ['x']);
+    await addCustomerTags({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://shopify/Customer/7', []);
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('no llama al Admin API en modo stub', async () => {
+    isStubMode.mockReturnValue(true);
+    await addCustomerTags({}, 'gid://shopify/Customer/7', ['lead-pendiente']);
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('lanza cuando Shopify devuelve userErrors', async () => {
+    adminFetch.mockResolvedValueOnce({
+      tagsAdd: {userErrors: [{field: 'tags', message: 'inválido'}]},
+    });
+    await expect(
+      addCustomerTags({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://shopify/Customer/7', ['x']),
+    ).rejects.toThrow(/addCustomerTags userErrors/);
+  });
+});
+
+describe('createCustomer · consentimiento de marketing', () => {
+  it('manda emailMarketingConsent cuando el usuario se suscribió', async () => {
+    adminFetch.mockResolvedValueOnce({
+      customerCreate: {customer: {id: 'gid://shopify/Customer/7'}, userErrors: []},
+    });
+    await createCustomer(
+      {PRIVATE_ADMIN_API_TOKEN: 't'},
+      {email: 'a@b.mx', newsletterOptIn: true},
+    );
+    const consent = adminFetch.mock.calls[0][2].input.emailMarketingConsent;
+    expect(consent.marketingState).toBe('SUBSCRIBED');
+    expect(consent.marketingOptInLevel).toBe('SINGLE_OPT_IN');
+    expect(typeof consent.consentUpdatedAt).toBe('string');
+  });
+
+  it('omite emailMarketingConsent cuando no se suscribió', async () => {
+    adminFetch.mockResolvedValueOnce({
+      customerCreate: {customer: {id: 'gid://shopify/Customer/7'}, userErrors: []},
+    });
+    await createCustomer({PRIVATE_ADMIN_API_TOKEN: 't'}, {email: 'a@b.mx'});
+    expect('emailMarketingConsent' in adminFetch.mock.calls[0][2].input).toBe(false);
   });
 });

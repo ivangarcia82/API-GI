@@ -44,13 +44,24 @@ function isTakenError(userErrors) {
  * Create (or reuse) a Shopify customer. Idempotent: on a TAKEN userError it
  * looks up the existing customer by email and returns its gid.
  * @param {Record<string, any>} env
- * @param {{email: string, firstName?: string, lastName?: string}} args
+ * @param {{email: string, firstName?: string, lastName?: string, newsletterOptIn?: boolean}} args
  * @returns {Promise<{gid: string}>}
  */
-export async function createCustomer(env, {email, firstName, lastName}) {
+export async function createCustomer(env, {email, firstName, lastName, newsletterOptIn}) {
   const input = {email};
   if (firstName != null) input.firstName = firstName;
   if (lastName != null) input.lastName = lastName;
+  if (newsletterOptIn) {
+    // Espejo del alta al newsletter. La verdad vive en users.newsletter_opt_in;
+    // esto es para que marketing pueda segmentar desde Shopify sin pedir un
+    // export. En la rama de correo ya tomado no se aplica: ese customer ya
+    // existía y su consentimiento no es nuestro que sobrescribir.
+    input.emailMarketingConsent = {
+      marketingState: 'SUBSCRIBED',
+      marketingOptInLevel: 'SINGLE_OPT_IN',
+      consentUpdatedAt: new Date().toISOString(),
+    };
+  }
 
   const data = await adminFetch(env, CUSTOMER_CREATE, {input});
   const result = data.customerCreate;
@@ -219,7 +230,12 @@ const ADVISORS_LIST = `
 
 const ADVISOR_BY_HANDLE = `
   query metaobjectByHandle($handle: MetaobjectHandleInput!) {
-    metaobjectByHandle(handle: $handle) { id }
+    metaobjectByHandle(handle: $handle) {
+      id
+      handle
+      displayName
+      fields { key value }
+    }
   }
 `;
 
@@ -284,6 +300,46 @@ export async function listAdvisors(env) {
 }
 
 /**
+ * Read a single advisor entry by handle: gid plus the fields the signup
+ * notification needs. Null when the handle doesn't exist.
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} handle
+ * @returns {Promise<{gid: string, handle: string, nombre: string, puesto: string, correo: string|null}|null>}
+ */
+export async function getAdvisorByHandle(env, handle) {
+  if (!handle) return null;
+  if (isStubMode(env)) {
+    return {
+      gid: `gid://shopify/Metaobject/STUB-${handle}`,
+      handle,
+      nombre: STUB_ADVISOR.fields.nombre,
+      puesto: 'Account Executive',
+      correo: STUB_ADVISOR.email,
+    };
+  }
+
+  const data = await adminFetch(env, ADVISOR_BY_HANDLE, {
+    handle: {type: ADVISOR_TYPE, handle},
+  });
+  const node = data ? data.metaobjectByHandle : null;
+  if (!node || !node.id) return null;
+
+  const fields = {};
+  for (const f of node.fields || []) {
+    if (f && f.key != null) fields[f.key] = f.value;
+  }
+  const correo = fields.correo ? String(fields.correo).trim() || null : null;
+
+  return {
+    gid: node.id,
+    handle: node.handle || handle,
+    nombre: fields.nombre || node.displayName || handle,
+    puesto: fields.puesto || '',
+    correo,
+  };
+}
+
+/**
  * Resolve an advisor handle to its metaobject gid. The signup action only ever
  * receives a handle from the browser and resolves it here, so a tampered form
  * can't point the metafield at an arbitrary object.
@@ -292,14 +348,8 @@ export async function listAdvisors(env) {
  * @returns {Promise<string|null>}
  */
 export async function resolveAdvisorGid(env, handle) {
-  if (!handle) return null;
-  if (isStubMode(env)) return `gid://shopify/Metaobject/STUB-${handle}`;
-
-  const data = await adminFetch(env, ADVISOR_BY_HANDLE, {
-    handle: {type: ADVISOR_TYPE, handle},
-  });
-  const node = data ? data.metaobjectByHandle : null;
-  return node && node.id ? node.id : null;
+  const advisor = await getAdvisorByHandle(env, handle);
+  return advisor ? advisor.gid : null;
 }
 
 /**
@@ -331,6 +381,37 @@ export async function setCustomerAdvisor(env, customerGid, advisorGid) {
       `setCustomerAdvisor userErrors: ${result.userErrors
         .map((e) => e.message)
         .join('; ')}`,
+    );
+  }
+}
+
+const CUSTOMER_TAGS_ADD = `
+  mutation tagsAdd($id: ID!, $tags: [String!]!) {
+    tagsAdd(id: $id, tags: $tags) {
+      userErrors { field message }
+    }
+  }
+`;
+
+/**
+ * Añadir etiquetas a un customer. Es la forma en que el alta marca un lead como
+ * pendiente de que marketing le asigne ejecutivo: marketing filtra por el tag
+ * en el admin de Shopify. No-op sin gid, sin etiquetas o en modo stub.
+ * Requiere write_customers.
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} customerGid
+ * @param {string[]} tags
+ * @returns {Promise<void>}
+ */
+export async function addCustomerTags(env, customerGid, tags) {
+  if (!customerGid || !Array.isArray(tags) || tags.length === 0) return;
+  if (isStubMode(env)) return;
+
+  const data = await adminFetch(env, CUSTOMER_TAGS_ADD, {id: customerGid, tags});
+  const result = data ? data.tagsAdd : null;
+  if (result && result.userErrors && result.userErrors.length) {
+    throw new Error(
+      `addCustomerTags userErrors: ${result.userErrors.map((e) => e.message).join('; ')}`,
     );
   }
 }
