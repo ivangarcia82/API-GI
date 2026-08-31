@@ -5,6 +5,7 @@ import {getDb} from '~/lib/db/client';
 import {verifyAndConsumeToken} from '~/lib/auth/tokens';
 import {markEmailVerified, findById} from '~/lib/auth/users';
 import {loginSession} from '~/lib/auth/session';
+import {notifyAdvisorOfSignup} from '~/lib/auth/signup-notify';
 
 export const meta = () => [{title: 'Verificar correo · Generando Ideas'}];
 
@@ -38,6 +39,18 @@ export async function action({request, context}) {
   // confirming lands them in their account (Set-Cookie rides the redirect).
   const user = await findById(db, consumed.userId);
   if (user) {
+    // Avisar al asesor asignado. El token es de un solo uso, así que esto corre
+    // exactamente una vez por cuenta. Se va por waitUntil para que el redirect
+    // no espere al Admin API ni a Resend; si el runtime no lo ofrece, se espera.
+    // La cuenta ya quedó verificada: ningún fallo aquí puede tumbar el alta.
+    const avisando = Promise.resolve()
+      .then(() => notifyAdvisorOfSignup(context.env, {user}))
+      .catch((err) => {
+        console.error('[verify] advisor notification failed:', err);
+      });
+    if (typeof context.waitUntil === 'function') context.waitUntil(avisando);
+    else await avisando;
+
     loginSession(context.session, {
       userId: user.id,
       role: user.role,

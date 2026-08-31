@@ -1,14 +1,9 @@
 // Shared, pure building blocks for the quote emails (advisor + customer).
 // Kept in one place so both templates render an identical items table.
+import {escapeHtml} from '../email/escape.js';
 
-export function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+// Re-exportado para no romper a quien ya lo importa desde aquí.
+export {escapeHtml};
 
 export function money(amount) {
   return Number(amount || 0).toLocaleString('es-MX', {

@@ -1,13 +1,6 @@
 // Server-only. HTML email bodies for verify + reset flows. URLs are escaped
 // before interpolation so a crafted link cannot break the href attribute.
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+import {escapeHtml} from './escape.js';
 
 function layout(heading, bodyHtml, ctaUrl, ctaLabel) {
   const url = escapeHtml(ctaUrl);
