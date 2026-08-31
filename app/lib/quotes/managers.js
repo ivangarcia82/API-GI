@@ -8,6 +8,13 @@
 // `getCustomerAdvisor` sólo devuelve el correo del metaobject. Las llaves van
 // en minúsculas y sin espacios; `managers.test.js` lo vigila.
 
+// Auditada contra Shopify el 2026-08-31. Seis correos de esta matriz no
+// existen como metaobject publicado (mromero, tguirre, nanchez, zchino, sperez,
+// gapia) y nueve ejecutivos publicados no aparecen aquí (dsegundo, fhernandez,
+// favila, gtapia, mrocha, nsanchez, pcordero, iestrada, taguirre). Decisión de
+// Iván: quien no cuadre sale sin copia, no se adivina el emparejamiento.
+// Las entradas huérfanas se conservan por si esas personas se publican después.
+
 /** @type {Record<string, string>} correo del ejecutivo -> correo de su manager */
 export const MANAGERS = {
   // Equipo de Sandra Jiménez
