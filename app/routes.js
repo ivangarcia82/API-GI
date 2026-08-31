@@ -6,8 +6,16 @@ export default hydrogenRoutes([
   // must NOT be registered as routes — otherwise flatRoutes turns them into
   // real URLs and bundles `vitest` into the production server build. Vitest
   // still discovers them via its own glob, independent of this config.
+  // Módulos auxiliares co-localizados con su ruta: son datos y lógica pura que
+  // consumen tanto el formulario como el `action`, no rutas. Sin ignorarlos,
+  // flatRoutes publica URLs muertas (`/registro/validation`) que revientan al
+  // visitarlas, porque el módulo no exporta componente ni loader.
   ...(await flatRoutes({
-    ignoredRouteFiles: ['**/*.test.{js,jsx,ts,tsx}'],
+    ignoredRouteFiles: [
+      '**/*.test.{js,jsx,ts,tsx}',
+      '**/registro.validation.js',
+      '**/registro.catalogos.js',
+    ],
   })),
   // Manual route definitions can be added to this array, in addition to or instead of using the `flatRoutes` file-based routing convention.
   // See https://reactrouter.com/api/framework-conventions/routes.ts#routests
