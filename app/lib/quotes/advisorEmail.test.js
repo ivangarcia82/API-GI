@@ -92,3 +92,29 @@ describe('buildAdvisorEmail', () => {
     expect(msg.html).not.toContain('href');
   });
 });
+
+describe('buildAdvisorEmail · copia al manager', () => {
+  it('incluye cc cuando el ejecutivo tiene manager', () => {
+    const msg = buildAdvisorEmail({
+      advisorEmail: 'laura@generandoideas.com',
+      managerEmail: 'antonio@generandoideas.com',
+      quote: {id: 'q-1'},
+      user: {email: 'cliente@empresa.mx'},
+      items: [],
+      invoiceUrl: null,
+    });
+    expect(msg.cc).toBe('antonio@generandoideas.com');
+  });
+
+  it('omite la clave cc cuando no hay manager', () => {
+    const msg = buildAdvisorEmail({
+      advisorEmail: 'laura@generandoideas.com',
+      managerEmail: null,
+      quote: {id: 'q-1'},
+      user: {email: 'cliente@empresa.mx'},
+      items: [],
+      invoiceUrl: null,
+    });
+    expect('cc' in msg).toBe(false);
+  });
+});

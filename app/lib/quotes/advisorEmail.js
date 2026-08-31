@@ -5,14 +5,15 @@ import {escapeHtml, itemsTableHtml} from './emailParts.js';
 /**
  * @param {{
  *   advisorEmail: string,
+ *   managerEmail?: string|null,
  *   quote: {id: string, notes?: string|null, deadline?: string|null},
  *   user: {email: string, firstName?: string, lastName?: string, company?: string},
  *   items: Array<{title: string, qty: number, technique?: string, size?: string, effectiveUnitPrice: number}>,
  *   invoiceUrl: string|null,
  * }} args
- * @returns {{to: string, subject: string, html: string}}
+ * @returns {{to: string, cc?: string, subject: string, html: string}}
  */
-export function buildAdvisorEmail({advisorEmail, quote, user, items, invoiceUrl}) {
+export function buildAdvisorEmail({advisorEmail, managerEmail, quote, user, items, invoiceUrl}) {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
 
   const invoiceBlock = invoiceUrl
@@ -43,6 +44,8 @@ export function buildAdvisorEmail({advisorEmail, quote, user, items, invoiceUrl}
 
   return {
     to: advisorEmail,
+    // Sólo se copia al manager cuando lo hay: Resend rechaza cc: undefined.
+    ...(managerEmail ? {cc: managerEmail} : {}),
     subject: `Nueva cotización ${quote.id} — ${fullName || user.email}`,
     html,
   };
