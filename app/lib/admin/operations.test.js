@@ -206,7 +206,7 @@ describe('getCustomerAdvisor', () => {
 
     const advisor = await getCustomerAdvisor({}, GID);
 
-    expect(advisor).toEqual({email: null, gid: null, fields: {}});
+    expect(advisor).toEqual({email: null, gid: null, handle: null, fields: {}});
   });
 
   it('returns a null-safe shape when the customer is null', async () => {
@@ -215,7 +215,7 @@ describe('getCustomerAdvisor', () => {
 
     const advisor = await getCustomerAdvisor({}, GID);
 
-    expect(advisor).toEqual({email: null, gid: null, fields: {}});
+    expect(advisor).toEqual({email: null, gid: null, handle: null, fields: {}});
   });
 
   it('returns email:null when the reference has no correo field', async () => {
@@ -245,7 +245,7 @@ describe('getCustomerAdvisor', () => {
 
     const advisor = await getCustomerAdvisor({}, null);
 
-    expect(advisor).toEqual({email: null, gid: null, fields: {}});
+    expect(advisor).toEqual({email: null, gid: null, handle: null, fields: {}});
     expect(adminFetch).not.toHaveBeenCalled();
   });
 });
@@ -793,5 +793,24 @@ describe('setDraftOrderAdvisor', () => {
     await expect(
       setDraftOrderAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://d/1', 'gid://m/1'),
     ).rejects.toThrow(/setDraftOrderAdvisor userErrors/);
+  });
+});
+
+describe('getCustomerAdvisor · handle del metaobject', () => {
+  it('devuelve el handle, que distingue al respaldo de una persona', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({
+      customer: {
+        metafield: {
+          reference: {
+            id: 'gid://shopify/Metaobject/9',
+            handle: 'marketing',
+            fields: [{key: 'correo', value: 'marketing@generandoideas.com'}],
+          },
+        },
+      },
+    });
+    const a = await getCustomerAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1');
+    expect(a.handle).toBe('marketing');
   });
 });

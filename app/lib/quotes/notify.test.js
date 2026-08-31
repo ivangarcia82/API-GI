@@ -231,3 +231,54 @@ describe('notifyQuoteSubmitted · enlace del correo interno', () => {
     expect(interno[1].html).not.toContain('/asesor/cotizaciones/');
   });
 });
+
+describe('notifyQuoteSubmitted · el buzón de marketing no es un ejecutivo', () => {
+  // El entry `marketing` es el respaldo del metaobject, no una persona: no
+  // tiene cuenta en el portal, así que mandarle el enlace da 404.
+  const comoMarketing = {
+    email: 'marketing@generandoideas.com',
+    handle: 'marketing',
+    fields: {},
+  };
+
+  it('no enlaza al portal cuando el asesor es el entry de marketing', async () => {
+    const sendEmail = vi.fn().mockResolvedValue({});
+    await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => comoMarketing,
+      managerFor: () => null,
+      sendEmail,
+    });
+    const interno = sendEmail.mock.calls.find(
+      ([, m]) => m.to === 'marketing@generandoideas.com',
+    );
+    expect(interno[1].html).not.toContain('/asesor/cotizaciones/');
+    expect(interno[1].html).toContain('shop/invoice');
+  });
+
+  it('el correo sigue llegando a marketing: es el destinatario correcto', async () => {
+    const sendEmail = vi.fn().mockResolvedValue({});
+    const res = await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => comoMarketing,
+      managerFor: () => null,
+      sendEmail,
+    });
+    expect(res.advisorTo).toBe('marketing@generandoideas.com');
+  });
+
+  it('sí enlaza al portal con un ejecutivo de verdad', async () => {
+    const sendEmail = vi.fn().mockResolvedValue({});
+    await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => ({
+        email: 'lvega@generandoideas.com',
+        handle: 'laura-vega',
+        fields: {},
+      }),
+      managerFor: () => null,
+      sendEmail,
+    });
+    const interno = sendEmail.mock.calls.find(
+      ([, m]) => m.to === 'lvega@generandoideas.com',
+    );
+    expect(interno[1].html).toContain('/asesor/cotizaciones/q-123');
+  });
+});

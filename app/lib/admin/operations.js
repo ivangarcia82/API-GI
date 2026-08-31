@@ -130,6 +130,7 @@ const CUSTOMER_ADVISOR = `
         reference {
           ... on Metaobject {
             id
+            handle
             type
             fields { key value }
           }
@@ -156,17 +157,18 @@ const STUB_ADVISOR = {
  * deterministic test advisor. Requires Admin scopes read_customers + read_metaobjects.
  * @param {Record<string, any>} env
  * @param {string|null|undefined} customerGid
- * @returns {Promise<{email: string|null, gid: string|null, fields: Record<string, string>}>}
+ * @returns {Promise<{email: string|null, gid: string|null, handle: string|null, fields: Record<string, string>}>}
  */
 export async function getCustomerAdvisor(env, customerGid) {
   if (isStubMode(env)) {
     return {
       email: STUB_ADVISOR.email,
       gid: 'gid://shopify/Metaobject/STUB-advisor',
+      handle: 'asesor-stub',
       fields: {...STUB_ADVISOR.fields},
     };
   }
-  if (!customerGid) return {email: null, gid: null, fields: {}};
+  if (!customerGid) return {email: null, gid: null, handle: null, fields: {}};
 
   const data = await adminFetch(env, CUSTOMER_ADVISOR, {gid: customerGid});
   const reference =
@@ -185,7 +187,10 @@ export async function getCustomerAdvisor(env, customerGid) {
   // El gid permite referenciar al asesor desde otros objetos (p. ej. la draft
   // order), sin volver a resolverlo por handle.
   const gid = reference && reference.id ? reference.id : null;
-  return {email, gid, fields};
+  // El handle distingue a una persona del entry de respaldo `marketing`, que
+  // tiene correo pero no es un ejecutivo ni tiene cuenta en el portal.
+  const handle = reference && reference.handle ? reference.handle : null;
+  return {email, gid, handle, fields};
 }
 
 const VARIANT_INVENTORY = `

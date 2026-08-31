@@ -6,6 +6,7 @@ import {getCustomerAdvisor as realGetCustomerAdvisor} from '../admin/operations.
 import {sendEmail as realSendEmail} from '../email/resend.js';
 import {buildAdvisorEmail} from './advisorEmail.js';
 import {managerFor as realManagerFor} from './managers.js';
+import {esAsesorReal} from './asesorReal.js';
 import {buildCustomerEmail} from './customerEmail.js';
 
 const DEFAULT_SALES_EMAIL = 'ventas@generandoideas.com';
@@ -27,13 +28,13 @@ export function resolveAdvisorRecipient(advisorEmail, env) {
  * Resolve the advisor without ever throwing: a Shopify outage must still let
  * the quote reach the sales inbox rather than swallowing the whole notification.
  */
-async function lookupAdvisorEmail(env, customerGid, getCustomerAdvisor) {
+async function lookupAdvisor(env, customerGid, getCustomerAdvisor) {
   try {
     const advisor = await getCustomerAdvisor(env, customerGid);
-    return advisor && advisor.email ? advisor.email : null;
+    return advisor && advisor.email ? advisor : {email: null, handle: null};
   } catch (err) {
     console.error('[quote.notify] advisor lookup failed; using sales fallback:', err);
-    return null;
+    return {email: null, handle: null};
   }
 }
 
@@ -72,7 +73,8 @@ export async function notifyQuoteSubmitted(
   const sendEmail = deps.sendEmail ?? realSendEmail;
   const managerFor = deps.managerFor ?? realManagerFor;
 
-  const advisorEmail = await lookupAdvisorEmail(env, customerGid, getCustomerAdvisor);
+  const advisor = await lookupAdvisor(env, customerGid, getCustomerAdvisor);
+  const advisorEmail = advisor.email;
   const advisorTo = resolveAdvisorRecipient(advisorEmail, env);
   // Sobre advisorEmail, no sobre advisorTo: advisorTo ya trae el fallback a
   // ventas@, y ese buzón no tiene manager que copiar. El requisito es copiar
@@ -84,9 +86,9 @@ export async function notifyQuoteSubmitted(
     origin,
   ).toString();
 
-  // Sólo tiene sentido mandar al portal a quien podrá abrirla: el ejecutivo
-  // asignado. El buzón general no tiene cuenta de asesor.
-  const portalUrl = advisorEmail
+  // Sólo tiene sentido mandar al portal a quien podrá abrirla. Ni el buzón
+  // general ni el entry `marketing` tienen cuenta de asesor.
+  const portalUrl = esAsesorReal(advisor)
     ? new URL(`/asesor/cotizaciones/${encodeURIComponent(quote.id)}`, origin).toString()
     : null;
 
