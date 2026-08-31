@@ -79,20 +79,28 @@ export async function notifyAdvisorOfSignup(env, {user}, deps = {}) {
   // la matriz de líderes — así el CC no cuesta una llamada extra.
   // Best-effort: si no se resuelve, se manda el handle y no se copia a nadie.
   let claimedAdvisor = null;
-  let cc = null;
+  // Se copia al ejecutivo que la persona señaló y a su líder, para que ambos
+  // estén pendientes mientras marketing valida. Copiar NO asigna: el metafield
+  // `ejecutiva_de_venta` sigue vacío y las cotizaciones caen en ventas@.
+  const copias = [];
   if (user.advisorHandle) {
     claimedAdvisor = user.advisorHandle;
     try {
       const reclamado = await getAdvisorByHandle(env, user.advisorHandle);
       if (reclamado && reclamado.nombre) claimedAdvisor = reclamado.nombre;
-      if (reclamado && reclamado.correo) cc = managerFor(reclamado.correo);
+      if (reclamado && reclamado.correo) {
+        copias.push(reclamado.correo);
+        const lider = managerFor(reclamado.correo);
+        if (lider) copias.push(lider);
+      }
     } catch (err) {
       console.error('[signup.notify] claimed advisor lookup failed:', err);
     }
   }
 
-  // Un mismo buzón en Para y en CC sólo duplica el correo.
-  if (cc && cc === recipient.correo) cc = null;
+  // Sin repetidos y sin el propio destinatario: un mismo buzón en Para y en CC
+  // sólo duplica el correo.
+  const cc = [...new Set(copias)].filter((c) => c && c !== recipient.correo);
 
   const message = buildSignupAdvisorEmail({
     advisorTo: recipient.correo,
@@ -104,7 +112,7 @@ export async function notifyAdvisorOfSignup(env, {user}, deps = {}) {
     ),
     claimedAdvisor,
     esCliente: user.esCliente ?? null,
-    cc,
+    cc: cc.length ? cc : null,
   });
 
   try {

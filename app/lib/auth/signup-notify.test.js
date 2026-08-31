@@ -175,17 +175,43 @@ describe('notifyAdvisorOfSignup · reclamo', () => {
   });
 });
 
-describe('notifyAdvisorOfSignup · copia al líder del asesor reclamado', () => {
-  function correrCon({advisorHandle, correoAsesor, managerFor}) {
+describe('notifyAdvisorOfSignup · sin reclamo no hay copias', () => {
+  it('no busca líder ni copia a nadie cuando no se señaló ejecutivo', async () => {
+    const send = vi.fn().mockResolvedValue({});
+    const managerFor = vi.fn().mockReturnValue('sjimenez@generandoideas.com');
+    await notifyAdvisorOfSignup(
+      {},
+      {user: {email: 'ana@acme.mx', shopifyCustomerGid: null, advisorHandle: null}},
+      {
+        getCustomerAdvisor: async () => ({email: null, fields: {}}),
+        getAdvisorByHandle: async () => ({correo: 'marketing@gi.com', nombre: 'Marketing'}),
+        managerFor,
+        sendEmail: send,
+      },
+    );
+    expect(managerFor).not.toHaveBeenCalled();
+    expect('cc' in send.mock.calls[0][1]).toBe(false);
+  });
+});
+
+describe('notifyAdvisorOfSignup · copia al ejecutivo reclamado', () => {
+  function correr({managerFor = () => null} = {}) {
     const send = vi.fn().mockResolvedValue({});
     return notifyAdvisorOfSignup(
       {},
-      {user: {email: 'ana@acme.mx', shopifyCustomerGid: null, advisorHandle, esCliente: 'si'}},
+      {
+        user: {
+          email: 'ana@acme.mx',
+          shopifyCustomerGid: null,
+          advisorHandle: 'laura-vega',
+          esCliente: 'si',
+        },
+      },
       {
         getCustomerAdvisor: async () => ({email: null, fields: {}}),
-        getAdvisorByHandle: async (_env, handle) =>
-          handle === advisorHandle
-            ? {correo: correoAsesor, nombre: 'Laura Vega'}
+        getAdvisorByHandle: async (_e, h) =>
+          h === 'laura-vega'
+            ? {correo: 'lvega@generandoideas.com', nombre: 'Laura Vega'}
             : {correo: 'marketing@generandoideas.com', nombre: 'Marketing'},
         managerFor,
         sendEmail: send,
@@ -193,43 +219,26 @@ describe('notifyAdvisorOfSignup · copia al líder del asesor reclamado', () => 
     ).then(() => send);
   }
 
-  it('copia al líder del ejecutivo que la persona dijo tener', async () => {
-    const send = await correrCon({
-      advisorHandle: 'laura-vega',
-      correoAsesor: 'lvega@generandoideas.com',
-      managerFor: (correo) =>
-        correo === 'lvega@generandoideas.com' ? 'sjimenez@generandoideas.com' : null,
-    });
-    expect(send.mock.calls[0][1].cc).toBe('sjimenez@generandoideas.com');
+  it('copia al ejecutivo y a su líder', async () => {
+    const send = await correr({managerFor: () => 'sjimenez@generandoideas.com'});
+    expect(send.mock.calls[0][1].cc).toEqual([
+      'lvega@generandoideas.com',
+      'sjimenez@generandoideas.com',
+    ]);
   });
 
-  it('no copia a nadie cuando el ejecutivo reclamado no tiene líder en la matriz', async () => {
-    const send = await correrCon({
-      advisorHandle: 'laura-vega',
-      correoAsesor: 'lvega@generandoideas.com',
-      managerFor: () => null,
-    });
-    expect('cc' in send.mock.calls[0][1]).toBe(false);
+  it('copia sólo al ejecutivo cuando no tiene líder en la matriz', async () => {
+    const send = await correr();
+    expect(send.mock.calls[0][1].cc).toEqual(['lvega@generandoideas.com']);
   });
 
-  it('no busca líder cuando no hubo reclamo de asesor', async () => {
-    const managerFor = vi.fn().mockReturnValue('sjimenez@generandoideas.com');
-    const send = await correrCon({
-      advisorHandle: null,
-      correoAsesor: null,
-      managerFor,
-    });
-    expect(managerFor).not.toHaveBeenCalled();
-    expect('cc' in send.mock.calls[0][1]).toBe(false);
+  it('no repite una dirección que ya es el destinatario', async () => {
+    const send = await correr({managerFor: () => 'marketing@generandoideas.com'});
+    expect(send.mock.calls[0][1].cc).toEqual(['lvega@generandoideas.com']);
   });
 
-  it('no se copia a sí mismo si el líder es el propio destinatario', async () => {
-    // Evita un correo con el mismo buzón en Para y en CC.
-    const send = await correrCon({
-      advisorHandle: 'laura-vega',
-      correoAsesor: 'lvega@generandoideas.com',
-      managerFor: () => 'marketing@generandoideas.com',
-    });
-    expect('cc' in send.mock.calls[0][1]).toBe(false);
+  it('no duplica si el líder es el propio ejecutivo', async () => {
+    const send = await correr({managerFor: () => 'lvega@generandoideas.com'});
+    expect(send.mock.calls[0][1].cc).toEqual(['lvega@generandoideas.com']);
   });
 });

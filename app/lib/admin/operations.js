@@ -129,6 +129,7 @@ const CUSTOMER_ADVISOR = `
       metafield(namespace: "custom", key: "ejecutiva_de_venta") {
         reference {
           ... on Metaobject {
+            id
             type
             fields { key value }
           }
@@ -155,13 +156,17 @@ const STUB_ADVISOR = {
  * deterministic test advisor. Requires Admin scopes read_customers + read_metaobjects.
  * @param {Record<string, any>} env
  * @param {string|null|undefined} customerGid
- * @returns {Promise<{email: string|null, fields: Record<string, string>}>}
+ * @returns {Promise<{email: string|null, gid: string|null, fields: Record<string, string>}>}
  */
 export async function getCustomerAdvisor(env, customerGid) {
   if (isStubMode(env)) {
-    return {email: STUB_ADVISOR.email, fields: {...STUB_ADVISOR.fields}};
+    return {
+      email: STUB_ADVISOR.email,
+      gid: 'gid://shopify/Metaobject/STUB-advisor',
+      fields: {...STUB_ADVISOR.fields},
+    };
   }
-  if (!customerGid) return {email: null, fields: {}};
+  if (!customerGid) return {email: null, gid: null, fields: {}};
 
   const data = await adminFetch(env, CUSTOMER_ADVISOR, {gid: customerGid});
   const reference =
@@ -177,7 +182,10 @@ export async function getCustomerAdvisor(env, customerGid) {
   }
 
   const email = fields.correo ? String(fields.correo).trim() || null : null;
-  return {email, fields};
+  // El gid permite referenciar al asesor desde otros objetos (p. ej. la draft
+  // order), sin volver a resolverlo por handle.
+  const gid = reference && reference.id ? reference.id : null;
+  return {email, gid, fields};
 }
 
 const VARIANT_INVENTORY = `
@@ -459,6 +467,45 @@ export async function addCustomerTags(env, customerGid, tags) {
   if (result && result.userErrors && result.userErrors.length) {
     throw new Error(
       `addCustomerTags userErrors: ${result.userErrors.map((e) => e.message).join('; ')}`,
+    );
+  }
+}
+
+const DRAFT_ORDER_ADVISOR_KEY = 'ejecutivo_asignado';
+
+/**
+ * Marcar la draft order con el ejecutivo que la atiende, para poder filtrar las
+ * órdenes por asesor en el admin de Shopify.
+ *
+ * Requiere crear la definición `custom.ejecutivo_asignado` sobre Draft orders
+ * (metaobject_reference validado contra `ejecutiva_de_venta`) en Configuración
+ * → Datos personalizados; sin ella el valor se escribe pero el admin no lo
+ * muestra ni lo ofrece como filtro.
+ *
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} draftOrderGid
+ * @param {string|null|undefined} advisorGid
+ * @returns {Promise<void>}
+ */
+export async function setDraftOrderAdvisor(env, draftOrderGid, advisorGid) {
+  if (!draftOrderGid || !advisorGid) return;
+  if (isStubMode(env)) return;
+
+  const data = await adminFetch(env, CUSTOMER_ADVISOR_SET, {
+    metafields: [
+      {
+        ownerId: draftOrderGid,
+        namespace: 'custom',
+        key: DRAFT_ORDER_ADVISOR_KEY,
+        type: 'metaobject_reference',
+        value: advisorGid,
+      },
+    ],
+  });
+  const result = data ? data.metafieldsSet : null;
+  if (result && result.userErrors && result.userErrors.length) {
+    throw new Error(
+      `setDraftOrderAdvisor userErrors: ${result.userErrors.map((e) => e.message).join('; ')}`,
     );
   }
 }

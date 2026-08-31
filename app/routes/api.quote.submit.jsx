@@ -3,7 +3,12 @@ import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {findById, setShopifyGid} from '~/lib/auth/users';
 import {isStubMode} from '~/lib/admin/client';
-import {createCustomer, createDraftOrder} from '~/lib/admin/operations';
+import {
+  createCustomer,
+  createDraftOrder,
+  getCustomerAdvisor,
+  setDraftOrderAdvisor,
+} from '~/lib/admin/operations';
 import {notifyQuoteSubmitted} from '~/lib/quotes/notify';
 import {getOrCreateDraftQuote, getQuoteWithItems, markSubmitted} from '~/lib/quotes/repo';
 import {buildDraftOrderInput} from '~/lib/quotes/draftInput';
@@ -86,17 +91,39 @@ export async function action({request, context}) {
   // Duplicar el SQL aquí ya había dejado esta ruta sin folio una vez.
   const {folio} = await markSubmitted(db, quote.id, {gid, invoiceUrl});
 
+  // El asesor se resuelve UNA vez: sirve para marcar la draft order y se le
+  // pasa a la notificación por `deps`, que si no lo volvería a consultar.
+  let advisor = {email: null, gid: null, fields: {}};
+  try {
+    advisor = await getCustomerAdvisor(env, customerGid);
+  } catch (err) {
+    console.error('[quote.submit] advisor lookup failed:', err);
+  }
+
+  // Marca de ejecutivo en la draft order, para filtrar por asesor en el admin.
+  // Best-effort: la cotización ya está enviada y persistida.
+  try {
+    await setDraftOrderAdvisor(env, gid, advisor.gid);
+  } catch (err) {
+    console.error('[quote.submit] draft order advisor metafield failed:', err);
+  }
+
   // Best-effort notifications: the internal copy (advisor, or the sales inbox
   // when the customer has none) and the buyer's confirmation. The quote is
   // already submitted and persisted, so notifyQuoteSubmitted never throws.
-  await notifyQuoteSubmitted(env, {
-    quote: {id: quote.id, folio, notes: quote.notes, deadline: quote.deadline},
-    user,
-    items,
-    invoiceUrl, // raw url; goes to internal staff only, never to the buyer
-    customerGid,
-    origin: new URL(request.url).origin,
-  });
+  await notifyQuoteSubmitted(
+    env,
+    {
+      quote: {id: quote.id, folio, notes: quote.notes, deadline: quote.deadline},
+      user,
+      items,
+      invoiceUrl, // raw url; goes to internal staff only, never to the buyer
+      customerGid,
+      origin: new URL(request.url).origin,
+    },
+    // Reutiliza el asesor ya resuelto en vez de pedirlo otra vez al Admin API.
+    {getCustomerAdvisor: async () => advisor},
+  );
 
   // Never surface a stub invoice URL to the user.
   const safeInvoiceUrl = isStubMode(env) ? null : invoiceUrl;

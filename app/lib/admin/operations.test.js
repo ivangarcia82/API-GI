@@ -18,6 +18,7 @@ import {
   setCustomerAdvisor,
   addCustomerTags,
   setCustomerRequestedAdvisor,
+  setDraftOrderAdvisor,
 } from './operations.js';
 
 beforeEach(() => {
@@ -205,7 +206,7 @@ describe('getCustomerAdvisor', () => {
 
     const advisor = await getCustomerAdvisor({}, GID);
 
-    expect(advisor).toEqual({email: null, fields: {}});
+    expect(advisor).toEqual({email: null, gid: null, fields: {}});
   });
 
   it('returns a null-safe shape when the customer is null', async () => {
@@ -214,7 +215,7 @@ describe('getCustomerAdvisor', () => {
 
     const advisor = await getCustomerAdvisor({}, GID);
 
-    expect(advisor).toEqual({email: null, fields: {}});
+    expect(advisor).toEqual({email: null, gid: null, fields: {}});
   });
 
   it('returns email:null when the reference has no correo field', async () => {
@@ -244,7 +245,7 @@ describe('getCustomerAdvisor', () => {
 
     const advisor = await getCustomerAdvisor({}, null);
 
-    expect(advisor).toEqual({email: null, fields: {}});
+    expect(advisor).toEqual({email: null, gid: null, fields: {}});
     expect(adminFetch).not.toHaveBeenCalled();
   });
 });
@@ -726,5 +727,71 @@ describe('setCustomerRequestedAdvisor', () => {
     await setCustomerRequestedAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1', 'gid://m/1');
     const keys = adminFetch.mock.calls[0][2].metafields.map((m) => m.key);
     expect(keys).not.toContain('ejecutiva_de_venta');
+  });
+});
+
+describe('getCustomerAdvisor · gid del metaobject', () => {
+  it('devuelve el gid además del correo, para poder referenciarlo', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({
+      customer: {
+        metafield: {
+          reference: {
+            id: 'gid://shopify/Metaobject/55',
+            type: 'ejecutiva_de_venta',
+            fields: [{key: 'correo', value: 'lvega@generandoideas.com'}],
+          },
+        },
+      },
+    });
+    const a = await getCustomerAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1');
+    expect(a.gid).toBe('gid://shopify/Metaobject/55');
+    expect(a.email).toBe('lvega@generandoideas.com');
+  });
+
+  it('devuelve gid null cuando el cliente no tiene asesor', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({customer: {metafield: null}});
+    const a = await getCustomerAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1');
+    expect(a.gid).toBeNull();
+    expect(a.email).toBeNull();
+  });
+});
+
+describe('setDraftOrderAdvisor', () => {
+  beforeEach(() => {
+    isStubMode.mockReturnValue(false);
+  });
+
+  it('escribe custom.ejecutivo_asignado en la draft order', async () => {
+    adminFetch.mockResolvedValueOnce({metafieldsSet: {metafields: [{id: 'm1'}], userErrors: []}});
+    await setDraftOrderAdvisor(
+      {PRIVATE_ADMIN_API_TOKEN: 't'},
+      'gid://shopify/DraftOrder/9',
+      'gid://shopify/Metaobject/55',
+    );
+    const [campo] = adminFetch.mock.calls[0][2].metafields;
+    expect(campo).toEqual({
+      ownerId: 'gid://shopify/DraftOrder/9',
+      namespace: 'custom',
+      key: 'ejecutivo_asignado',
+      type: 'metaobject_reference',
+      value: 'gid://shopify/Metaobject/55',
+    });
+  });
+
+  it('no llama al Admin API sin draft order o sin asesor', async () => {
+    await setDraftOrderAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, null, 'gid://m/1');
+    await setDraftOrderAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://d/1', null);
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('lanza cuando Shopify devuelve userErrors', async () => {
+    adminFetch.mockResolvedValueOnce({
+      metafieldsSet: {metafields: [], userErrors: [{field: 'value', message: 'mal'}]},
+    });
+    await expect(
+      setDraftOrderAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://d/1', 'gid://m/1'),
+    ).rejects.toThrow(/setDraftOrderAdvisor userErrors/);
   });
 });

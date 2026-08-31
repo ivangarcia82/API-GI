@@ -35,7 +35,7 @@ function row(label, value) {
  *   user: {email: string, firstName?: string|null, lastName?: string|null, company?: string|null, phone?: string|null},
  *   customerAdminUrl: string|null,
  *   claimedAdvisor?: string|null,
- *   cc?: string|null,
+ *   cc?: string|string[]|null,
  *   esCliente?: string|null,
  * }} args
  * @returns {{to: string, subject: string, html: string}}
