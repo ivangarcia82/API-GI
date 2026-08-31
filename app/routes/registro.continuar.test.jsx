@@ -19,6 +19,7 @@ function fillStep1Valid() {
   fireEvent.change(screen.getByLabelText('Apellido'), {target: {value: 'Pérez'}});
   fireEvent.change(screen.getByLabelText('Correo corporativo'), {target: {value: 'ana@empresa.mx'}});
   fireEvent.change(screen.getByLabelText('Contraseña'), {target: {value: 'secreto123'}});
+  fireEvent.change(screen.getByLabelText('Teléfono'), {target: {value: '5512345678'}});
 }
 
 function clickContinuar() {

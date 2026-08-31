@@ -29,12 +29,18 @@ async function irAPaso2(advisors) {
     target: {value: 'ana@empresa.mx'},
   });
   fireEvent.change(screen.getByLabelText('Contraseña'), {target: {value: 'secreto123'}});
+  fireEvent.change(screen.getByLabelText('Teléfono'), {target: {value: '5512345678'}});
   fireEvent.click(screen.getByRole('button', {name: /continuar/i}));
   await screen.findByText(/paso 2\/3/);
 }
 
 function llenarEmpresa() {
   fireEvent.change(screen.getByLabelText('Empresa'), {target: {value: 'Acme'}});
+  fireEvent.change(screen.getByLabelText('Razón social'), {
+    target: {value: 'Acme S.A. de C.V.'},
+  });
+  fireEvent.change(screen.getByLabelText('Cargo'), {target: {value: 'Compradora'}});
+  fireEvent.change(screen.getByLabelText('Área'), {target: {value: 'Compras'}});
   fireEvent.change(screen.getByLabelText('Volumen mensual estimado'), {
     target: {value: 'Menos de $50,000 MXN'},
   });

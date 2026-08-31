@@ -5,6 +5,7 @@ import {Button} from '~/components/gi/ui';
 import {ROUTES} from '~/lib/site-content';
 import {listAdvisors} from '~/lib/admin/operations';
 import {MARKETING_HANDLE, UNKNOWN_ADVISOR} from '~/lib/auth/advisor-choice';
+import {AREAS, COMO_NOS_CONOCISTE, UBICACIONES} from './registro.catalogos.js';
 import {validateStep} from './registro.validation.js';
 
 export {action} from './auth.signup.jsx';
@@ -47,12 +48,31 @@ export default function Registro() {
     volume: '',
     esCliente: '',
     advisor: '',
+    position: '',
+    area: '',
+    heardAbout: '',
+    location: '',
+    privacy: false,
     terms: false,
+    newsletter: false,
   });
   const [errores, setErrores] = useState({});
   const [revisandoEmail, setRevisandoEmail] = useState(false);
   const [verPassword, setVerPassword] = useState(false);
   const setField = (k, v) => setForm((f) => ({...f, [k]: v}));
+
+  // Los tres checks del paso 3 comparten presentación; se define una vez para
+  // no repetir el objeto de estilos en cada uno.
+  const estiloCheck = {
+    display: 'flex',
+    alignItems: 'start',
+    gap: 10,
+    fontSize: 13,
+    color: 'var(--ink-3)',
+    lineHeight: 1.5,
+    marginTop: 8,
+    cursor: 'pointer',
+  };
 
   // Responder la pregunta reinicia el asesor, para que un "sí -> elijo a Laura
   // -> no" no deje colgado un handle que ya no aplica. Si no hay lista que
@@ -120,7 +140,19 @@ export default function Registro() {
           ))}
         </div>
 
-        <Form className="auth-form" method="post">
+        <Form
+          className="auth-form"
+          method="post"
+          onSubmit={(e) => {
+            // El paso 3 es el único que se envía en vez de "continuar", así que
+            // su validación vive aquí. El servidor la repite: es la que manda.
+            const errs = validateStep(3, form);
+            if (Object.keys(errs).length > 0) {
+              e.preventDefault();
+              setErrores(errs);
+            }
+          }}
+        >
           {/* Hidden mirrors so values from non-active wizard steps still post. */}
           <input type="hidden" name="firstName" value={form.name} />
           <input type="hidden" name="lastName" value={form.lastName} />
@@ -133,6 +165,13 @@ export default function Registro() {
           <input type="hidden" name="needs" value={form.needs} />
           <input type="hidden" name="esCliente" value={form.esCliente} />
           <input type="hidden" name="advisor" value={form.advisor} />
+          <input type="hidden" name="position" value={form.position} />
+          <input type="hidden" name="area" value={form.area} />
+          <input type="hidden" name="heardAbout" value={form.heardAbout} />
+          <input type="hidden" name="location" value={form.location} />
+          <input type="hidden" name="privacy" value={form.privacy ? '1' : ''} />
+          <input type="hidden" name="terms" value={form.terms ? '1' : ''} />
+          <input type="hidden" name="newsletter" value={form.newsletter ? '1' : ''} />
 
           {step === 1 && (
             <>
@@ -239,7 +278,13 @@ export default function Registro() {
                   value={form.phone}
                   onChange={(e) => setField('phone', e.target.value)}
                   placeholder="55 1234 5678"
+                  required
                 />
+                {errores.phone && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                    {errores.phone}
+                  </span>
+                )}
               </div>
             </>
           )}
@@ -263,17 +308,61 @@ export default function Registro() {
                 )}
               </div>
               <div className="field">
-                <label htmlFor="reg-razon-social">Razón social (opcional)</label>
+                <label htmlFor="reg-razon-social">Razón social</label>
                 <input
                   id="reg-razon-social"
                   className="input"
                   value={form.razonSocial}
                   onChange={(e) => setField('razonSocial', e.target.value)}
                   placeholder="Acme Corporativo S.A. de C.V."
+                  required
                 />
                 <span className="help-msg">
-                  Si la proporcionas ahora aceleramos la apertura de crédito.
+                  Como aparece en tu constancia de situación fiscal.
                 </span>
+                {errores.razonSocial && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                    {errores.razonSocial}
+                  </span>
+                )}
+              </div>
+              <div className="row-fields">
+                <div className="field">
+                  <label htmlFor="reg-position">Cargo</label>
+                  <input
+                    id="reg-position"
+                    className="input"
+                    value={form.position}
+                    onChange={(e) => setField('position', e.target.value)}
+                    placeholder="Gerente de compras"
+                    required
+                  />
+                  {errores.position && (
+                    <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                      {errores.position}
+                    </span>
+                  )}
+                </div>
+                <div className="field">
+                  <label htmlFor="reg-area">Área</label>
+                  <select
+                    id="reg-area"
+                    className="input"
+                    value={form.area}
+                    onChange={(e) => setField('area', e.target.value)}
+                    required
+                  >
+                    <option value="">Selecciona…</option>
+                    {AREAS.map((a) => (
+                      <option key={a}>{a}</option>
+                    ))}
+                  </select>
+                  {errores.area && (
+                    <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                      {errores.area}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="field">
                 <label htmlFor="reg-volume">Volumen mensual estimado</label>
@@ -373,6 +462,47 @@ export default function Registro() {
 
           {step === 3 && (
             <>
+              {/* Sin `required`: el botón del paso 3 es submit, así que la
+                  validación nativa se adelantaría a validateStep y mostraría un
+                  mensaje del navegador en vez del nuestro. */}
+              <div className="field">
+                <label htmlFor="reg-heard-about">¿Cómo nos conociste?</label>
+                <select
+                  id="reg-heard-about"
+                  className="input"
+                  value={form.heardAbout}
+                  onChange={(e) => setField('heardAbout', e.target.value)}
+                >
+                  <option value="">Selecciona…</option>
+                  {COMO_NOS_CONOCISTE.map((o) => (
+                    <option key={o}>{o}</option>
+                  ))}
+                </select>
+                {errores.heardAbout && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                    {errores.heardAbout}
+                  </span>
+                )}
+              </div>
+              <div className="field">
+                <label htmlFor="reg-location">¿Dónde te encuentras ubicado?</label>
+                <select
+                  id="reg-location"
+                  className="input"
+                  value={form.location}
+                  onChange={(e) => setField('location', e.target.value)}
+                >
+                  <option value="">Selecciona…</option>
+                  {UBICACIONES.map((o) => (
+                    <option key={o}>{o}</option>
+                  ))}
+                </select>
+                {errores.location && (
+                  <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                    {errores.location}
+                  </span>
+                )}
+              </div>
               <div className="field">
                 <label htmlFor="reg-needs">¿Qué buscas? (opcional)</label>
                 <textarea
@@ -386,22 +516,14 @@ export default function Registro() {
                 />
               </div>
 
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'start',
-                  gap: 10,
-                  fontSize: 13,
-                  color: 'var(--ink-3)',
-                  lineHeight: 1.5,
-                  marginTop: 8,
-                }}
-              >
+              <div style={{height: 1, background: 'var(--line)', margin: '16px 0 4px'}} />
+
+              <label htmlFor="reg-privacy" style={estiloCheck}>
                 <input
+                  id="reg-privacy"
                   type="checkbox"
-                  checked={form.terms}
-                  onChange={(e) => setField('terms', e.target.checked)}
-                  required
+                  checked={form.privacy}
+                  onChange={(e) => setField('privacy', e.target.checked)}
                   style={{marginTop: 3}}
                 />
                 <span>
@@ -413,9 +535,54 @@ export default function Registro() {
                     style={{color: 'var(--accent)', textDecoration: 'underline'}}
                   >
                     Aviso de privacidad
-                  </a>{' '}
-                  y los Términos de uso de Generando Ideas.
+                  </a>
+                  .
                 </span>
+              </label>
+              {errores.privacy && (
+                <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                  {errores.privacy}
+                </span>
+              )}
+
+              <label htmlFor="reg-terms" style={estiloCheck}>
+                <input
+                  id="reg-terms"
+                  type="checkbox"
+                  checked={form.terms}
+                  onChange={(e) => setField('terms', e.target.checked)}
+                  style={{marginTop: 3}}
+                />
+                <span>
+                  Acepto los{' '}
+                  <a
+                    href={ROUTES.terms}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{color: 'var(--accent)', textDecoration: 'underline'}}
+                  >
+                    Términos y condiciones
+                  </a>
+                  .
+                </span>
+              </label>
+              {errores.terms && (
+                <span className="help-msg" role="alert" style={{color: 'var(--err)'}}>
+                  {errores.terms}
+                </span>
+              )}
+
+              <div style={{height: 1, background: 'var(--line)', margin: '12px 0 4px'}} />
+
+              <label htmlFor="reg-newsletter" style={estiloCheck}>
+                <input
+                  id="reg-newsletter"
+                  type="checkbox"
+                  checked={form.newsletter}
+                  onChange={(e) => setField('newsletter', e.target.checked)}
+                  style={{marginTop: 3}}
+                />
+                <span>Quiero recibir novedades y promociones de Generando Ideas.</span>
               </label>
             </>
           )}
