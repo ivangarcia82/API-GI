@@ -5,6 +5,10 @@ node_modules
 /public/build
 /.mf
 .env
+# Cubre copias y variantes (.env.local, .env.backup…): un .env.backup con
+# secretos no estaba ignorado y podía acabar commiteado.
+.env.*
+!.env.example
 .shopify
 .react-router
 

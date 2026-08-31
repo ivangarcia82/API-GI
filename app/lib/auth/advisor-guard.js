@@ -5,10 +5,10 @@
 // era asesor no puede seguir abriendo el portal si ya se le quitó el rol.
 import {getDb} from '~/lib/db/client.js';
 import {requireUser} from './guard.js';
+import {ADVISOR_ROLE} from './roles.js';
 import {findById} from './users.js';
 
-/** Rol de los ejecutivos de venta. Los compradores son 'quoter'. */
-export const ADVISOR_ROLE = 'asesor';
+export {ADVISOR_ROLE};
 
 /**
  * @param {Record<string, any>} context

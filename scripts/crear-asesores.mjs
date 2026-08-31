@@ -9,13 +9,41 @@
 //
 // Idempotente: a quien ya tiene cuenta no la toca, sólo le corrige el rol si
 // hiciera falta.
+import {isStubMode} from '../app/lib/admin/client.js';
 import {getDb} from '../app/lib/db/client.js';
 import {listAdvisors, getAdvisorByHandle} from '../app/lib/admin/operations.js';
 import {createUser, findByEmail, EmailTakenError} from '../app/lib/auth/users.js';
-import {ADVISOR_ROLE} from '../app/lib/auth/advisor-guard.js';
+// Desde roles.js y no desde advisor-guard.js: ese arrastra el guard de
+// peticiones, que importa con el alias `~` y Node crudo no lo resuelve.
+import {ADVISOR_ROLE} from '../app/lib/auth/roles.js';
 
 const dryRun = process.argv.includes('--dry-run');
 const env = process.env;
+
+// Sin token del Admin API, listAdvisors devuelve asesores de PRUEBA
+// (stub1@example.com…) y este script los daría de alta como cuentas reales.
+// Falla ruidosamente en vez de ensuciar la base.
+// Hydrogen inyecta PUBLIC_STORE_DOMAIN en tiempo de ejecución, pero un script
+// en Node crudo no la recibe: sin ella adminFetch arma https://undefined/... y
+// el fallo llega como un ENOTFOUND críptico.
+if (!env.PUBLIC_STORE_DOMAIN) {
+  console.error(
+    '✗ Falta PUBLIC_STORE_DOMAIN (p. ej. development-gi.myshopify.com).\n' +
+      '  Pásala en la llamada:  PUBLIC_STORE_DOMAIN=tu-tienda.myshopify.com npm run crear-asesores',
+  );
+  process.exit(1);
+}
+
+if (isStubMode(env)) {
+  console.error(
+    '✗ PRIVATE_ADMIN_API_TOKEN no está en el entorno: se leerían asesores de prueba.\n' +
+      '  Carga el .env antes de correr:  set -a; . ./.env; set +a; npm run crear-asesores\n' +
+      '  Si ya lo cargaste y sigue fallando, revisa que ningún valor del .env tenga\n' +
+      '  espacios o < > sin comillas: eso corta la carga a partir de esa línea.',
+  );
+  process.exit(1);
+}
+
 const db = getDb(env);
 
 const advisors = await listAdvisors(env);

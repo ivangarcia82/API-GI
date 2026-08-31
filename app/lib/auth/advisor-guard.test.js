@@ -7,7 +7,8 @@ vi.mock('./guard.js', () => ({requireUser: (...a) => requireUser(...a)}));
 vi.mock('~/lib/db/client.js', () => ({getDb: () => ({__db: true})}));
 vi.mock('./users.js', () => ({findById: (...a) => findById(...a)}));
 
-import {ADVISOR_ROLE, requireAdvisor} from './advisor-guard.js';
+import {ADVISOR_ROLE} from './roles.js';
+import {requireAdvisor} from './advisor-guard.js';
 
 const context = {env: {}};
 
