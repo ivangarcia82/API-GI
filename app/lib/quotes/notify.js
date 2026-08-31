@@ -5,6 +5,7 @@
 import {getCustomerAdvisor as realGetCustomerAdvisor} from '../admin/operations.js';
 import {sendEmail as realSendEmail} from '../email/resend.js';
 import {buildAdvisorEmail} from './advisorEmail.js';
+import {managerFor as realManagerFor} from './managers.js';
 import {buildCustomerEmail} from './customerEmail.js';
 
 const DEFAULT_SALES_EMAIL = 'ventas@generandoideas.com';
@@ -59,7 +60,7 @@ async function trySend(env, sendEmail, message, label) {
  *   customerGid: string|null,
  *   origin: string,
  * }} params
- * @param {{getCustomerAdvisor?: Function, sendEmail?: Function}} [deps]
+ * @param {{getCustomerAdvisor?: Function, sendEmail?: Function, managerFor?: Function}} [deps]
  * @returns {Promise<{advisorTo: string, advisorSent: boolean, customerSent: boolean}>}
  */
 export async function notifyQuoteSubmitted(
@@ -69,9 +70,14 @@ export async function notifyQuoteSubmitted(
 ) {
   const getCustomerAdvisor = deps.getCustomerAdvisor ?? realGetCustomerAdvisor;
   const sendEmail = deps.sendEmail ?? realSendEmail;
+  const managerFor = deps.managerFor ?? realManagerFor;
 
   const advisorEmail = await lookupAdvisorEmail(env, customerGid, getCustomerAdvisor);
   const advisorTo = resolveAdvisorRecipient(advisorEmail, env);
+  // Sobre advisorEmail, no sobre advisorTo: advisorTo ya trae el fallback a
+  // ventas@, y ese buzón no tiene manager que copiar. El requisito es copiar
+  // "si la cotización tiene ejecutivo".
+  const managerEmail = advisorEmail ? managerFor(advisorEmail) : null;
 
   const quoteUrl = new URL(
     `/account/cotizaciones/${encodeURIComponent(quote.id)}`,
@@ -81,7 +87,7 @@ export async function notifyQuoteSubmitted(
   const advisorSent = await trySend(
     env,
     sendEmail,
-    buildAdvisorEmail({advisorEmail: advisorTo, quote, user, items, invoiceUrl}),
+    buildAdvisorEmail({advisorEmail: advisorTo, managerEmail, quote, user, items, invoiceUrl}),
     'advisor',
   );
 

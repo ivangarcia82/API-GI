@@ -156,3 +156,48 @@ describe('notifyQuoteSubmitted', () => {
     });
   });
 });
+
+describe('notifyQuoteSubmitted · copia al manager', () => {
+  it('copia al manager cuando el cliente tiene ejecutivo asignado', async () => {
+    const sendEmail = vi.fn().mockResolvedValue({});
+    await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => ({email: 'laura@generandoideas.com', fields: {}}),
+      managerFor: () => 'antonio@generandoideas.com',
+      sendEmail,
+    });
+    const interno = sendEmail.mock.calls.find(
+      ([, msg]) => msg.to === 'laura@generandoideas.com',
+    );
+    expect(interno[1].cc).toBe('antonio@generandoideas.com');
+  });
+
+  it('no copia a nadie cuando el ejecutivo no está en la matriz', async () => {
+    const sendEmail = vi.fn().mockResolvedValue({});
+    await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => ({email: 'laura@generandoideas.com', fields: {}}),
+      managerFor: () => null,
+      sendEmail,
+    });
+    const interno = sendEmail.mock.calls.find(
+      ([, msg]) => msg.to === 'laura@generandoideas.com',
+    );
+    expect('cc' in interno[1]).toBe(false);
+  });
+
+  it('no busca manager cuando la cotización cae en el buzón de ventas', async () => {
+    // Sin ejecutivo no hay a quién copiar, aunque ventas@ estuviera en la
+    // matriz: el requisito es "si la cotización TIENE ejecutivo".
+    const sendEmail = vi.fn().mockResolvedValue({});
+    const managerFor = vi.fn().mockReturnValue('nadie@generandoideas.com');
+    await notifyQuoteSubmitted({}, args(), {
+      getCustomerAdvisor: async () => ({email: null, fields: {}}),
+      managerFor,
+      sendEmail,
+    });
+    expect(managerFor).not.toHaveBeenCalled();
+    const interno = sendEmail.mock.calls.find(
+      ([, msg]) => msg.to === 'ventas@generandoideas.com',
+    );
+    expect('cc' in interno[1]).toBe(false);
+  });
+});
