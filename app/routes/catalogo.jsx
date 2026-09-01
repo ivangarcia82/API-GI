@@ -35,7 +35,14 @@ export const meta = () => [
   },
 ];
 
-const EMPTY = {nodes: [], pageInfo: {hasNextPage: false, hasPreviousPage: false}};
+/* Los cuatro campos de pageInfo son obligatorios: <Pagination> lanza si le
+   falta startCursor o endCursor, y eso tumbaba la ruta entera con un 500 en
+   cuanto la consulta no devolvía nada — por ejemplo, una colección que no
+   existe o que no está publicada en el canal de Hydrogen. */
+const EMPTY = {
+  nodes: [],
+  pageInfo: {hasNextPage: false, hasPreviousPage: false, startCursor: null, endCursor: null},
+};
 
 /* Ids de faceta que devuelve esta tienda. Se leen por id y no por posición
    porque Shopify sólo incluye las facetas que aplican al resultado. */
@@ -126,7 +133,9 @@ export async function loader({context, request}) {
   );
 
   return {
-    products: resultado ? {nodes: resultado.nodes || [], pageInfo: resultado.pageInfo} : EMPTY,
+    products: resultado
+      ? {nodes: resultado.nodes || [], pageInfo: {...EMPTY.pageInfo, ...resultado.pageInfo}}
+      : EMPTY,
     // La colección no expone total: se marca como desconocido en vez de
     // enseñar un 0 que sería falso.
     totalCount: fuente.modo === 'coleccion' ? null : (resultado?.totalCount ?? 0),
