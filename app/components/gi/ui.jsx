@@ -175,6 +175,24 @@ export function PH({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const imgRef = useRef(null);
+
+  /* El navegador puede terminar de cargar la imagen ANTES de que React hidrate
+     y enganche onLoad — pasa siempre que viene de caché. Ese evento ya ocurrió
+     y nadie lo escucha, así que `loaded` se quedaba en false y la imagen
+     invisible (opacity 0) mostrando el placeholder hasta refrescar.
+     `complete` + `naturalWidth` recuperan el estado real al montar.
+     Depende de `src` para reiniciarse cuando la tarjeta cambia de imagen. */
+  useEffect(() => {
+    setError(false);
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setLoaded(true);
+      return;
+    }
+    setLoaded(false);
+  }, [src]);
+
   return (
     <div
       className={`ph ${tint || 'ph-tinted-stone'} ${aspect} ${className} ${
@@ -184,6 +202,7 @@ export function PH({
     >
       {src && !error && (
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           loading="lazy"
