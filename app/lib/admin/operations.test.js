@@ -19,6 +19,7 @@ import {
   addCustomerTags,
   setCustomerRequestedAdvisor,
   setDraftOrderAdvisor,
+  getCustomerBrandColors,
 } from './operations.js';
 
 beforeEach(() => {
@@ -812,5 +813,47 @@ describe('getCustomerAdvisor · handle del metaobject', () => {
     });
     const a = await getCustomerAdvisor({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://c/1');
     expect(a.handle).toBe('marketing');
+  });
+});
+
+describe('getCustomerBrandColors', () => {
+  it('devuelve el valor crudo del metafield', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({
+      customer: {metafield: {value: '["Rojo","Negro"]'}},
+    });
+    const out = await getCustomerBrandColors(
+      {PRIVATE_ADMIN_API_TOKEN: 't'},
+      'gid://shopify/Customer/9989852135727',
+    );
+    expect(out).toBe('["Rojo","Negro"]');
+    const [, , vars] = adminFetch.mock.calls[0];
+    expect(vars.gid).toBe('gid://shopify/Customer/9989852135727');
+  });
+
+  it('devuelve null cuando el customer no tiene el metafield', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({customer: {metafield: null}});
+    expect(await getCustomerBrandColors({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://x')).toBeNull();
+  });
+
+  it('devuelve null cuando el customer no existe', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({customer: null});
+    expect(await getCustomerBrandColors({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://x')).toBeNull();
+  });
+
+  /* Sin token no hay a quién preguntar, y un stub inventado restringiría el
+     catálogo en desarrollo sin que nadie entienda por qué. */
+  it('no llama a la red en stub mode', async () => {
+    isStubMode.mockReturnValue(true);
+    expect(await getCustomerBrandColors({}, 'gid://x')).toBeNull();
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('no llama a la red sin gid', async () => {
+    isStubMode.mockReturnValue(false);
+    expect(await getCustomerBrandColors({PRIVATE_ADMIN_API_TOKEN: 't'}, null)).toBeNull();
+    expect(adminFetch).not.toHaveBeenCalled();
   });
 });

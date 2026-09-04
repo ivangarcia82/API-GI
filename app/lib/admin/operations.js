@@ -514,3 +514,30 @@ export async function setDraftOrderAdvisor(env, draftOrderGid, advisorGid) {
     );
   }
 }
+
+const CUSTOMER_BRAND_COLORS = `
+  query customerBrandColors($gid: ID!) {
+    customer(id: $gid) {
+      metafield(namespace: "custom", key: "colores") { value }
+    }
+  }
+`;
+
+/**
+ * Lee la paleta de marca del cliente: el metafield de customer
+ * `custom.colores`, un list.single_line_text_field cuyo valor es un JSON como
+ * `["Rojo","Negro"]`. Devuelve la cadena cruda —el parseo vive en
+ * brand-colors.js, que es puro y testeable sin red.
+ *
+ * Null-safe por diseño: sin token, sin gid, sin customer o sin metafield
+ * devuelve null, que aguas arriba significa "no filtres". Requiere el scope
+ * read_customers, el mismo que ya usa getCustomerAdvisor.
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} customerGid
+ * @returns {Promise<string|null>}
+ */
+export async function getCustomerBrandColors(env, customerGid) {
+  if (isStubMode(env) || !customerGid) return null;
+  const data = await adminFetch(env, CUSTOMER_BRAND_COLORS, {gid: customerGid});
+  return data?.customer?.metafield?.value ?? null;
+}
