@@ -12,14 +12,23 @@ vi.mock('./auth/session.js', () => ({
 
 import {getBrandColors, getColorVocabulary} from './brand-colors.server.js';
 
-/* withCache se salta la caché y ejecuta: aquí se prueba la lógica, no Hydrogen. */
+/* withCache se salta la caché y ejecuta: aquí se prueba la lógica, no
+   Hydrogen. Pero SÍ se guardan las opciones con las que se le llama: la clave
+   de caché es lo único que impide que dos clientes con paletas distintas
+   compartan entrada, y sin capturarla ningún test lo vigilaba. */
+const opcionesDeCache = [];
 const storefrontQuery = vi.fn();
 
 const hazContexto = () => ({
   env: {PRIVATE_ADMIN_API_TOKEN: 't'},
   session: {},
   storefront: {query: (...a) => storefrontQuery(...a)},
-  withCache: {run: (_opciones, fn) => fn({addDebugData: () => {}})},
+  withCache: {
+    run: (opciones, fn) => {
+      opcionesDeCache.push(opciones);
+      return fn({addDebugData: () => {}});
+    },
+  },
 });
 
 /** Respuesta de la faceta de color con los tonos indicados. */
@@ -31,6 +40,7 @@ beforeEach(() => {
   getCustomerBrandColors.mockReset();
   getSessionUser.mockReset();
   storefrontQuery.mockReset();
+  opcionesDeCache.length = 0;
 });
 
 describe('getBrandColors', () => {
@@ -102,6 +112,28 @@ describe('getBrandColors', () => {
     const dos = await getBrandColors(hazContexto());
     expect(uno.families).toEqual(['rojo']);
     expect(dos.families).toEqual(['verde']);
+  });
+
+  /* La única forma de fuga entre clientes que tiene el diseño: si la clave de
+     caché pierde el gid, durante los cinco minutos del TTL todos los clientes
+     con sesión reciben la paleta del primero que cargó. */
+  it('mete el gid del cliente en la clave de caché', async () => {
+    getSessionUser.mockReturnValue({userId: 'u1', gid: 'gid://shopify/Customer/7'});
+    getCustomerBrandColors.mockResolvedValue('["Rojo"]');
+    await getBrandColors(hazContexto());
+    expect(opcionesDeCache).toHaveLength(1);
+    expect(opcionesDeCache[0].cacheKey).toContain('gid://shopify/Customer/7');
+  });
+
+  it('da claves distintas a clientes distintos', async () => {
+    getSessionUser.mockReturnValueOnce({userId: 'u1', gid: 'gid://1'});
+    getCustomerBrandColors.mockResolvedValueOnce('["Rojo"]');
+    await getBrandColors(hazContexto());
+    getSessionUser.mockReturnValueOnce({userId: 'u2', gid: 'gid://2'});
+    getCustomerBrandColors.mockResolvedValueOnce('["Verde"]');
+    await getBrandColors(hazContexto());
+    const [a, b] = opcionesDeCache.map((o) => JSON.stringify(o.cacheKey));
+    expect(a).not.toEqual(b);
   });
 });
 
