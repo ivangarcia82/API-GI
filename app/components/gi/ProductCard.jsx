@@ -5,6 +5,9 @@ import {Button, PH} from './ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex} from '~/lib/gi';
 
+/* El recorte es de presentación y vive aquí a propósito: `product.colors` trae
+   todos los tonos del producto porque de ahí sale también el filtrado por la
+   paleta del cliente. */
 function Swatches({colors, size = 14}) {
   return (
     <div style={{display: 'flex', gap: 6, marginTop: 8}}>

@@ -209,9 +209,10 @@ export default function Product() {
     imageAlt: product.featuredImage?.altText || product.title,
     price: unit,
     currency,
-    colors: colorOption
-      ? colorOption.optionValues.map((v) => v.name).slice(0, 8)
-      : [],
+    // Todos los tonos, no los ocho primeros: de esta lista sale también el
+    // recorte por paleta de la tira de vistos recientemente, y un ROJO en la
+    // posición 10 tiene que contar igual que uno en la primera.
+    colors: colorOption ? colorOption.optionValues.map((v) => v.name) : [],
     isNew,
     isOffer,
     firstVariantId:

@@ -129,6 +129,12 @@ export function normalizeProduct(node) {
   const colorOption = (node.options || []).find((o) =>
     /color/i.test(o.name),
   );
+  // Sin recortar: `colors` es también lo que lee productMatchesBrand para
+  // decidir si un producto entra en la paleta del cliente. Recortarlo aquí
+  // hacía que un producto con ROJO en la posición 10 apareciera en el catálogo
+  // —que filtra en la API, sobre todos sus tonos— y se cayera de favoritos,
+  // del home y de los similares, que post-filtran sobre esta lista. El recorte
+  // a swatches visibles es de presentación y vive en quien los pinta.
   const colors = colorOption
     ? (colorOption.optionValues || colorOption.values || []).map((v) =>
         typeof v === 'string' ? v : v.name,
@@ -147,7 +153,7 @@ export function normalizeProduct(node) {
     currency: price?.currencyCode || 'MXN',
     firstVariantId: first?.id || null,
     available: first?.availableForSale ?? true,
-    colors: colors.slice(0, 8),
+    colors,
     tags,
     isNew: tags.includes('nuevo'),
     isOffer: tags.includes('oferta'),
