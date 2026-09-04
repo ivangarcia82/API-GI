@@ -1,4 +1,4 @@
-import {createHydrogenContext} from '@shopify/hydrogen';
+import {createHydrogenContext, createWithCache} from '@shopify/hydrogen';
 import {AppSession} from '~/lib/session';
 import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
 
@@ -36,6 +36,11 @@ export async function createHydrogenRouterContext(
     AppSession.init(request, [env.SESSION_SECRET]),
   ]);
 
+  // Caché de subrequest para lo que no pasa por la Storefront API. La usa
+  // getBrandColors: leer la paleta del cliente por Admin API en cada carga de
+  // cada página sería un round trip de más en toda la aplicación.
+  const withCache = createWithCache({cache, waitUntil, request});
+
   const hydrogenContext = createHydrogenContext(
     {
       env,
@@ -50,7 +55,7 @@ export async function createHydrogenRouterContext(
         queryFragment: CART_QUERY_FRAGMENT,
       },
     },
-    additionalContext,
+    {...additionalContext, withCache},
   );
 
   return hydrogenContext;
