@@ -12,7 +12,8 @@
     "codegen": "shopify hydrogen codegen && react-router typegen",
     "test": "vitest run",
     "migrate": "node scripts/migrate.mjs",
-    "crear-asesores": "node scripts/crear-asesores.mjs"
+    "crear-asesores": "node scripts/crear-asesores.mjs",
+    "diagnostico-colores": "node scripts/diagnostico-colores-marca.mjs"
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
