@@ -235,9 +235,15 @@ Rojo/Negro sólo ve esos dos swatches. La paleta **no** se pinta como chip
 removible en `activeChips` — es el suelo del catálogo, no un filtro aplicado, y
 un chip con una "x" que no quita nada sería mentir.
 
-Estado vacío propio, distinto del "Sin resultados" genérico: *"No hay productos
-en los colores de tu marca con estos filtros"*, con el botón de limpiar
-filtros.
+Estado vacío propio, distinto del "Sin resultados" genérico, y con dos
+variantes porque el botón tiene que corresponderse con el texto:
+
+- **Con filtros aplicados**: *"No hay productos en los colores de tu marca con
+  estos filtros. Prueba a quitar alguno."* y el botón de limpiar filtros.
+- **Sin ningún filtro** —el `/catalogo` desnudo de un cliente cuya paleta no
+  existe en la tienda—: no hay filtros que quitar, así que ni se pide ni se
+  pinta el botón. La paleta la edita Generando Ideas y no el cliente, de modo
+  que la única salida real es escribirnos, y eso es lo que se ofrece.
 
 ### Ficha de producto
 
@@ -323,6 +329,14 @@ Vitest, archivos junto al fuente, como el resto del repositorio.
 `app/lib/filters.test.js` — casos añadidos
 - La paleta de marca no genera chips removibles.
 - `appliedFilters` deja fuera los colores pedidos que no son de la marca.
+
+`app/routes/search.brandColors.test.js` y
+`app/routes/collections.brandColors.test.js`
+- Sin paleta, `productFilters: null`; con paleta, sólo sus tonos.
+- Las dos ramas de la decisión sin vocabulario.
+- El vocabulario no se pide cuando no hay paleta.
+- En `/search`, además, que `$productFilters` entre en el bloque `products:` y
+  en ninguno de los otros dos `search(...)` de la consulta.
 
 `app/routes/catalogo.brandColors.test.js`
 - Los `productFilters` de la marca llegan de verdad a la consulta.

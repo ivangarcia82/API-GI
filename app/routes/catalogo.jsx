@@ -183,6 +183,42 @@ export async function loader({context, request}) {
   };
 }
 
+/**
+ * Qué decir y qué ofrecer cuando no queda ni un producto que pintar.
+ *
+ * El mensaje y el botón tienen que salir de la misma decisión: con paleta de
+ * marca y sin ningún filtro aplicado —el /catalogo desnudo de un cliente cuya
+ * paleta no existe en la tienda— el texto pedía "prueba a quitar alguno" y no
+ * se pintaba ningún botón, porque el de limpiar filtros colgaba de
+ * `hayFiltros`. El cliente se quedaba sin nada que pulsar. Su paleta la edita
+ * Generando Ideas y no él, así que la única salida real es escribirnos.
+ *
+ * Se exporta para poder fijarlo con un test sin montar la página entera.
+ * @param {{marcaColores?: string[], hayFiltros?: boolean}} estado
+ * @returns {{texto: string, accion: 'limpiar'|'contacto'|null}}
+ */
+export function estadoVacio({marcaColores = [], hayFiltros = false} = {}) {
+  if (marcaColores.length) {
+    return hayFiltros
+      ? {
+          texto:
+            'No hay productos en los colores de tu marca con estos filtros. Prueba a quitar alguno.',
+          accion: 'limpiar',
+        }
+      : {
+          texto:
+            'Ahora mismo no encontramos productos en los colores de tu marca. Escríbenos y te buscamos alternativas.',
+          accion: 'contacto',
+        };
+  }
+  return hayFiltros
+    ? {
+        texto: 'Ninguna combinación de estos filtros devuelve productos. Prueba a quitar alguno.',
+        accion: 'limpiar',
+      }
+    : {texto: 'Intenta con otras palabras de búsqueda.', accion: null};
+}
+
 /* Si la búsqueda de Shopify falla, el loader ya degrada a lista vacía; esto
    cubre lo demás (una combinación de filtros que revienta la consulta, un
    cursor inválido pegado en la URL). Se queda dentro del layout para que la
@@ -347,6 +383,7 @@ export default function Catalogo() {
 
   const chips = activeChips(filtros, {categorias: HOME_CATEGORIES});
   const hayFiltros = hasActiveFilters(filtros);
+  const vacio = estadoVacio({marcaColores, hayFiltros});
 
   const titulo = filtros.q
     ? `Resultados · “${filtros.q}”`
@@ -476,16 +513,15 @@ export default function Catalogo() {
                     <div className="empty">
                       <Icon name="search" size={32} className="muted-2" />
                       <h3>Sin resultados</h3>
-                      <p>
-                        {marcaColores.length > 0
-                          ? 'No hay productos en los colores de tu marca con estos filtros. Prueba a quitar alguno.'
-                          : hayFiltros
-                            ? 'Ninguna combinación de estos filtros devuelve productos. Prueba a quitar alguno.'
-                            : 'Intenta con otras palabras de búsqueda.'}
-                      </p>
-                      {hayFiltros && (
+                      <p>{vacio.texto}</p>
+                      {vacio.accion === 'limpiar' && (
                         <Button variant="ghost" onClick={limpiarTodo}>
                           Limpiar filtros
+                        </Button>
+                      )}
+                      {vacio.accion === 'contacto' && (
+                        <Button variant="ghost" onClick={() => navigate('/contacto')}>
+                          Escríbenos
                         </Button>
                       )}
                     </div>

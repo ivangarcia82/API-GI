@@ -13,7 +13,7 @@ vi.mock('~/lib/brand-colors.server', () => ({
   getColorVocabulary: (...a) => getColorVocabulary(...a),
 }));
 
-import {loader} from './catalogo.jsx';
+import {loader, estadoVacio} from './catalogo.jsx';
 
 const VOCABULARIO = [
   {label: 'ROJO', count: 66},
@@ -161,5 +161,50 @@ describe('catálogo · colores de marca', () => {
     await pedir('/catalogo?cat=textil');
     const [, opciones] = storefrontQuery.mock.calls.at(-1);
     expect(opciones.variables.productFilters).toBeNull();
+  });
+});
+
+/* El estado vacío nunca puede ser un callejón sin salida: si el texto pide
+   quitar filtros tiene que haber un botón que los quite, y si no hay ninguno
+   que quitar tiene que ofrecer otra cosa. */
+describe('catálogo · estado vacío', () => {
+  it('con paleta y filtros ofrece limpiarlos', () => {
+    expect(estadoVacio({marcaColores: ['rojo'], hayFiltros: true})).toEqual({
+      texto:
+        'No hay productos en los colores de tu marca con estos filtros. Prueba a quitar alguno.',
+      accion: 'limpiar',
+    });
+  });
+
+  /* El caso que se quedaba mudo: /catalogo desnudo, la paleta del cliente no
+     existe en la tienda, y el mensaje pedía quitar filtros que no había. */
+  it('con paleta y sin filtros no pide quitar nada, y ofrece salida', () => {
+    const out = estadoVacio({marcaColores: ['morado'], hayFiltros: false});
+    expect(out.accion).toBe('contacto');
+    expect(out.texto).not.toMatch(/filtro/i);
+  });
+
+  /* Un cliente sin paleta ve exactamente lo de siempre. */
+  it('sin paleta y con filtros ofrece limpiarlos', () => {
+    expect(estadoVacio({marcaColores: [], hayFiltros: true})).toEqual({
+      texto: 'Ninguna combinación de estos filtros devuelve productos. Prueba a quitar alguno.',
+      accion: 'limpiar',
+    });
+  });
+
+  it('sin paleta y sin filtros sigue mandando a reformular la búsqueda', () => {
+    expect(estadoVacio({marcaColores: [], hayFiltros: false})).toEqual({
+      texto: 'Intenta con otras palabras de búsqueda.',
+      accion: null,
+    });
+  });
+
+  it('nunca pide quitar filtros sin ofrecer el botón que los quita', () => {
+    for (const marcaColores of [[], ['rojo']]) {
+      for (const hayFiltros of [true, false]) {
+        const {texto, accion} = estadoVacio({marcaColores, hayFiltros});
+        if (/quitar/i.test(texto)) expect(accion).toBe('limpiar');
+      }
+    }
   });
 });
