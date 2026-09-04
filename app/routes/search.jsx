@@ -400,18 +400,22 @@ async function predictiveSearch({request, context}) {
 
   if (!term) return {type, term, result: getEmptyPredictiveSearchResult()};
 
-  // Predictively search articles, collections, pages, products, and queries (suggestions)
-  const {predictiveSearch: items, errors} = await storefront.query(
-    PREDICTIVE_SEARCH_QUERY,
-    {
+  // Predictively search articles, collections, pages, products, and queries
+  // (suggestions). getBrandColors sale en el mismo Promise.all: esta ruta se
+  // dispara en cada tecleo desde el modal de búsqueda, no hay loader de root
+  // que corra a la par (es un fetcher contra /search) y con caché fría es un
+  // round trip íntegro al Admin API que no se puede permitir en serie.
+  const [{predictiveSearch: items, errors}, marca] = await Promise.all([
+    storefront.query(PREDICTIVE_SEARCH_QUERY, {
       variables: {
         // customize search options as needed
         limit,
         limitScope: 'EACH',
         term,
       },
-    },
-  );
+    }),
+    getBrandColors(context),
+  ]);
 
   if (errors) {
     throw new Error(
@@ -425,7 +429,6 @@ async function predictiveSearch({request, context}) {
 
   // predictiveSearch no acepta productFilters: el recorte por paleta se hace
   // aquí, sobre una lista de 6-10 elementos que ya trae sus colores.
-  const marca = await getBrandColors(context);
   const filtrados = {
     ...items,
     products: keepBrandProducts(items.products || [], marca?.families || []),
