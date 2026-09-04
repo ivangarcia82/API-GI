@@ -4,14 +4,21 @@ import {Icon} from './Icon';
 import {Button, PH} from './ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {formatPrice, colorHex} from '~/lib/gi';
+import {brandOptionValues, brandVariantId} from '~/lib/brand-colors';
 
 /* El recorte es de presentación y vive aquí a propósito: `product.colors` trae
    todos los tonos del producto porque de ahí sale también el filtrado por la
-   paleta del cliente. */
+   paleta del cliente.
+   Al cliente con paleta se le enseñan sólo sus tonos: ver un azul en la tarjeta
+   y no encontrarlo en la ficha sería peor que no verlo. La paleta se lee del
+   contexto y no por props para no atravesar con ella las cinco pantallas que
+   pintan tarjetas. */
 function Swatches({colors, size = 14}) {
+  const {brandColors} = useApp();
+  const suyos = brandOptionValues(colors, brandColors);
   return (
     <div style={{display: 'flex', gap: 6, marginTop: 8}}>
-      {colors.slice(0, 5).map((c) => (
+      {suyos.slice(0, 5).map((c) => (
         <div
           key={c}
           title={c}
@@ -64,7 +71,11 @@ function Precio({product, view}) {
  */
 export function AddControl({product, label, variant, size = 'sm', className = ''}) {
   const navigate = useNavigate();
-  const {isLoggedIn, addToQuote, openQuoteDrawer} = useApp();
+  const {isLoggedIn, addToQuote, openQuoteDrawer, brandColors} = useApp();
+  /* `firstVariantId` es la primera variante que devolvió la consulta y puede
+     ser de cualquier color: a un cliente con paleta le metería en la cotización
+     una variante que no puede pedir. */
+  const variantId = brandVariantId(product, brandColors);
   const toast = useToast();
 
   if (!isLoggedIn) {
@@ -95,12 +106,12 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
         // Quick-add needs a real ProductVariant gid to price + image the line.
         // Without one, send the user to the PDP to choose a variant instead of
         // creating a $0, imageless quote line.
-        if (!product.firstVariantId) {
+        if (!variantId) {
           navigate(`/products/${product.handle}`);
           return;
         }
         addToQuote({
-          variantId: product.firstVariantId,
+          variantId,
           productId: product.id,
           handle: product.handle,
           title: product.title,

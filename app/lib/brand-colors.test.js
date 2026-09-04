@@ -7,6 +7,8 @@ import {
   hayVocabulario,
   productMatchesBrand,
   keepBrandProducts,
+  brandOptionValues,
+  brandVariantId,
 } from './brand-colors.js';
 import {SIN_COINCIDENCIA} from './filters.js';
 import {normalizeProduct} from './gi.js';
@@ -233,5 +235,109 @@ describe('keepBrandProducts', () => {
 
   it('con marca deja sólo los que coinciden', () => {
     expect(keepBrandProducts(lista, ['rojo']).map((p) => p.id)).toEqual([1]);
+  });
+});
+
+/* Ver los productos de su paleta no basta: dentro de un producto que sí es
+   suyo siguen apareciendo los tonos que no lo son, y el botón de cotizar puede
+   mandar una variante de cualquier color. Estas dos funciones cierran eso. */
+
+const VALORES_COLOR = [
+  {name: 'ROJO'},
+  {name: 'AZUL MARINO'},
+  {name: 'VINO'},
+  {name: 'VERDE'},
+];
+
+describe('brandOptionValues', () => {
+  it('sin paleta devuelve la lista tal cual', () => {
+    expect(brandOptionValues(VALORES_COLOR, [])).toBe(VALORES_COLOR);
+  });
+
+  it('con paleta deja sólo los tonos de la marca', () => {
+    expect(brandOptionValues(VALORES_COLOR, ['azul']).map((v) => v.name)).toEqual([
+      'AZUL MARINO',
+    ]);
+  });
+
+  /* Por familia, no por texto: "Rojo" en el metafield tiene que traerse VINO. */
+  it('recorta por familia y no por coincidencia exacta', () => {
+    expect(brandOptionValues(VALORES_COLOR, ['rojo']).map((v) => v.name)).toEqual([
+      'ROJO',
+      'VINO',
+    ]);
+  });
+
+  /* Si no hay nada a lo que reducir, no se reduce: un selector de color vacío
+     no le dice al cliente en qué colores existe el producto. Es el caso de la
+     ficha que sólo se alcanza por link directo. */
+  it('devuelve la lista entera si ningún tono es de la marca', () => {
+    expect(brandOptionValues(VALORES_COLOR, ['morado'])).toBe(VALORES_COLOR);
+  });
+
+  it('tolera una lista vacía', () => {
+    expect(brandOptionValues([], ['rojo'])).toEqual([]);
+  });
+
+  /* La ficha le pasa los valores de opción de la Storefront API ({name}); la
+     tarjeta, los tonos ya normalizados de `product.colors`, que son cadenas
+     sueltas. Una sola función para las dos formas, como ya hace tonosDe. */
+  it('acepta también una lista de cadenas', () => {
+    expect(brandOptionValues(['ROJO', 'AZUL', 'VINO'], ['rojo'])).toEqual(['ROJO', 'VINO']);
+  });
+
+  it('devuelve la lista entera de cadenas si ninguna es de la marca', () => {
+    const tonos = ['AZUL', 'VERDE'];
+    expect(brandOptionValues(tonos, ['rojo'])).toBe(tonos);
+  });
+});
+
+const PRODUCTO = {
+  firstVariantId: 'gid://variant/DEFECTO',
+  colorVariants: [
+    {name: 'AZUL', variantId: 'gid://variant/AZUL'},
+    {name: 'VINO', variantId: 'gid://variant/VINO'},
+    {name: 'NEGRO', variantId: 'gid://variant/NEGRO'},
+  ],
+};
+
+describe('brandVariantId', () => {
+  it('sin paleta cotiza la variante por defecto', () => {
+    expect(brandVariantId(PRODUCTO, [])).toBe('gid://variant/DEFECTO');
+  });
+
+  /* El botón de cotizar del catálogo mandaba `firstVariantId` a secas, que
+     puede ser de un color que el cliente no puede pedir. */
+  it('con paleta cotiza la primera variante de su color', () => {
+    expect(brandVariantId(PRODUCTO, ['rojo'])).toBe('gid://variant/VINO');
+  });
+
+  it('respeta el orden de los tonos del producto', () => {
+    expect(brandVariantId(PRODUCTO, ['negro', 'azul'])).toBe('gid://variant/AZUL');
+  });
+
+  it('salta los tonos que no tienen variante seleccionable', () => {
+    const sinVariante = {
+      firstVariantId: 'gid://variant/DEFECTO',
+      colorVariants: [
+        {name: 'VINO', variantId: null},
+        {name: 'ROJO', variantId: 'gid://variant/ROJO'},
+      ],
+    };
+    expect(brandVariantId(sinVariante, ['rojo'])).toBe('gid://variant/ROJO');
+  });
+
+  it('cae en la variante por defecto si ningún tono es de la marca', () => {
+    expect(brandVariantId(PRODUCTO, ['morado'])).toBe('gid://variant/DEFECTO');
+  });
+
+  it('cae en la variante por defecto si el producto no trae colorVariants', () => {
+    expect(brandVariantId({firstVariantId: 'gid://variant/X'}, ['rojo'])).toBe(
+      'gid://variant/X',
+    );
+  });
+
+  it('devuelve null si no hay ninguna variante que cotizar', () => {
+    expect(brandVariantId({}, ['rojo'])).toBeNull();
   });
 });

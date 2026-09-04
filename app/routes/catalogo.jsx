@@ -26,6 +26,7 @@ import {
   appliedFilters,
 } from '~/lib/filters';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {brandVariantId} from '~/lib/brand-colors';
 import {
   effectiveColorFamilies,
   visibleColorSelection,
@@ -258,6 +259,43 @@ const paginationLinkStyle = {
   color: 'var(--ink)',
 };
 
+/**
+ * Las líneas de cotización de una selección múltiple, cada una con la variante
+ * del color de la marca del cliente.
+ *
+ * Antes se mandaba `firstVariantId` a secas, que es la primera variante que
+ * devolvió la consulta y puede ser de cualquier color: al cliente con paleta le
+ * entraban en la cotización variantes que no puede pedir, en lote y sin que el
+ * color apareciera por ningún lado.
+ *
+ * @param {Array<object>} productos los seleccionados, ya normalizados
+ * @param {string[]} marcaColores
+ * @returns {{lineas: Array<object>, sinVariante: number}}
+ */
+export function lineasDeSeleccion(productos, marcaColores) {
+  const lineas = [];
+  let sinVariante = 0;
+  for (const p of productos || []) {
+    const variantId = brandVariantId(p, marcaColores);
+    // Sin variante no se puede cotizar sin crear una línea de $0 y sin foto.
+    if (!variantId) {
+      sinVariante += 1;
+      continue;
+    }
+    lineas.push({
+      variantId,
+      productId: p.id,
+      handle: p.handle,
+      title: p.title,
+      sku: p.sku,
+      image: p.image,
+      price: p.price,
+      qty: 1,
+    });
+  }
+  return {lineas, sinVariante};
+}
+
 export default function Catalogo() {
   const {products, totalCount, filtros, facetas, marcaColores = []} = useLoaderData();
   /* La ruta de colección no expone un total. Se escribe "productos" a secas en
@@ -291,26 +329,18 @@ export default function Catalogo() {
   const limpiarSeleccion = useCallback(() => setSeleccion(new Map()), []);
 
   const cotizarSeleccion = async () => {
-    const elegidos = [...seleccion.values()];
-    const cotizables = elegidos.filter((p) => p.firstVariantId);
-    const sinVariante = elegidos.length - cotizables.length;
+    const {lineas: cotizables, sinVariante} = lineasDeSeleccion(
+      [...seleccion.values()],
+      marcaColores,
+    );
     setAñadiendo(true);
     let ok = 0;
     try {
       // En serie: cada respuesta del servidor trae la lista autoritativa de
       // líneas, así que lanzarlas en paralelo haría que la última pisara al
       // resto.
-      for (const p of cotizables) {
-        await addToQuote({
-          variantId: p.firstVariantId,
-          productId: p.id,
-          handle: p.handle,
-          title: p.title,
-          sku: p.sku,
-          image: p.image,
-          price: p.price,
-          qty: 1,
-        });
+      for (const linea of cotizables) {
+        await addToQuote(linea);
         ok += 1;
       }
       limpiarSeleccion();

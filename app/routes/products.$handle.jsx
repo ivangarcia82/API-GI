@@ -1,4 +1,4 @@
-import {useLoaderData, Link, useNavigate} from 'react-router';
+import {useLoaderData, Link, useNavigate, redirect} from 'react-router';
 import {useState} from 'react';
 import {
   getSelectedProductOptions,
@@ -19,7 +19,11 @@ import {resumen, separarFrasesPegadas} from '~/lib/text';
 import {useVariantGallery} from '~/lib/gallery';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {getBrandColors} from '~/lib/brand-colors.server';
-import {keepBrandProducts, productMatchesBrand} from '~/lib/brand-colors';
+import {
+  keepBrandProducts,
+  productMatchesBrand,
+  brandOptionValues,
+} from '~/lib/brand-colors';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
@@ -72,20 +76,35 @@ async function loadCriticalData({context, params, request}) {
   const {storefront} = context;
   if (!handle) throw new Error('Expected product handle to be defined');
 
-  const [{product}] = await Promise.all([
+  const [{product}, marca] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
+    getBrandColors(context),
   ]);
 
   if (!product?.id) throw new Response(null, {status: 404});
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
+  const marcaColores = marca?.families || [];
+
+  /* Si la ficha aterrizaría en un color que el cliente no puede pedir, se
+     arranca en uno suyo. Va antes de stock y recomendaciones porque al
+     redirigir esas dos consultas se tirarían. Los parámetros que ya traía la
+     URL se conservan: por ahí llegan las campañas y los enlaces de las
+     ejecutivas. */
+  const opciones = opcionesDeMarca(product, marcaColores);
+  if (opciones) {
+    const params = new URLSearchParams(new URL(request.url).search);
+    for (const {name, value} of opciones) params.set(name, value);
+    throw redirect(`/products/${product.handle}?${params}`);
+  }
+
   // Inventory comes from the Admin API (the Hydrogen-managed Storefront token
   // can't get the inventory scope). Best-effort: needs the Admin `read_inventory`
   // scope + a real Admin token; degrades to null (no badge) otherwise.
   // Related products power the "Productos similares" strip; best-effort too.
-  const [stock, recomendacionesCrudas, marca] = await Promise.all([
+  const [stock, recomendacionesCrudas] = await Promise.all([
     getVariantInventory(context.env, product.selectedOrFirstAvailableVariant?.id),
     storefront
       .query(GI_PRODUCT_RECOMMENDATIONS_QUERY, {variables: {productId: product.id}})
@@ -95,10 +114,8 @@ async function loadCriticalData({context, params, request}) {
           .filter((p) => p && p.id !== product.id),
       )
       .catch(() => []),
-    getBrandColors(context),
   ]);
 
-  const marcaColores = marca?.families || [];
   // productRecommendations no acepta facetas: se recorta aquí. Es una tira
   // corta, así que no hay paginación ni conteo que romper.
   const recommendations = keepBrandProducts(recomendacionesCrudas, marcaColores);
@@ -413,13 +430,23 @@ export default function Product() {
 
           {/* VARIANT OPTIONS (color/size as swatches) */}
           {productOptions.map((option) => {
-            if (option.optionValues.length === 1) return null;
             const isColor = /color/i.test(option.name);
+            /* Al cliente con paleta se le ofrecen sólo sus tonos: enseñarle un
+               azul que no puede pedir es ruido, y el loader ya le hizo aterrizar
+               en un color suyo. `brandOptionValues` devuelve la lista entera
+               cuando ninguno es de la marca — el producto que sólo se alcanza
+               por link directo—, y ahí se ven todos marcados junto al aviso. */
+            const valores = isColor
+              ? brandOptionValues(option.optionValues, marcaColores)
+              : option.optionValues;
+            // Un solo valor no es una elección; la regla ya existía y se aplica
+            // igual sobre la lista recortada.
+            if (valores.length === 1) return null;
             return (
               <div className="pdp-section" key={option.name}>
                 <h3>{option.name}</h3>
                 <div className={isColor ? 'pdp-swatches' : 'pdp-printtech'}>
-                  {option.optionValues.map((value) => {
+                  {valores.map((value) => {
                     const {
                       name,
                       variantUriQuery,
@@ -725,6 +752,37 @@ export function esFueraDeMarca(colorOption, marcaColores) {
 export function esTonoDeMarca(nombre, marcaColores) {
   if (!marcaColores?.length) return true;
   return productMatchesBrand({colors: [nombre]}, marcaColores);
+}
+
+/**
+ * Los `selectedOptions` a los que hay que redirigir para que la ficha arranque
+ * en un color de la marca, o null si no hay que redirigir.
+ *
+ * Sin esto, ocultar los tonos ajenos deja la ficha peor que antes: aterriza en
+ * una variante que ya no aparece en el selector, y su foto, su precio y el
+ * botón de cotizar apuntan a un color que el cliente no puede pedir.
+ *
+ * El destino es siempre una variante que YA sabemos que es de su paleta, así
+ * que la comprobación de "ya está en su color" corta el bucle en la carga
+ * siguiente.
+ *
+ * @param {object} product tal como lo devuelve PRODUCT_QUERY
+ * @param {string[]} marcaColores
+ * @returns {Array<{name: string, value: string}>|null}
+ */
+export function opcionesDeMarca(product, marcaColores) {
+  if (!marcaColores?.length) return null;
+  const colorOption = (product?.options || []).find((o) => /color/i.test(o?.name || ''));
+  if (!colorOption) return null;
+  // Sin ningún color suyo no hay a dónde llevarle: la ficha le enseña todos los
+  // tonos junto a su banda de aviso.
+  if (esFueraDeMarca(colorOption, marcaColores)) return null;
+  const actual = (product?.selectedOrFirstAvailableVariant?.selectedOptions || []).find(
+    (o) => /color/i.test(o?.name || ''),
+  );
+  if (actual && esTonoDeMarca(actual.value, marcaColores)) return null;
+  const [primero] = brandOptionValues(colorOption.optionValues, marcaColores) || [];
+  return primero?.firstSelectableVariant?.selectedOptions ?? null;
 }
 
 /* Un producto retirado o renombrado es el 404 más común de esta tienda: llega

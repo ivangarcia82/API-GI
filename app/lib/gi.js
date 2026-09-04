@@ -140,6 +140,16 @@ export function normalizeProduct(node) {
         typeof v === 'string' ? v : v.name,
       )
     : [...new Set(variants.map((v) => v.title).filter(Boolean))];
+  /* Cada tono junto a la variante que le corresponde. La tarjeta sólo pide
+     `variants(first: 1)`, así que el `firstVariantId` de abajo puede ser de
+     cualquier color: para cotizarle a un cliente con paleta hay que poder
+     elegir la variante de SU color. `firstSelectableVariant` lo piden las
+     consultas que alimentan tarjetas; donde no venga, el tono queda sin
+     variante y `brandVariantId` lo salta. */
+  const colorVariants = (colorOption?.optionValues || []).map((v) => ({
+    name: typeof v === 'string' ? v : v?.name,
+    variantId: v?.firstSelectableVariant?.id ?? null,
+  }));
   return {
     id: node.id,
     handle: node.handle,
@@ -154,6 +164,7 @@ export function normalizeProduct(node) {
     firstVariantId: first?.id || null,
     available: first?.availableForSale ?? true,
     colors,
+    colorVariants,
     tags,
     isNew: tags.includes('nuevo'),
     isOffer: tags.includes('oferta'),

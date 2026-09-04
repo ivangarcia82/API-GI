@@ -13,7 +13,7 @@ vi.mock('~/lib/brand-colors.server', () => ({
   getColorVocabulary: (...a) => getColorVocabulary(...a),
 }));
 
-import {loader, estadoVacio} from './catalogo.jsx';
+import {loader, estadoVacio, lineasDeSeleccion} from './catalogo.jsx';
 
 const VOCABULARIO = [
   {label: 'ROJO', count: 66},
@@ -206,5 +206,66 @@ describe('catálogo · estado vacío', () => {
         if (/quitar/i.test(texto)) expect(accion).toBe('limpiar');
       }
     }
+  });
+});
+
+/* La barra de selección múltiple cotizaba `firstVariantId` a secas, que es la
+   primera variante que devolvió la consulta y puede ser de cualquier color: a
+   un cliente con paleta le metía en la cotización variantes que no puede pedir,
+   y en lote, sin que llegara a ver el color por ningún lado. */
+
+const seleccionado = (id, colorVariants, firstVariantId) => ({
+  id,
+  handle: `p-${id}`,
+  title: `Producto ${id}`,
+  sku: `SKU-${id}`,
+  image: `https://cdn.test/${id}.jpg`,
+  price: 100,
+  firstVariantId,
+  colorVariants,
+});
+
+const CON_ROJO = seleccionado(
+  '1',
+  [
+    {name: 'AZUL', variantId: 'gid://variant/AZUL'},
+    {name: 'ROJO', variantId: 'gid://variant/ROJO'},
+  ],
+  'gid://variant/AZUL',
+);
+
+describe('catálogo · cotizar en lote respetando la paleta', () => {
+  it('sin paleta cotiza la variante por defecto', () => {
+    const {lineas, sinVariante} = lineasDeSeleccion([CON_ROJO], []);
+    expect(lineas.map((l) => l.variantId)).toEqual(['gid://variant/AZUL']);
+    expect(sinVariante).toBe(0);
+  });
+
+  it('con paleta cotiza la variante de su color', () => {
+    const {lineas} = lineasDeSeleccion([CON_ROJO], ['rojo']);
+    expect(lineas[0].variantId).toBe('gid://variant/ROJO');
+  });
+
+  it('conserva los datos que la línea necesita para pintarse', () => {
+    const {lineas} = lineasDeSeleccion([CON_ROJO], ['rojo']);
+    expect(lineas[0]).toEqual({
+      variantId: 'gid://variant/ROJO',
+      productId: '1',
+      handle: 'p-1',
+      title: 'Producto 1',
+      sku: 'SKU-1',
+      image: 'https://cdn.test/1.jpg',
+      price: 100,
+      qty: 1,
+    });
+  });
+
+  /* Sin variante no se puede cotizar sin crear una línea de $0 y sin foto: se
+     cuentan aparte para poder decirle al cliente cuántas quedaron fuera. */
+  it('cuenta aparte los que no tienen ninguna variante', () => {
+    const sinNada = seleccionado('2', [], null);
+    const {lineas, sinVariante} = lineasDeSeleccion([CON_ROJO, sinNada], ['rojo']);
+    expect(lineas).toHaveLength(1);
+    expect(sinVariante).toBe(1);
   });
 });

@@ -24,12 +24,15 @@ const PRODUCTO = {
   firstVariantId: 'gid://shopify/ProductVariant/9',
 };
 
-function montar(props = {}, {isLoggedIn = true, producto = PRODUCTO} = {}) {
+function montar(
+  props = {},
+  {isLoggedIn = true, producto = PRODUCTO, brandColors = []} = {},
+) {
   const Stub = createRoutesStub([
     {
       path: '/',
       Component: () => (
-        <AppProvider isLoggedIn={isLoggedIn}>
+        <AppProvider isLoggedIn={isLoggedIn} brandColors={brandColors}>
           <ProductCard product={producto} {...props} />
         </AppProvider>
       ),
@@ -115,5 +118,74 @@ describe('precio visible sin sesión', () => {
     montar({}, {isLoggedIn: false});
     expect(screen.getByRole('button', {name: /Ver detalles/i})).toBeTruthy();
     expect(screen.queryByRole('button', {name: /cotizaci[oó]n/i})).toBeNull();
+  });
+});
+
+/* Un cliente con paleta de marca no puede ver ni cotizar tonos que no son
+   suyos: la fila de swatches de la tarjeta los enseñaba todos, y el botón de
+   cotizar mandaba `firstVariantId`, que es la primera variante que devolvió la
+   consulta y puede ser de cualquier color. */
+
+const CON_COLORES = {
+  ...PRODUCTO,
+  colors: ['AZUL', 'ROJO', 'VERDE'],
+  firstVariantId: 'gid://variant/AZUL',
+  colorVariants: [
+    {name: 'AZUL', variantId: 'gid://variant/AZUL'},
+    {name: 'ROJO', variantId: 'gid://variant/ROJO'},
+    {name: 'VERDE', variantId: 'gid://variant/VERDE'},
+  ],
+};
+
+/* addToQuote habla con /api/quote/add por `fetch`, así que la variante que se
+   cotiza de verdad se lee del cuerpo de esa petición. Es la aserción honesta:
+   observa lo que sale hacia el servidor, no un doble nuestro. */
+function capturarCotizadas() {
+  const enviadas = [];
+  vi.stubGlobal('fetch', async (url, init) => {
+    if (String(url).includes('/api/quote/')) {
+      enviadas.push(new URLSearchParams(init.body));
+    }
+    return new Response(JSON.stringify({ok: true, items: []}), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'},
+    });
+  });
+  return enviadas;
+}
+
+afterEach(() => vi.unstubAllGlobals());
+
+/** Los tonos que la tarjeta está pintando, por su `title`. */
+const tonosPintados = () =>
+  [...document.querySelectorAll('[title]')]
+    .map((el) => el.getAttribute('title'))
+    .filter((t) => CON_COLORES.colors.includes(t));
+
+describe('ProductCard · colores de marca', () => {
+  it('sin paleta pinta todos los tonos', () => {
+    montar({}, {producto: CON_COLORES});
+    expect(tonosPintados()).toEqual(['AZUL', 'ROJO', 'VERDE']);
+  });
+
+  it('con paleta pinta sólo los tonos de la marca', () => {
+    montar({}, {producto: CON_COLORES, brandColors: ['rojo']});
+    expect(tonosPintados()).toEqual(['ROJO']);
+  });
+
+  it('cotiza la variante del color de la marca, no la primera de la consulta', async () => {
+    const enviadas = capturarCotizadas();
+    montar({}, {producto: CON_COLORES, brandColors: ['rojo']});
+    fireEvent.click(screen.getByRole('button', {name: 'Añadir a cotización'}));
+    await vi.waitFor(() => expect(enviadas).toHaveLength(1));
+    expect(enviadas[0].get('variantId')).toBe('gid://variant/ROJO');
+  });
+
+  it('sin paleta cotiza la variante por defecto', async () => {
+    const enviadas = capturarCotizadas();
+    montar({}, {producto: CON_COLORES});
+    fireEvent.click(screen.getByRole('button', {name: 'Añadir a cotización'}));
+    await vi.waitFor(() => expect(enviadas).toHaveLength(1));
+    expect(enviadas[0].get('variantId')).toBe('gid://variant/AZUL');
   });
 });

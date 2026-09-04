@@ -118,6 +118,11 @@ export function brandProductFilters(familias, vocabulario) {
   return out.length ? out : [SIN_COINCIDENCIA]; // fail-closed
 }
 
+/** El nombre de un tono, venga como cadena suelta o como valor de opción. */
+function nombreDe(valor) {
+  return typeof valor === 'string' ? valor : valor?.name;
+}
+
 /** Los tonos de un producto, venga normalizado o crudo de la Storefront API. */
 function tonosDe(producto) {
   if (producto?.colors?.length) return producto.colors;
@@ -153,4 +158,53 @@ export function keepBrandProducts(productos, familias) {
   const paleta = familias || [];
   if (!paleta.length) return productos;
   return (productos || []).filter((p) => productMatchesBrand(p, paleta));
+}
+
+/**
+ * Los valores de una opción de color, recortados a los tonos de la marca.
+ *
+ * Si NINGUNO coincide devuelve la lista entera, y no vacía: un selector de
+ * color sin opciones no le dice al cliente en qué colores existe el producto.
+ * Ese caso sólo se alcanza por link directo —los listados ya ocultan esos
+ * productos— y ahí la ficha enseña todos los tonos junto a su banda de aviso.
+ *
+ * Acepta las dos formas en que llegan los tonos: los valores de opción de la
+ * Storefront API (`{name}`) y las cadenas sueltas de `product.colors`.
+ *
+ * @param {Array<{name: string}|string>} optionValues
+ * @param {string[]} familias
+ * @returns {Array<{name: string}|string>} la misma referencia cuando no se recorta
+ */
+export function brandOptionValues(optionValues, familias) {
+  const paleta = familias || [];
+  if (!paleta.length || !optionValues?.length) return optionValues;
+  const suyos = optionValues.filter((v) => {
+    const familia = colorFamilyOf(nombreDe(v));
+    return familia && paleta.includes(familia);
+  });
+  return suyos.length ? suyos : optionValues;
+}
+
+/**
+ * La variante que hay que cotizar de este producto.
+ *
+ * `firstVariantId` es la primera que devolvió la consulta, y puede ser de
+ * cualquier color: cotizarla a un cliente con paleta le mete en la cotización
+ * una variante que no puede pedir. Aquí se prefiere la primera de sus colores,
+ * en el orden en que la tienda los declara.
+ *
+ * @param {{firstVariantId?: string|null, colorVariants?: Array<{name: string, variantId: string|null}>}} producto
+ * @param {string[]} familias
+ * @returns {string|null}
+ */
+export function brandVariantId(producto, familias) {
+  const paleta = familias || [];
+  const porDefecto = producto?.firstVariantId ?? null;
+  if (!paleta.length) return porDefecto;
+  for (const tono of producto?.colorVariants || []) {
+    if (!tono?.variantId) continue;
+    const familia = colorFamilyOf(tono.name);
+    if (familia && paleta.includes(familia)) return tono.variantId;
+  }
+  return porDefecto;
 }

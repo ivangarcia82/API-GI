@@ -10,7 +10,13 @@ export const GI_PRODUCT_CARD_FRAGMENT = `#graphql
     tags
     featuredImage { id url altText width height }
     priceRange { minVariantPrice { amount currencyCode } }
-    options { name optionValues { name } }
+    # firstSelectableVariant es lo que permite cotizar en el color de la marca
+    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,
+    # que puede ser de un color que ese cliente no puede pedir.
+    options {
+      name
+      optionValues { name firstSelectableVariant { id } }
+    }
     variants(first: 1) {
       nodes {
         id

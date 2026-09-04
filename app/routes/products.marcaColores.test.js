@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest';
 import {productMatchesBrand} from '~/lib/brand-colors';
-import {esFueraDeMarca, esTonoDeMarca} from './products.$handle.jsx';
+import {esFueraDeMarca, esTonoDeMarca, opcionesDeMarca} from './products.$handle.jsx';
 
 const OPCION_COLOR = {
   name: 'Color',
@@ -70,5 +70,76 @@ describe('ficha · coherente con los listados', () => {
       true,
     );
     expect(productMatchesBrand({colors: tonos}, marca)).toBe(false);
+  });
+});
+
+/* Ocultar los tonos ajenos no basta: si la ficha aterriza en una variante que
+   el cliente no puede pedir, su foto, su precio y el botón de cotizar apuntan a
+   un color que ya no aparece en el selector. Hay que arrancar en uno suyo. */
+
+const variante = (color) => ({
+  id: `gid://variant/${color}`,
+  selectedOptions: [
+    {name: 'Color', value: color},
+    {name: 'Talla', value: 'UNICA'},
+  ],
+});
+
+const producto = (colorActual, tonos = ['AZUL', 'ROJO', 'NEGRO']) => ({
+  handle: 'mochila-test',
+  options: [
+    {
+      name: 'Color',
+      optionValues: tonos.map((t) => ({name: t, firstSelectableVariant: variante(t)})),
+    },
+    {name: 'Talla', optionValues: [{name: 'UNICA'}]},
+  ],
+  selectedOrFirstAvailableVariant: variante(colorActual),
+});
+
+describe('ficha · arrancar en un color de la marca', () => {
+  it('sin paleta no redirige', () => {
+    expect(opcionesDeMarca(producto('AZUL'), [])).toBeNull();
+  });
+
+  it('no redirige si la variante resuelta ya es de su color', () => {
+    expect(opcionesDeMarca(producto('ROJO'), ['rojo'])).toBeNull();
+  });
+
+  it('redirige a la primera variante de su color cuando la resuelta es ajena', () => {
+    expect(opcionesDeMarca(producto('AZUL'), ['rojo'])).toEqual([
+      {name: 'Color', value: 'ROJO'},
+      {name: 'Talla', value: 'UNICA'},
+    ]);
+  });
+
+  it('respeta el orden en que la tienda declara los tonos', () => {
+    expect(opcionesDeMarca(producto('AZUL'), ['negro', 'rojo'])).toEqual([
+      {name: 'Color', value: 'ROJO'},
+      {name: 'Talla', value: 'UNICA'},
+    ]);
+  });
+
+  /* El producto que sólo se alcanza por link directo: no hay a dónde llevarle,
+     y la ficha ya le enseña todos los tonos con su banda de aviso. */
+  it('no redirige si el producto no tiene ningún color de su marca', () => {
+    expect(opcionesDeMarca(producto('AZUL', ['AZUL', 'VERDE']), ['rojo'])).toBeNull();
+  });
+
+  it('no redirige si el producto no tiene opción de color', () => {
+    const sinColor = {
+      handle: 'x',
+      options: [{name: 'Talla', optionValues: [{name: 'CH'}]}],
+      selectedOrFirstAvailableVariant: {id: 'v', selectedOptions: [{name: 'Talla', value: 'CH'}]},
+    };
+    expect(opcionesDeMarca(sinColor, ['rojo'])).toBeNull();
+  });
+
+  /* El fallo clásico de esto es el bucle: se comprueba aplicando la función al
+     estado en el que deja la propia redirección. */
+  it('no vuelve a redirigir desde el destino al que redirigió', () => {
+    const destino = opcionesDeMarca(producto('AZUL'), ['rojo']);
+    const color = destino.find((o) => o.name === 'Color').value;
+    expect(opcionesDeMarca(producto(color), ['rojo'])).toBeNull();
   });
 });
