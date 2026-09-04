@@ -275,6 +275,14 @@ export function appliedFilters(filters) {
   return out;
 }
 
+/* Un cliente con paleta de marca no puede acabar en "no filtro nada": eso le
+   enseñaría el catálogo entero, lo contrario de lo prometido. Cuando su paleta
+   no tiene ningún tono en la tienda, se filtra por un valor imposible para que
+   la respuesta sea 0 productos, que es la verdad. */
+export const SIN_COINCIDENCIA = {
+  variantOption: {name: 'color', value: 'GI-SIN-COINCIDENCIA'},
+};
+
 /**
  * Array de `ProductFilter` para `search(productFilters:)`.
  *
