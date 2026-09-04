@@ -5,6 +5,8 @@
 import {useEffect, useState} from 'react';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {getRecentlyViewed, pushRecentlyViewed} from '~/lib/recentlyViewed';
+import {useApp} from '~/lib/AppContext';
+import {productMatchesBrand} from '~/lib/brand-colors';
 
 /**
  * @param {object} props
@@ -13,20 +15,23 @@ import {getRecentlyViewed, pushRecentlyViewed} from '~/lib/recentlyViewed';
  */
 export function RecentlyViewed({current, max = 4}) {
   const [items, setItems] = useState([]);
+  const {brandColors = []} = useApp();
 
   useEffect(() => {
     if (current?.id) pushRecentlyViewed(current);
     // Client requirement: hide products with no image everywhere, including
     // this history strip (it builds its own snapshot shape in
     // products.$handle.jsx, bypassing normalizeProduct — see recentSnapshot).
+    // El historial es de localStorage: puede traer productos vistos antes de
+    // que le asignaran la paleta, o desde otra cuenta en el mismo navegador.
     setItems(
       getRecentlyViewed(current?.id)
-        .filter((p) => p?.image)
+        .filter((p) => p?.image && productMatchesBrand(p, brandColors))
         .slice(0, max),
     );
     // Re-run only when the viewed product changes (not on variant tweaks).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current?.id, max]);
+  }, [current?.id, max, brandColors]);
 
   if (items.length === 0) return null;
 

@@ -27,6 +27,12 @@ const DEFAULT_TWEAKS = {
   showRoleBanner: true,
 };
 
+// Referencia estable para el default de la prop `brandColors`: un literal `[]`
+// en la firma se re-crea en cada render del provider, y eso invalida sin
+// necesidad los `useEffect` que la traen en sus dependencias (p. ej. la tira
+// de vistos recientemente).
+const DEFAULT_BRAND_COLORS = [];
+
 function read(key, fallback) {
   if (typeof window === 'undefined') return fallback;
   try {
@@ -43,6 +49,7 @@ const ToastCtx = createContext(() => {});
 export function AppProvider({
   children,
   isLoggedIn = false,
+  brandColors = DEFAULT_BRAND_COLORS,
   quote: quoteProp = [],
   favs: favsProp = [],
 }) {
@@ -265,6 +272,7 @@ export function AppProvider({
   const value = {
     hydrated,
     isLoggedIn,
+    brandColors,
     quote,
     quoteCount,
     quotePending,

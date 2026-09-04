@@ -19,6 +19,7 @@ import giMarketing from '~/styles/gi-marketing.css?url';
 import {PageLayout} from './components/PageLayout';
 import {AppProvider} from '~/lib/AppContext';
 import {getSessionUser} from '~/lib/auth/session';
+import {getBrandColors} from '~/lib/brand-colors.server';
 import {getDb} from '~/lib/db/client';
 import {listWishlist} from '~/lib/wishlist/repo';
 import {getOrCreateDraftQuote, getQuoteWithItems} from '~/lib/quotes/repo';
@@ -142,14 +143,17 @@ async function loadCriticalData({context}) {
   const {storefront, session} = context;
   const sessionUser = getSessionUser(session);
 
-  const [header] = await Promise.all([
+  const [header, marca] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
+    // La tira de "vistos recientemente" vive en localStorage y se pinta en
+    // cliente: necesita la paleta para no enseñar lo que ninguna lista
+    // enseñaría. El memo por request hace que esto no cueste una llamada extra.
+    getBrandColors(context),
   ]);
 
   let favs = [];
@@ -175,6 +179,7 @@ async function loadCriticalData({context}) {
   return {
     header,
     isLoggedIn: Boolean(sessionUser),
+    brandColors: marca?.families || [],
     favs,
     quote,
   };
@@ -277,6 +282,7 @@ export default function App() {
     >
       <AppProvider
         isLoggedIn={data.isLoggedIn}
+        brandColors={data.brandColors}
         quote={data.quote}
         favs={data.favs}
       >
