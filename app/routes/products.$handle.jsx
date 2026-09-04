@@ -436,7 +436,10 @@ export default function Product() {
                           preventScrollReset
                           replace
                           className={`pdp-swatch ${selected ? 'active' : ''} ${deMarca ? '' : 'pdp-swatch-ajeno'}`}
-                          style={{'--c': bg, opacity: available ? 1 : 0.3}}
+                          // Única fuente de verdad para la opacidad: una regla de clase
+                          // nunca gana a este inline, así que el estado "ajeno" tiene que
+                          // decidirse aquí también. No disponible manda sobre ajeno.
+                          style={{'--c': bg, opacity: !available ? 0.3 : deMarca ? 1 : 0.45}}
                           title={deMarca ? name : `${name} · fuera de tu marca`}
                           aria-label={deMarca ? name : `${name}, fuera de los colores de tu marca`}
                         />

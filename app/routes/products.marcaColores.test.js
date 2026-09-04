@@ -37,10 +37,38 @@ describe('ficha · marcado de tonos', () => {
 });
 
 /* Coherencia con el resto de la aplicación: si el producto no aparece en
-   ninguna lista, la ficha tiene que avisarlo. */
+   ninguna lista, la ficha tiene que avisarlo — y viceversa.
+   Importante: los booleanos esperados (`avisa`, `pasaListado`) están escritos
+   a mano en cada caso, nunca calculados llamando a esFueraDeMarca ni a
+   productMatchesBrand. Comparar el resultado de una función contra el
+   resultado de la otra es `X === X`: pasaría igual aunque la lógica de
+   ambas estuviera rota de la misma forma. Comparando contra un literal fijo
+   se prueban las dos rutas de verdad, y por separado. */
 describe('ficha · coherente con los listados', () => {
-  it('avisa exactamente cuando el producto no pasaría el post-filtro', () => {
-    const producto = {colors: ['AZUL', 'VERDE']};
-    expect(esFueraDeMarca(OPCION_COLOR, ['rojo'])).toBe(!productMatchesBrand(producto, ['rojo']));
+  it('tonos fuera de la paleta: avisa, y el post-filtro lo dejaría fuera', () => {
+    const tonos = ['AZUL', 'VERDE'];
+    const marca = ['rojo'];
+    expect(esFueraDeMarca({name: 'Color', optionValues: tonos.map((name) => ({name}))}, marca)).toBe(
+      true,
+    );
+    expect(productMatchesBrand({colors: tonos}, marca)).toBe(false);
+  });
+
+  it('un tono sí es de la paleta: no avisa, y el post-filtro lo dejaría pasar', () => {
+    const tonos = ['AZUL', 'ROJO'];
+    const marca = ['rojo'];
+    expect(esFueraDeMarca({name: 'Color', optionValues: tonos.map((name) => ({name}))}, marca)).toBe(
+      false,
+    );
+    expect(productMatchesBrand({colors: tonos}, marca)).toBe(true);
+  });
+
+  it('sólo tonos no clasificables (UNICO/TRANSPARENTE): avisa, y el post-filtro lo dejaría fuera', () => {
+    const tonos = ['UNICO', 'TRANSPARENTE'];
+    const marca = ['rojo'];
+    expect(esFueraDeMarca({name: 'Color', optionValues: tonos.map((name) => ({name}))}, marca)).toBe(
+      true,
+    );
+    expect(productMatchesBrand({colors: tonos}, marca)).toBe(false);
   });
 });

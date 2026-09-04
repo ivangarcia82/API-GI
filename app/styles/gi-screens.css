@@ -2831,14 +2831,16 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
   line-height: 1.5;
 }
 
-/* Un tono que no es de su marca sigue siendo elegible, pero se distingue.
+/* Un tono que no es de su marca sigue siendo elegible, pero se distingue con
+   un anillo punteado. La opacidad NO se pone aquí: el <Link> del swatch ya
+   trae opacity inline (para disponible/agotado, en products.$handle.jsx), y
+   un inline gana siempre a esta clase — sería una declaración muerta. Una
+   sola fuente de verdad: el inline decide también el caso "ajeno".
    ::before (no ::after): .pdp-swatch::after ya es el punto de color del
    swatch (inset: 3px, background: var(--c)); con la misma especificidad y
-   definida después, un ::after aquí lo taparía y dejaría el swatch sin su
-   color — un tono que no se puede ver es peor que no marcarlo. */
-.pdp-swatch-ajeno {
-  opacity: 0.45;
-}
+   definida después, un ::after aquí no lo haría invisible (background no se
+   pisa), pero sí le cambiaría inset y border, dejando el punto de color mal
+   dimensionado. */
 .pdp-swatch-ajeno::before {
   content: '';
   position: absolute;
