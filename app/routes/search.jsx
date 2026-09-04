@@ -3,6 +3,8 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
 import {getEmptyPredictiveSearchResult} from '~/lib/search';
+import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {brandProductFilters} from '~/lib/brand-colors';
 
 /**
  * @type {Route.MetaFunction}
@@ -160,6 +162,7 @@ export const SEARCH_QUERY = `#graphql
     $last: Int
     $term: String!
     $startCursor: String
+    $productFilters: [ProductFilter!]
   ) @inContext(country: $country, language: $language) {
     articles: search(
       query: $term,
@@ -189,6 +192,7 @@ export const SEARCH_QUERY = `#graphql
       first: $first,
       last: $last,
       query: $term,
+      productFilters: $productFilters,
       sortKey: RELEVANCE,
       types: [PRODUCT],
       unavailableProducts: HIDE,
@@ -223,9 +227,17 @@ async function regularSearch({request, context}) {
   const variables = getPaginationVariables(request, {pageBy: 8});
   const term = String(url.searchParams.get('q') || '');
 
+  // Un cliente con paleta de marca sólo ve, también en la búsqueda, lo que
+  // puede pedir en sus colores.
+  const [marca, vocabulario] = await Promise.all([
+    getBrandColors(context),
+    getColorVocabulary(context),
+  ]);
+  const productFilters = brandProductFilters(marca?.families || [], vocabulario);
+
   // Search articles, pages, and products for the `q` term
   const {errors, ...items} = await storefront.query(SEARCH_QUERY, {
-    variables: {...variables, term},
+    variables: {...variables, term, productFilters},
   });
 
   if (!items) {

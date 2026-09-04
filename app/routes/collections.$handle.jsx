@@ -5,6 +5,8 @@ import {Button, PH} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {GI_PRODUCT_CARD_FRAGMENT} from '~/lib/giFragments';
 import {normalizeProduct} from '~/lib/gi';
+import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {brandProductFilters} from '~/lib/brand-colors';
 
 const paginationLinkStyle = {
   display: 'inline-flex',
@@ -56,8 +58,17 @@ export async function loader(args) {
   if (!handle) throw redirect('/collections');
 
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
+
+  // Un cliente con paleta de marca sólo ve, también aquí, lo que puede pedir
+  // en sus colores.
+  const [marca, vocabulario] = await Promise.all([
+    getBrandColors(context),
+    getColorVocabulary(context),
+  ]);
+  const filters = brandProductFilters(marca?.families || [], vocabulario);
+
   const {collection} = await context.storefront.query(COLLECTION_QUERY, {
-    variables: {handle, ...paginationVariables},
+    variables: {handle, filters, ...paginationVariables},
   });
 
   if (!collection) {
@@ -184,6 +195,7 @@ const COLLECTION_QUERY = `#graphql
     $handle: String!
     $country: CountryCode
     $language: LanguageCode
+    $filters: [ProductFilter!]
     $first: Int
     $last: Int
     $startCursor: String
@@ -196,6 +208,7 @@ const COLLECTION_QUERY = `#graphql
       description
       image { url altText width height }
       products(
+        filters: $filters
         first: $first
         last: $last
         before: $startCursor
