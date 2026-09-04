@@ -18,6 +18,8 @@ import {
   HOME_CATEGORIES,
   HOME_FEATURED_COLLECTIONS,
 } from '~/lib/gi';
+import {getBrandColors} from '~/lib/brand-colors.server';
+import {keepBrandProducts} from '~/lib/brand-colors';
 
 export const meta = () => [
   {title: 'Generando Ideas — Promocionales que generan memoria'},
@@ -36,17 +38,24 @@ export async function loader(args) {
 async function loadCriticalData({context}) {
   const {storefront} = context;
 
-  const [categories, featuredCollections, productsRes] = await Promise.all([
+  const [categories, featuredCollections, productsRes, marca] = await Promise.all([
     fetchCollectionCards(storefront, HOME_CATEGORIES.map((c) => c.handle)),
     fetchCollectionCards(storefront, HOME_FEATURED_COLLECTIONS),
+    /* La tira es de "más vendidos", y ese orden sólo existe en
+       `products(sortKey: BEST_SELLING)`: SearchSortKeys se queda en PRICE y
+       RELEVANCE, así que migrar a `search` para ganar las facetas destruiría
+       el criterio de la sección. Se filtra en memoria y se sobre-pide para
+       que a un cliente con paleta no le queden cuatro productos. */
     storefront.query(GI_PRODUCTS_QUERY, {
-      variables: {first: 16, sortKey: 'BEST_SELLING'},
+      variables: {first: 60, sortKey: 'BEST_SELLING'},
     }),
+    getBrandColors(context),
   ]);
 
-  const products = (productsRes?.products?.nodes || [])
-    .map(normalizeProduct)
-    .filter(Boolean);
+  const products = keepBrandProducts(
+    (productsRes?.products?.nodes || []).map(normalizeProduct).filter(Boolean),
+    marca?.families || [],
+  ).slice(0, 16);
 
   // Merge category display config (icon + label) with fetched images
   const catMap = Object.fromEntries(categories.map((c) => [c.handle, c]));

@@ -4,7 +4,7 @@ import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
 import {getEmptyPredictiveSearchResult} from '~/lib/search';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
-import {brandProductFilters} from '~/lib/brand-colors';
+import {brandProductFilters, keepBrandProducts} from '~/lib/brand-colors';
 
 /**
  * @type {Route.MetaFunction}
@@ -330,6 +330,7 @@ const PREDICTIVE_SEARCH_PRODUCT_FRAGMENT = `#graphql
         currencyCode
       }
     }
+    options { name optionValues { name } }
   }
 `;
 
@@ -422,12 +423,17 @@ async function predictiveSearch({request, context}) {
     throw new Error('No predictive search data returned from Shopify API');
   }
 
-  const total = Object.values(items).reduce(
-    (acc, item) => acc + item.length,
-    0,
-  );
+  // predictiveSearch no acepta productFilters: el recorte por paleta se hace
+  // aquí, sobre una lista de 6-10 elementos que ya trae sus colores.
+  const marca = await getBrandColors(context);
+  const filtrados = {
+    ...items,
+    products: keepBrandProducts(items.products || [], marca?.families || []),
+  };
 
-  return {type, term, result: {items, total}};
+  const total = Object.values(filtrados).reduce((acc, item) => acc + item.length, 0);
+
+  return {type, term, result: {items: filtrados, total}};
 }
 
 /** @typedef {import('./+types/search').Route} Route */

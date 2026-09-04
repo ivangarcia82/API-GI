@@ -6,6 +6,8 @@ import {getDb} from '~/lib/db/client';
 import {requireUser} from '~/lib/auth/guard';
 import {listWishlist} from '~/lib/wishlist/repo';
 import {normalizeProduct} from '~/lib/gi';
+import {getBrandColors} from '~/lib/brand-colors.server';
+import {keepBrandProducts} from '~/lib/brand-colors';
 
 const FAVORITOS_QUERY = `#graphql
   query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)
@@ -18,6 +20,7 @@ const FAVORITOS_QUERY = `#graphql
         title
         featuredImage { url altText width height }
         priceRange { minVariantPrice { amount currencyCode } }
+        options { name optionValues { name } }
         variants(first: 1) { nodes { id } }
       }
     }
@@ -42,12 +45,16 @@ export async function loader({context}) {
   const db = getDb(context.env);
   const ids = await listWishlist(db, userId);
   if (ids.length === 0) return {products: []};
-  const {nodes} = await context.storefront.query(FAVORITOS_QUERY, {
-    variables: {ids},
-  });
-  const products = keepProducts(nodes)
-    .map((node) => normalizeProduct(node))
-    .filter(Boolean);
+  const [{nodes}, marca] = await Promise.all([
+    context.storefront.query(FAVORITOS_QUERY, {variables: {ids}}),
+    getBrandColors(context),
+  ]);
+  // Un favorito guardado antes de que le asignaran la paleta puede quedar
+  // fuera de ella; se oculta como en cualquier otra lista.
+  const products = keepBrandProducts(
+    keepProducts(nodes).map((node) => normalizeProduct(node)).filter(Boolean),
+    marca?.families || [],
+  );
   return {products};
 }
 

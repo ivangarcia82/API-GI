@@ -18,6 +18,8 @@ import {buildProductSpecs} from '~/lib/specs';
 import {resumen, separarFrasesPegadas} from '~/lib/text';
 import {useVariantGallery} from '~/lib/gallery';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
+import {getBrandColors} from '~/lib/brand-colors.server';
+import {keepBrandProducts} from '~/lib/brand-colors';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
@@ -83,7 +85,7 @@ async function loadCriticalData({context, params, request}) {
   // can't get the inventory scope). Best-effort: needs the Admin `read_inventory`
   // scope + a real Admin token; degrades to null (no badge) otherwise.
   // Related products power the "Productos similares" strip; best-effort too.
-  const [stock, recommendations] = await Promise.all([
+  const [stock, recomendacionesCrudas, marca] = await Promise.all([
     getVariantInventory(context.env, product.selectedOrFirstAvailableVariant?.id),
     storefront
       .query(GI_PRODUCT_RECOMMENDATIONS_QUERY, {variables: {productId: product.id}})
@@ -93,9 +95,21 @@ async function loadCriticalData({context, params, request}) {
           .filter((p) => p && p.id !== product.id),
       )
       .catch(() => []),
+    getBrandColors(context),
   ]);
 
-  return {product, stock, recommendations, origin: new URL(request.url).origin};
+  const marcaColores = marca?.families || [];
+  // productRecommendations no acepta facetas: se recorta aquí. Es una tira
+  // corta, así que no hay paginación ni conteo que romper.
+  const recommendations = keepBrandProducts(recomendacionesCrudas, marcaColores);
+
+  return {
+    product,
+    stock,
+    recommendations,
+    marcaColores,
+    origin: new URL(request.url).origin,
+  };
 }
 
 export default function Product() {
