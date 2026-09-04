@@ -2815,3 +2815,34 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
 @media (max-width: 600px) {
   .gis-panel { width: 100vw; max-height: 100dvh; height: 100%; border-radius: 0; }
 }
+
+/* Ficha · producto fuera de la paleta de marca del cliente.
+   Avisa sin bloquear: el enlace pudo llegar por correo de la ejecutiva o desde
+   un favorito guardado antes de que le asignaran la paleta. */
+.pdp-aviso-marca {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Un tono que no es de su marca sigue siendo elegible, pero se distingue.
+   ::before (no ::after): .pdp-swatch::after ya es el punto de color del
+   swatch (inset: 3px, background: var(--c)); con la misma especificidad y
+   definida después, un ::after aquí lo taparía y dejaría el swatch sin su
+   color — un tono que no se puede ver es peor que no marcarlo. */
+.pdp-swatch-ajeno {
+  opacity: 0.45;
+}
+.pdp-swatch-ajeno::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 1px dashed var(--line);
+}

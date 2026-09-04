@@ -850,6 +850,13 @@ export type FavoritosNodesQuery = {
                 'amount' | 'currencyCode'
               >;
             };
+            options: Array<
+              Pick<StorefrontAPI.ProductOption, 'name'> & {
+                optionValues: Array<
+                  Pick<StorefrontAPI.ProductOptionValue, 'name'>
+                >;
+              }
+            >;
             variants: {nodes: Array<Pick<StorefrontAPI.ProductVariant, 'id'>>};
           })
     >
@@ -1482,6 +1489,11 @@ export type PredictiveProductFragment = {__typename: 'Product'} & Pick<
         price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
       }
     >;
+    options: Array<
+      Pick<StorefrontAPI.ProductOption, 'name'> & {
+        optionValues: Array<Pick<StorefrontAPI.ProductOptionValue, 'name'>>;
+      }
+    >;
   };
 
 export type PredictiveQueryFragment = {
@@ -1551,6 +1563,13 @@ export type PredictiveSearchQuery = {
               price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
             }
           >;
+          options: Array<
+            Pick<StorefrontAPI.ProductOption, 'name'> & {
+              optionValues: Array<
+                Pick<StorefrontAPI.ProductOptionValue, 'name'>
+              >;
+            }
+          >;
         }
     >;
     queries: Array<
@@ -1595,7 +1614,7 @@ interface GeneratedQueryTypes {
     return: GiCatalogCollectionQuery;
     variables: GiCatalogCollectionQueryVariables;
   };
-  '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        variants(first: 1) { nodes { id } }\n      }\n    }\n  }\n': {
+  '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        options { name optionValues { name } }\n        variants(first: 1) { nodes { id } }\n      }\n    }\n  }\n': {
     return: FavoritosNodesQuery;
     variables: FavoritosNodesQueryVariables;
   };
@@ -1631,7 +1650,7 @@ interface GeneratedQueryTypes {
     return: RegularSearchQuery;
     variables: RegularSearchQueryVariables;
   };
-  '#graphql\n  query PredictiveSearch(\n    $country: CountryCode\n    $language: LanguageCode\n    $limit: Int!\n    $limitScope: PredictiveSearchLimitScope!\n    $term: String!\n    $types: [PredictiveSearchType!]\n  ) @inContext(country: $country, language: $language) {\n    predictiveSearch(\n      limit: $limit,\n      limitScope: $limitScope,\n      query: $term,\n      types: $types,\n    ) {\n      articles {\n        ...PredictiveArticle\n      }\n      collections {\n        ...PredictiveCollection\n      }\n      pages {\n        ...PredictivePage\n      }\n      products {\n        ...PredictiveProduct\n      }\n      queries {\n        ...PredictiveQuery\n      }\n    }\n  }\n  #graphql\n  fragment PredictiveArticle on Article {\n    __typename\n    id\n    title\n    handle\n    blog {\n      handle\n    }\n    image {\n      url\n      altText\n      width\n      height\n    }\n    trackingParameters\n  }\n\n  #graphql\n  fragment PredictiveCollection on Collection {\n    __typename\n    id\n    title\n    handle\n    image {\n      url\n      altText\n      width\n      height\n    }\n    trackingParameters\n  }\n\n  #graphql\n  fragment PredictivePage on Page {\n    __typename\n    id\n    title\n    handle\n    trackingParameters\n  }\n\n  #graphql\n  fragment PredictiveProduct on Product {\n    __typename\n    id\n    title\n    handle\n    trackingParameters\n    featuredImage { url altText width height }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      image {\n        url\n        altText\n        width\n        height\n      }\n      price {\n        amount\n        currencyCode\n      }\n    }\n  }\n\n  #graphql\n  fragment PredictiveQuery on SearchQuerySuggestion {\n    __typename\n    text\n    styledText\n    trackingParameters\n  }\n\n': {
+  '#graphql\n  query PredictiveSearch(\n    $country: CountryCode\n    $language: LanguageCode\n    $limit: Int!\n    $limitScope: PredictiveSearchLimitScope!\n    $term: String!\n    $types: [PredictiveSearchType!]\n  ) @inContext(country: $country, language: $language) {\n    predictiveSearch(\n      limit: $limit,\n      limitScope: $limitScope,\n      query: $term,\n      types: $types,\n    ) {\n      articles {\n        ...PredictiveArticle\n      }\n      collections {\n        ...PredictiveCollection\n      }\n      pages {\n        ...PredictivePage\n      }\n      products {\n        ...PredictiveProduct\n      }\n      queries {\n        ...PredictiveQuery\n      }\n    }\n  }\n  #graphql\n  fragment PredictiveArticle on Article {\n    __typename\n    id\n    title\n    handle\n    blog {\n      handle\n    }\n    image {\n      url\n      altText\n      width\n      height\n    }\n    trackingParameters\n  }\n\n  #graphql\n  fragment PredictiveCollection on Collection {\n    __typename\n    id\n    title\n    handle\n    image {\n      url\n      altText\n      width\n      height\n    }\n    trackingParameters\n  }\n\n  #graphql\n  fragment PredictivePage on Page {\n    __typename\n    id\n    title\n    handle\n    trackingParameters\n  }\n\n  #graphql\n  fragment PredictiveProduct on Product {\n    __typename\n    id\n    title\n    handle\n    trackingParameters\n    featuredImage { url altText width height }\n    selectedOrFirstAvailableVariant(\n      selectedOptions: []\n      ignoreUnknownOptions: true\n      caseInsensitiveMatch: true\n    ) {\n      id\n      image {\n        url\n        altText\n        width\n        height\n      }\n      price {\n        amount\n        currencyCode\n      }\n    }\n    options { name optionValues { name } }\n  }\n\n  #graphql\n  fragment PredictiveQuery on SearchQuerySuggestion {\n    __typename\n    text\n    styledText\n    trackingParameters\n  }\n\n': {
     return: PredictiveSearchQuery;
     variables: PredictiveSearchQueryVariables;
   };

@@ -19,7 +19,7 @@ import {resumen, separarFrasesPegadas} from '~/lib/text';
 import {useVariantGallery} from '~/lib/gallery';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {getBrandColors} from '~/lib/brand-colors.server';
-import {keepBrandProducts} from '~/lib/brand-colors';
+import {keepBrandProducts, productMatchesBrand} from '~/lib/brand-colors';
 import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
@@ -113,7 +113,7 @@ async function loadCriticalData({context, params, request}) {
 }
 
 export default function Product() {
-  const {product, stock, recommendations = []} = useLoaderData();
+  const {product, stock, recommendations = [], marcaColores = []} = useLoaderData();
   const navigate = useNavigate();
   const {isLoggedIn, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
@@ -195,6 +195,7 @@ export default function Product() {
 
   // Compact snapshot for the "Vistos recientemente" history (ProductCard shape).
   const colorOption = (product.options || []).find((o) => /color/i.test(o.name));
+  const fueraDeMarca = esFueraDeMarca(colorOption, marcaColores);
   const recentSnapshot = {
     id: product.id,
     handle: product.handle,
@@ -402,6 +403,13 @@ export default function Product() {
             </div>
           )}
 
+          {fueraDeMarca && (
+            <div className="pdp-aviso-marca" role="status">
+              Este producto no está disponible en los colores de tu marca.
+              Puedes cotizarlo igual; tu ejecutiva te confirma las opciones.
+            </div>
+          )}
+
           {/* VARIANT OPTIONS (color/size as swatches) */}
           {productOptions.map((option) => {
             if (option.optionValues.length === 1) return null;
@@ -420,16 +428,17 @@ export default function Product() {
                     } = value;
                     const bg = swatch?.color || colorHex(name);
                     if (isColor) {
+                      const deMarca = esTonoDeMarca(name, marcaColores);
                       return (
                         <Link
                           key={option.name + name}
                           to={`?${variantUriQuery}`}
                           preventScrollReset
                           replace
-                          className={`pdp-swatch ${selected ? 'active' : ''}`}
+                          className={`pdp-swatch ${selected ? 'active' : ''} ${deMarca ? '' : 'pdp-swatch-ajeno'}`}
                           style={{'--c': bg, opacity: available ? 1 : 0.3}}
-                          title={name}
-                          aria-label={name}
+                          title={deMarca ? name : `${name} · fuera de tu marca`}
+                          aria-label={deMarca ? name : `${name}, fuera de los colores de tu marca`}
                         />
                       );
                     }
@@ -688,6 +697,30 @@ export default function Product() {
       />
     </>
   );
+}
+
+/* Se exportan para poder probar la decisión sin montar la ficha entera, que
+   arrastra media aplicación. */
+
+/**
+ * ¿Este producto no se puede pedir en ningún color de la marca? Es la misma
+ * pregunta que hace productMatchesBrand en los listados, sobre la forma que
+ * tiene aquí el producto (opciones de la Storefront API, no normalizado).
+ * @param {{optionValues?: Array<{name: string}>}|undefined} colorOption
+ * @param {string[]} marcaColores
+ */
+export function esFueraDeMarca(colorOption, marcaColores) {
+  if (!marcaColores?.length || !colorOption) return false;
+  return !productMatchesBrand(
+    {colors: (colorOption.optionValues || []).map((v) => v.name)},
+    marcaColores,
+  );
+}
+
+/** ¿Este tono concreto pertenece a la paleta de la marca? */
+export function esTonoDeMarca(nombre, marcaColores) {
+  if (!marcaColores?.length) return true;
+  return productMatchesBrand({colors: [nombre]}, marcaColores);
 }
 
 /* Un producto retirado o renombrado es el 404 más común de esta tienda: llega
