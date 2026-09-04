@@ -247,6 +247,29 @@ describe('buildProductFilters', () => {
   });
 });
 
+describe('buildProductFilters · colorObligatorio', () => {
+  const FAMILIAS = [{family: 'rojo', values: ['ROJO', 'VINO']}];
+
+  it('sin la opción, una familia sin tonos simplemente no filtra', () => {
+    expect(buildProductFilters({color: ['morado']}, FAMILIAS)).toBeNull();
+  });
+
+  /* Un cliente con paleta no puede caer en "no filtro nada": eso le enseñaría
+     el catálogo entero, que es justo lo contrario de lo que se le prometió. */
+  it('con la opción, una familia sin tonos devuelve un filtro imposible', () => {
+    const out = buildProductFilters({color: ['morado']}, FAMILIAS, {colorObligatorio: true});
+    expect(out).toEqual([{variantOption: {name: 'color', value: 'GI-SIN-COINCIDENCIA'}}]);
+  });
+
+  it('con la opción y tonos disponibles, filtra normal', () => {
+    const out = buildProductFilters({color: ['rojo']}, FAMILIAS, {colorObligatorio: true});
+    expect(out).toEqual([
+      {variantOption: {name: 'color', value: 'ROJO'}},
+      {variantOption: {name: 'color', value: 'VINO'}},
+    ]);
+  });
+});
+
 /* ------------------------------------------------------------------ *
  * Interacción                                                         *
  * ------------------------------------------------------------------ */

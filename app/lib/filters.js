@@ -294,9 +294,10 @@ export const SIN_COINCIDENCIA = {
  * @param {Array<{family: string, values: string[]}>} colorFamilies familias
  *   presentes en el resultado actual, de `groupColorValues`
  */
-export function buildProductFilters(filters, colorFamilies = []) {
+export function buildProductFilters(filters, colorFamilies = [], {colorObligatorio = false} = {}) {
   const out = [];
 
+  let tonosDeColor = 0;
   for (const familyId of filters.color || []) {
     const fam = colorFamilies.find((f) => f.family === familyId);
     // Una familia que no está en el resultado actual no aporta ningún tono:
@@ -304,8 +305,10 @@ export function buildProductFilters(filters, colorFamilies = []) {
     if (!fam) continue;
     for (const value of fam.values) {
       out.push({variantOption: {name: 'color', value}});
+      tonosDeColor += 1;
     }
   }
+  if (colorObligatorio && tonosDeColor === 0) out.push(SIN_COINCIDENCIA);
 
   for (const value of filters.talla || []) {
     out.push({variantOption: {name: 'talla', value}});

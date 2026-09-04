@@ -6,6 +6,14 @@ vi.mock('@shopify/hydrogen', () => ({
   Pagination: () => null,
 }));
 
+// El loader ahora también resuelve la paleta de marca del cliente: sin este
+// mock, getBrandColors intentaría leer context.session, que este arnés no
+// provee.
+vi.mock('~/lib/brand-colors.server', () => ({
+  getBrandColors: () => Promise.resolve(null),
+  getColorVocabulary: () => Promise.resolve([]),
+}));
+
 import {loader} from './catalogo.jsx';
 
 const context = {storefront: {query: (...a) => storefrontQuery(...a)}};

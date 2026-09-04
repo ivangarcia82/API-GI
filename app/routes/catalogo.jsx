@@ -25,6 +25,8 @@ import {
   resolveCatalogSource,
   appliedFilters,
 } from '~/lib/filters';
+import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {effectiveColorFamilies, visibleColorSelection} from '~/lib/brand-colors';
 
 export const meta = () => [
   {title: 'Catálogo · Generando Ideas'},
@@ -65,9 +67,32 @@ export async function loader({context, request}) {
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
   const sortDef = SORTS[filtros.sort];
 
-  const fuente = resolveCatalogSource(filtros);
+  /* La paleta del cliente y el vocabulario de color de la tienda son
+     independientes entre sí, así que van en paralelo. Los dos vienen
+     cacheados: en la práctica no cuestan un round trip. */
+  const [marca, vocabulario] = await Promise.all([
+    getBrandColors(context),
+    getColorVocabulary(context),
+  ]);
+  const marcaColores = marca?.families || [];
+
+  /* Dos vistas del mismo filtro de color, y la diferencia importa:
+       - `efectivos` es lo que se consulta. Con paleta, nunca sale de ella.
+       - `visibles` es lo que se pinta como chip. La paleta no aparece: es el
+         suelo del catálogo, no un filtro aplicado, y una x que no quitara nada
+         mentiría. Lo que el usuario pidió fuera de su paleta se borra. */
+  const filtrosEfectivos = {
+    ...filtros,
+    color: effectiveColorFamilies(filtros.color, marcaColores),
+  };
+  const filtrosVisibles = {
+    ...filtros,
+    color: visibleColorSelection(filtros.color, marcaColores),
+  };
+
+  const fuente = resolveCatalogSource(filtrosEfectivos);
   const consultaBase = {
-    query: buildSearchQuery(filtros),
+    query: buildSearchQuery(filtrosEfectivos),
     sortKey: sortDef.sortKey,
     reverse: sortDef.reverse,
   };
@@ -78,26 +103,15 @@ export async function loader({context, request}) {
       return null;
     });
 
-  /* Una familia de color se traduce a un OR de los tonos crudos que existan
-     ahora mismo ("Verde" → VERDE, VERDE PISTACHO, VERDE AQUA…), y esos tonos
-     sólo se conocen leyendo la faceta. De ahí el huevo y la gallina: para
-     construir el filtro hace falta una respuesta previa. */
-  let colorValues = [];
-  if (filtros.color.length) {
-    const vocabulario =
-      fuente.modo === 'coleccion'
-        ? await buscar(
-            {handle: fuente.handle, productFilters: null, first: 1, sortKey: 'RELEVANCE', reverse: false},
-            'vocabulario de color (colección)',
-            GI_CATALOG_COLLECTION_QUERY,
-          )
-        : await buscar({...consultaBase, productFilters: null, first: 1}, 'vocabulario de color');
-    const facetas =
-      vocabulario?.collection?.products?.filters ?? vocabulario?.search?.productFilters ?? [];
-    colorValues = facetas.find((f) => f.id === FACET.color)?.values || [];
-  }
-
-  const productFilters = buildProductFilters(filtros, groupColorValues(colorValues));
+  /* El vocabulario de color solía pedirse con una consulta extra ("para
+     construir el filtro hace falta una respuesta previa"). Ahora viene de
+     getColorVocabulary, cacheado y compartido por todas las rutas, así que el
+     catálogo se resuelve con una sola consulta. */
+  const productFilters = buildProductFilters(
+    filtrosEfectivos,
+    groupColorValues(vocabulario),
+    {colorObligatorio: marcaColores.length > 0},
+  );
 
   /* La categoría se resuelve por colección porque `search(query:"tag:...")` no
      filtra: sólo pesa en la relevancia, y al cruzarla con cualquier otro filtro
@@ -127,10 +141,11 @@ export async function loader({context, request}) {
   /* Todas las facetas salen de la consulta ya filtrada para que sus conteos
      reflejen lo aplicado. La de color es la excepción aparente: Shopify no
      estrecha una faceta con su propio filtro, así que aquí sigue llegando el
-     vocabulario completo y los demás colores se pueden seguir eligiendo. */
+     vocabulario completo y los demás colores se pueden seguir eligiendo — salvo
+     que el cliente tenga paleta, en cuyo caso el panel sólo ofrece la suya. */
   const colores = groupColorValues(
     (facetasCrudas.find((f) => f.id === FACET.color)?.values || []).filter((v) => v.count > 0),
-  );
+  ).filter((c) => !marcaColores.length || marcaColores.includes(c.family));
 
   return {
     products: resultado
@@ -139,7 +154,8 @@ export async function loader({context, request}) {
     // La colección no expone total: se marca como desconocido en vez de
     // enseñar un 0 que sería falso.
     totalCount: fuente.modo === 'coleccion' ? null : (resultado?.totalCount ?? 0),
-    filtros: appliedFilters(filtros),
+    filtros: appliedFilters(filtrosVisibles),
+    marcaColores,
     facetas: {
       colores,
       materiales: listaDe(facetasCrudas, FACET.material),
@@ -189,7 +205,7 @@ const paginationLinkStyle = {
 };
 
 export default function Catalogo() {
-  const {products, totalCount, filtros, facetas} = useLoaderData();
+  const {products, totalCount, filtros, facetas, marcaColores = []} = useLoaderData();
   /* La ruta de colección no expone un total. Se escribe "productos" a secas en
      vez de inventar un número o enseñar un 0 que sería mentira. */
   const totalTexto =
@@ -443,9 +459,11 @@ export default function Catalogo() {
                       <Icon name="search" size={32} className="muted-2" />
                       <h3>Sin resultados</h3>
                       <p>
-                        {hayFiltros
-                          ? 'Ninguna combinación de estos filtros devuelve productos. Prueba a quitar alguno.'
-                          : 'Intenta con otras palabras de búsqueda.'}
+                        {marcaColores.length > 0
+                          ? 'No hay productos en los colores de tu marca con estos filtros. Prueba a quitar alguno.'
+                          : hayFiltros
+                            ? 'Ninguna combinación de estos filtros devuelve productos. Prueba a quitar alguno.'
+                            : 'Intenta con otras palabras de búsqueda.'}
                       </p>
                       {hayFiltros && (
                         <Button variant="ghost" onClick={limpiarTodo}>
