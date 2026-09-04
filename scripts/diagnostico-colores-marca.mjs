@@ -9,14 +9,12 @@
 //   2. ¿Cuántos productos no tienen NINGÚN tono clasificable (UNICO,
 //      TRANSPARENTE, MARMOLEADO)? Ésos desaparecen para todos los clientes
 //      con paleta, y son el riesgo real de la decisión que tomamos.
+import {adminFetch} from '../app/lib/admin/client.js';
 import {COLOR_FAMILIES, colorFamilyOf} from '../app/lib/filters.js';
 
 const env = process.env;
-const dominio = env.PUBLIC_STORE_DOMAIN;
-const token = env.PRIVATE_ADMIN_API_TOKEN;
-const version = env.SHOPIFY_ADMIN_API_VERSION || '2026-04';
 
-if (!dominio || !token) {
+if (!env.PUBLIC_STORE_DOMAIN || !env.PRIVATE_ADMIN_API_TOKEN) {
   console.error(
     '✗ Faltan PUBLIC_STORE_DOMAIN y/o PRIVATE_ADMIN_API_TOKEN.\n' +
       '  set -a; . ./.env; set +a; PUBLIC_STORE_DOMAIN=development-gi.myshopify.com \\\n' +
@@ -34,17 +32,11 @@ const QUERY = `
   }
 `;
 
+// La guarda de arriba exige PRIVATE_ADMIN_API_TOKEN, así que adminFetch nunca
+// cae en stub mode aquí: siempre pega a la Admin API real.
 async function pedir(cursor) {
-  const res = await fetch(`https://${dominio}/admin/api/${version}/graphql.json`, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json', 'X-Shopify-Access-Token': token},
-    body: JSON.stringify({query: QUERY, variables: {cursor}}),
-  });
-  const json = await res.json();
-  if (!res.ok || json.errors) {
-    throw new Error(`Admin API: ${JSON.stringify(json.errors ?? res.status)}`);
-  }
-  return json.data.products;
+  const data = await adminFetch(env, QUERY, {cursor});
+  return data.products;
 }
 
 const porFamilia = new Map(COLOR_FAMILIES.map((f) => [f.id, 0]));
