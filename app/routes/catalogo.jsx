@@ -71,13 +71,9 @@ export async function loader({context, request}) {
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
   const sortDef = SORTS[filtros.sort];
 
-  /* La paleta del cliente y el vocabulario de color de la tienda son
-     independientes entre sí, así que van en paralelo. Los dos vienen
-     cacheados: en la práctica no cuestan un round trip. */
-  const [marca, vocabulario] = await Promise.all([
-    getBrandColors(context),
-    getColorVocabulary(context),
-  ]);
+  /* La paleta primero, y sola: sin `gid` getBrandColors ni toca la red, así
+     que el visitante anónimo no paga nada por preguntar. */
+  const marca = await getBrandColors(context);
   const marcaColores = marca?.families || [];
 
   /* Dos vistas del mismo filtro de color, y la diferencia importa:
@@ -93,6 +89,16 @@ export async function loader({context, request}) {
     ...filtros,
     color: visibleColorSelection(filtros.color, marcaColores),
   };
+
+  /* El vocabulario sólo sirve para expandir familias de color a los tonos
+     crudos de la tienda. Sin ninguna familia que expandir —ni de la paleta ni
+     elegida en el panel— no se usa para nada, y con la entrada de CacheLong
+     fría es una consulta entera por delante de la real. Es la condición que
+     el código viejo tenía como `if (filtros.color.length)`, ampliada a la
+     paleta. */
+  const vocabulario = filtrosEfectivos.color.length
+    ? await getColorVocabulary(context)
+    : null;
 
   const fuente = resolveCatalogSource(filtrosEfectivos);
   const consultaBase = {

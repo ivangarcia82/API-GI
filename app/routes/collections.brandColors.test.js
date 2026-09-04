@@ -55,6 +55,21 @@ describe('colección · colores de marca', () => {
     expect(opciones.variables.filters).toEqual([{variantOption: {name: 'color', value: 'ROJO'}}]);
   });
 
+  /* Un visitante anónimo no tiene ninguna familia que expandir: pedir el
+     vocabulario le costaría una consulta entera por delante de la real cada
+     vez que la entrada de CacheLong estuviera fría. */
+  it('sin paleta no pide el vocabulario', async () => {
+    getBrandColors.mockResolvedValue(null);
+    await pedir();
+    expect(getColorVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('con paleta sí lo pide', async () => {
+    getBrandColors.mockResolvedValue({families: ['rojo'], raw: '["Rojo"]'});
+    await pedir();
+    expect(getColorVocabulary).toHaveBeenCalled();
+  });
+
   /* Fail-closed: el vocabulario llegó y no hay nada morado en la tienda. */
   it('con vocabulario y sin tonos de su paleta pide lo imposible', async () => {
     getBrandColors.mockResolvedValue({families: ['morado'], raw: '["Morado"]'});

@@ -7,7 +7,6 @@ import {CacheLong, CacheShort} from '@shopify/hydrogen';
 import {getSessionUser} from './auth/session.js';
 import {getCustomerBrandColors} from './admin/operations.js';
 import {parseBrandColors} from './brand-colors.js';
-import {GI_CATALOG_SEARCH_QUERY} from './giFragments.js';
 
 /* Memo por request. El loader de root y el de la ruta corren en paralelo, así
    que sin esto cada página pagaría dos veces lo mismo. Va en un WeakMap y no
@@ -26,6 +25,23 @@ function memo(context, clave, fn) {
 }
 
 const FACET_COLOR = 'filter.v.option.color';
+
+/* Consulta propia y mínima. Reusar GI_CATALOG_SEARCH_QUERY salía caro para
+   nada: pedía totalCount, una página entera de `...GiProductCard` y las cinco
+   facetas del catálogo, cuando de aquí sólo se usan los valores de una. */
+const GI_COLOR_VOCABULARY_QUERY = `#graphql
+  query GiColorVocabulary(
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    search(query: "*", types: PRODUCT, first: 1) {
+      productFilters {
+        id
+        values { label count }
+      }
+    }
+  }
+`;
 
 async function leerPaleta(context) {
   const usuario = getSessionUser(context.session);
@@ -84,6 +100,11 @@ export function getBrandColors(context) {
  * facetas de donde sacarlos. Cambia con el catálogo, no con el cliente: es una
  * sola entrada compartida, con CacheLong.
  *
+ * Quien lo pide tiene que comprobar antes que hay alguna familia que expandir:
+ * sin paleta y sin colores elegidos no sirve para nada, y con la entrada de
+ * CacheLong fría es una consulta íntegra delante de la real que pagaría todo
+ * visitante anónimo.
+ *
  * Devuelve **null** en cuanto no se pudo leer —la consulta falló, la faceta no
  * vino, o vino sin un solo valor—, y nunca una lista vacía: quien lo consume
  * tiene que poder distinguir "no sé qué colores hay" de "sé que no hay
@@ -95,15 +116,8 @@ export function getColorVocabulary(context) {
   return memo(context, 'vocabulario', async () => {
     let valores;
     try {
-      const res = await context.storefront.query(GI_CATALOG_SEARCH_QUERY, {
+      const res = await context.storefront.query(GI_COLOR_VOCABULARY_QUERY, {
         cache: CacheLong(),
-        variables: {
-          query: '*',
-          productFilters: null,
-          sortKey: 'RELEVANCE',
-          reverse: false,
-          first: 1,
-        },
       });
       const facetas = res?.search?.productFilters || [];
       valores = (facetas.find((f) => f.id === FACET_COLOR)?.values || []).filter(

@@ -114,6 +114,27 @@ describe('catálogo · colores de marca', () => {
     expect(storefrontQuery).toHaveBeenCalledTimes(1);
   });
 
+  /* Un visitante anónimo no tiene nada que expandir: pedir el vocabulario le
+     costaría una consulta entera por delante de la del catálogo, cada vez que
+     la entrada de CacheLong estuviera fría. */
+  it('sin paleta ni colores elegidos no pide el vocabulario', async () => {
+    getBrandColors.mockResolvedValue(null);
+    await pedir('/catalogo');
+    expect(getColorVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('lo pide en cuanto hay colores elegidos', async () => {
+    getBrandColors.mockResolvedValue(null);
+    await pedir('/catalogo?color=rojo');
+    expect(getColorVocabulary).toHaveBeenCalled();
+  });
+
+  it('y lo pide siempre que hay paleta', async () => {
+    getBrandColors.mockResolvedValue({families: ['rojo'], raw: '["Rojo"]'});
+    await pedir('/catalogo');
+    expect(getColorVocabulary).toHaveBeenCalled();
+  });
+
   /* Fail-closed: el vocabulario llegó entero y no hay un solo tono morado en
      la tienda. 0 productos es la verdad. */
   it('con vocabulario y sin tonos de su paleta pide lo imposible', async () => {

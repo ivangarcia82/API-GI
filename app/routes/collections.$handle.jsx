@@ -60,12 +60,14 @@ export async function loader(args) {
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
 
   // Un cliente con paleta de marca sólo ve, también aquí, lo que puede pedir
-  // en sus colores.
-  const [marca, vocabulario] = await Promise.all([
-    getBrandColors(context),
-    getColorVocabulary(context),
-  ]);
-  const filters = brandProductFilters(marca?.families || [], vocabulario);
+  // en sus colores. El vocabulario va después y no en paralelo porque sólo
+  // sirve para expandir esa paleta: sin ella —todo visitante anónimo— pedirlo
+  // sería una consulta completa por delante de la de la colección.
+  const marca = await getBrandColors(context);
+  const familias = marca?.families || [];
+  const filters = familias.length
+    ? brandProductFilters(familias, await getColorVocabulary(context))
+    : null;
 
   const {collection} = await context.storefront.query(COLLECTION_QUERY, {
     variables: {handle, filters, ...paginationVariables},
