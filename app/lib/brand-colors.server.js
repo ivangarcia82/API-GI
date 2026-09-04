@@ -83,11 +83,17 @@ export function getBrandColors(context) {
  * existen, y /collections/:handle y /search no tienen ninguna pre-consulta de
  * facetas de donde sacarlos. Cambia con el catálogo, no con el cliente: es una
  * sola entrada compartida, con CacheLong.
+ *
+ * Devuelve **null** en cuanto no se pudo leer —la consulta falló, la faceta no
+ * vino, o vino sin un solo valor—, y nunca una lista vacía: quien lo consume
+ * tiene que poder distinguir "no sé qué colores hay" de "sé que no hay
+ * ninguno", porque llevan a decisiones opuestas (ver brandProductFilters).
  * @param {any} context
- * @returns {Promise<Array<{label: string, count: number}>>}
+ * @returns {Promise<Array<{label: string, count: number}>|null>}
  */
 export function getColorVocabulary(context) {
   return memo(context, 'vocabulario', async () => {
+    let valores;
     try {
       const res = await context.storefront.query(GI_CATALOG_SEARCH_QUERY, {
         cache: CacheLong(),
@@ -100,15 +106,23 @@ export function getColorVocabulary(context) {
         },
       });
       const facetas = res?.search?.productFilters || [];
-      return (facetas.find((f) => f.id === FACET_COLOR)?.values || []).filter(
+      valores = (facetas.find((f) => f.id === FACET_COLOR)?.values || []).filter(
         (v) => v.count > 0,
       );
     } catch (error) {
-      // Sin vocabulario no se puede expandir ninguna familia. Devolver [] hace
-      // que brandProductFilters emita el filtro imposible y el cliente vea 0
-      // productos — es preferible a enseñarle el catálogo de otro.
       console.error('[brand-colors] no se pudo leer el vocabulario de color:', error);
-      return [];
+      return null;
     }
+    if (!valores.length) {
+      // Esta tienda tiene ~100 tonos: cero es siempre el índice de búsqueda
+      // degradado, no un catálogo sin colores. Medido el 2026-09-04 contra el
+      // servidor de desarrollo: search(query:"*") devolvía totalCount 0 y cero
+      // facetas mientras el catálogo respondía con normalidad por otras vías.
+      console.error(
+        '[brand-colors] la faceta de color llegó vacía: no se aplicará ninguna paleta de marca en esta request',
+      );
+      return null;
+    }
+    return valores;
   });
 }

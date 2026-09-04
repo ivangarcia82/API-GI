@@ -26,7 +26,11 @@ import {
   appliedFilters,
 } from '~/lib/filters';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
-import {effectiveColorFamilies, visibleColorSelection} from '~/lib/brand-colors';
+import {
+  effectiveColorFamilies,
+  visibleColorSelection,
+  hayVocabulario,
+} from '~/lib/brand-colors';
 
 export const meta = () => [
   {title: 'Catálogo · Generando Ideas'},
@@ -106,11 +110,19 @@ export async function loader({context, request}) {
   /* El vocabulario de color solía pedirse con una consulta extra ("para
      construir el filtro hace falta una respuesta previa"). Ahora viene de
      getColorVocabulary, cacheado y compartido por todas las rutas, así que el
-     catálogo se resuelve con una sola consulta. */
+     catálogo se resuelve con una sola consulta.
+
+     `colorObligatorio` es el fail-closed —0 productos cuando ninguna familia
+     de la marca existe en la tienda— y sólo se enciende si el vocabulario se
+     pudo leer de verdad. Sin él no se puede afirmar que la paleta no tenga
+     tonos, y vaciarle el catálogo al cliente por un hipo de la faceta sería
+     peor que servirle el catálogo público, que es el que ve cualquier
+     visitante anónimo. Es la misma decisión que toma brandProductFilters para
+     /collections y /search: las dos rutas del catálogo la heredan aquí. */
   const productFilters = buildProductFilters(
     filtrosEfectivos,
     groupColorValues(vocabulario),
-    {colorObligatorio: marcaColores.length > 0},
+    {colorObligatorio: marcaColores.length > 0 && hayVocabulario(vocabulario)},
   );
 
   /* La categoría se resuelve por colección porque `search(query:"tag:...")` no

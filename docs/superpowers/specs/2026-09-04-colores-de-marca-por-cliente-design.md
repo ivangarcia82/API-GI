@@ -133,13 +133,30 @@ Requiere el scope `read_customers`, que ya está en uso para
 `getCustomerAdvisor`.
 
 ```js
-getColorVocabulary(context) → Array<{label, count}>
+getColorVocabulary(context) → Array<{label, count}> | null
 ```
-Los tonos crudos que existen en la tienda, de la faceta de color de
-`search(query: "*", first: 1)`. Hace falta porque expandir "Rojo" a
-`ROJO / VINO / TINTO / GUINDA` exige saber qué tonos existen, y
-`/collections/:handle` y `/search` no tienen ninguna pre-consulta de facetas de
-donde sacarlos.
+Los tonos crudos que existen en la tienda, de la faceta de color de una
+consulta propia y mínima (`search(query: "*", first: 1)` pidiendo **sólo** los
+valores de la faceta de color: ni `totalCount`, ni `nodes`, ni las otras cuatro
+facetas). Hace falta porque expandir "Rojo" a `ROJO / VINO / TINTO / GUINDA`
+exige saber qué tonos existen, y `/collections/:handle` y `/search` no tienen
+ninguna pre-consulta de facetas de donde sacarlos.
+
+Devuelve **`null`**, nunca una lista vacía, en cuanto no se pudo leer: la
+consulta falló, la faceta no vino, o vino sin un solo valor. La distinción no es
+cosmética — ver *Degradación*: `null` significa "no sé qué colores hay" y lleva
+a **no filtrar**; una lista con valores significa "sé cuáles hay" y una familia
+ausente de ella lleva a **0 productos**. Confundir las dos le apaga la tienda al
+cliente en cuanto el índice de búsqueda tiene un mal día, que es exactamente lo
+que pasaba el 2026-09-04 en `development-gi`: `search(query:"*")` devolvía
+`totalCount: 0` y cero facetas mientras el catálogo respondía con normalidad por
+otras vías.
+
+**Sólo se pide cuando hay algo que expandir.** Sin paleta y sin colores elegidos
+no hay ninguna familia que traducir a tonos, así que las tres rutas nativas leen
+primero la paleta —que no toca la red cuando no hay `gid`— y sólo entonces piden
+el vocabulario. De lo contrario todo visitante anónimo pagaría esa consulta
+delante de la real cada vez que la entrada de `CacheLong` estuviera fría.
 
 ### Las cachés
 
@@ -243,9 +260,31 @@ catálogo vacío sin explicación:
 | Admin API en stub mode (sin `PRIVATE_ADMIN_API_TOKEN`) | Sin restricción |
 | Metafield ausente o `[]` | Sin restricción |
 | La llamada al Admin API falla o expira | Sin restricción, `console.error`. Nunca tumba la ruta |
+| El vocabulario de color no se pudo leer (consulta caída, faceta ausente o vacía) | **Fail-open**: sin restricción y `console.error`. Ver abajo |
 | El metafield trae **sólo** valores irreconocibles (`Pantone 186C`, `#c2352c`) | **Fail-open**: sin restricción y `console.warn` con el valor crudo y el gid. Una errata en el admin no debe vaciarle el catálogo a un cliente |
 | Algunos valores reconocibles y otros no | Se usan los reconocibles; los demás se descartan en silencio |
-| Una familia de la marca sin ningún tono en la tienda | No aporta filtros; si ninguna aporta, el resultado es 0 productos, que es la verdad |
+| Una familia de la marca sin ningún tono en la tienda, **con el vocabulario leído** | **Fail-closed**: no aporta filtros; si ninguna aporta, el resultado es 0 productos, que es la verdad |
+
+Las dos últimas filas son la misma situación aparente —no hay ni un tono que
+pedir— con salidas opuestas, y merecen decirse despacio porque la primera
+versión del diseño las confundió en una sola:
+
+- **Vocabulario leído, y ninguna familia de la marca aparece en él** →
+  fail-closed, 0 productos. La tienda no vende nada en sus colores y decírselo
+  es la respuesta honesta.
+- **Vocabulario ausente, vacío o ilegible** → fail-open, no se filtra. No
+  podemos afirmar nada sobre el catálogo. El razonamiento original —"devolver
+  `[]` hace que el cliente vea 0 productos, que es preferible a enseñarle el
+  catálogo de otro"— era falso: el catálogo sin filtrar no es el de otro
+  cliente, es el **público**, el mismo que ve cualquier visitante anónimo. No
+  hay ninguna fuga que evitar, y a cambio un hipo de la faceta le apagaba la
+  tienda a un cliente que paga, en catálogo, colecciones y búsqueda a la vez.
+
+La distinción vive en `hayVocabulario()` y en `brandProductFilters()`, no en
+cada ruta: `/collections` y `/search` la heredan por llamar a
+`brandProductFilters`, y `/catalogo` —que construye sus filtros con
+`buildProductFilters`— la hereda encendiendo `colorObligatorio` sólo cuando
+`hayVocabulario()` es cierto.
 
 ## Aislamiento entre clientes
 
@@ -272,8 +311,12 @@ Vitest, archivos junto al fuente, como el resto del repositorio.
   `['rojo']`).
 - `effectiveColorFamilies`: sin marca, marca sin selección, intersección,
   intersección vacía, y `?color=` con basura.
-- `brandProductFilters`: expansión a tonos, familia sin tonos, lista vacía →
-  `null`.
+- `brandProductFilters`: expansión a tonos, lista vacía → `null`, y **las dos
+  ramas de la decisión por separado**: familia sin tonos con el vocabulario
+  leído → filtro imposible; vocabulario `null` / `undefined` / `[]` → sin
+  filtrar.
+- Coherencia con `normalizeProduct`: un producto con más de ocho tonos coincide
+  igual desde un listado nativo que desde uno post-filtrado.
 - `productMatchesBrand`: semántica ANY, producto con `colors`, producto sólo
   con `options`, producto con `UNICO` / `TRANSPARENTE` (no coincide).
 

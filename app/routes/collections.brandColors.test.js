@@ -54,4 +54,24 @@ describe('colección · colores de marca', () => {
     const [, opciones] = storefrontQuery.mock.calls[0];
     expect(opciones.variables.filters).toEqual([{variantOption: {name: 'color', value: 'ROJO'}}]);
   });
+
+  /* Fail-closed: el vocabulario llegó y no hay nada morado en la tienda. */
+  it('con vocabulario y sin tonos de su paleta pide lo imposible', async () => {
+    getBrandColors.mockResolvedValue({families: ['morado'], raw: '["Morado"]'});
+    await pedir();
+    const [, opciones] = storefrontQuery.mock.calls[0];
+    expect(opciones.variables.filters).toEqual([
+      {variantOption: {name: 'color', value: 'GI-SIN-COINCIDENCIA'}},
+    ]);
+  });
+
+  /* Fail-open: sin vocabulario no se filtra, porque no se puede afirmar nada.
+     Lo que se sirve es el catálogo público, no el de otro cliente. */
+  it('sin vocabulario no filtra, en vez de dejar la colección vacía', async () => {
+    getBrandColors.mockResolvedValue({families: ['rojo'], raw: '["Rojo"]'});
+    getColorVocabulary.mockResolvedValue(null);
+    await pedir();
+    const [, opciones] = storefrontQuery.mock.calls[0];
+    expect(opciones.variables.filters).toBeNull();
+  });
 });

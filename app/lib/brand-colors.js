@@ -68,24 +68,54 @@ export function visibleColorSelection(seleccion, marca) {
 }
 
 /**
+ * ¿Llegó el vocabulario de color de la tienda?
+ *
+ * Una lista vacía NO significa "la tienda no tiene colores": la faceta que lo
+ * produce viene vacía en cuanto el índice de búsqueda tiene un mal día, y
+ * desde aquí las dos cosas son indistinguibles. Por eso `[]`, `null` y
+ * `undefined` cuentan todos como "no lo sé", que es lo contrario de "sé que no
+ * hay ninguno" y lleva a la decisión opuesta.
+ * @param {Array<{label: string, count: number}>|null|undefined} vocabulario
+ */
+export function hayVocabulario(vocabulario) {
+  return Array.isArray(vocabulario) && vocabulario.length > 0;
+}
+
+/**
  * `ProductFilter[]` para las consultas que aceptan facetas. Cada familia se
  * expande a los tonos crudos que existen en la tienda; al ser todos del mismo
  * tipo, la API los combina con O.
+ *
+ * Se puede acabar sin ningún tono que pedir de dos maneras muy distintas, y
+ * confundirlas le apagaba la tienda a un cliente que paga:
+ *
+ *  - **Vocabulario leído, y ninguna familia de la marca aparece en él** →
+ *    fail-CLOSED: el filtro imposible, 0 productos. Es la respuesta honesta —
+ *    la tienda no vende nada en sus colores.
+ *  - **Vocabulario ausente, vacío o ilegible** → fail-OPEN: no se filtra. No
+ *    podemos afirmar nada del catálogo, y el catálogo sin filtrar no es el de
+ *    otro cliente: es el público, el mismo que ve cualquier visitante
+ *    anónimo. No hay ninguna fuga que evitar, así que un hipo de la faceta no
+ *    puede costarle la tienda entera al cliente. El rastro lo deja
+ *    `getColorVocabulary`, que es quien sabe por qué no llegó.
+ *
  * @param {string[]} familias
- * @param {Array<{label: string, count: number}>} vocabulario tonos del catálogo
- * @returns {Array<object>|null} null cuando no hay marca (no filtrar)
+ * @param {Array<{label: string, count: number}>|null} vocabulario tonos del
+ *   catálogo, o null/vacío si no se pudo leer
+ * @returns {Array<object>|null} null cuando no se filtra
  */
 export function brandProductFilters(familias, vocabulario) {
   const paleta = familias || [];
-  if (!paleta.length) return null;
-  const grupos = groupColorValues(vocabulario || []);
+  if (!paleta.length) return null; // sin marca no hay restricción que aplicar
+  if (!hayVocabulario(vocabulario)) return null; // fail-open, ver arriba
+  const grupos = groupColorValues(vocabulario);
   const out = [];
   for (const id of paleta) {
     const grupo = grupos.find((g) => g.family === id);
     if (!grupo) continue;
     for (const value of grupo.values) out.push({variantOption: {name: 'color', value}});
   }
-  return out.length ? out : [SIN_COINCIDENCIA];
+  return out.length ? out : [SIN_COINCIDENCIA]; // fail-closed
 }
 
 /** Los tonos de un producto, venga normalizado o crudo de la Storefront API. */

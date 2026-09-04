@@ -4,9 +4,11 @@ import {
   effectiveColorFamilies,
   visibleColorSelection,
   brandProductFilters,
+  hayVocabulario,
   productMatchesBrand,
   keepBrandProducts,
 } from './brand-colors.js';
+import {SIN_COINCIDENCIA} from './filters.js';
 
 /* El metafield es list.single_line_text_field SIN validación de choices: es
    texto libre que escribe una persona en el admin. Todo lo que sigue son
@@ -96,14 +98,49 @@ describe('brandProductFilters', () => {
     expect(brandProductFilters([], VOCABULARIO)).toBeNull();
   });
 
-  /* Fail-closed, el único caso: la marca es morada y la tienda no vende nada
-     morado. La verdad es "no hay nada para ti aquí", no "toma el catálogo
-     entero". Un valor imposible es cómo se le dice eso a la API sin que cada
-     loader tenga que ramificar. */
+  /* Fail-closed, el único caso: el vocabulario se leyó, la marca es morada y
+     la tienda no vende nada morado. La verdad es "no hay nada para ti aquí",
+     no "toma el catálogo entero". Un valor imposible es cómo se le dice eso a
+     la API sin que cada loader tenga que ramificar. */
   it('devuelve un filtro imposible si ninguna familia existe en el catálogo', () => {
     const out = brandProductFilters(['morado'], VOCABULARIO);
     expect(out).toHaveLength(1);
     expect(out[0].variantOption.value).toBe('GI-SIN-COINCIDENCIA');
+  });
+
+  /* Fail-open, la otra rama, y la que importa no confundir: sin vocabulario no
+     sabemos qué tonos existen, así que no se puede afirmar que la marca no
+     tenga ninguno. El catálogo sin filtrar es el público, no el de otro
+     cliente: no hay fuga que evitar, y apagarle la tienda a un cliente que
+     paga por un hipo de la faceta sería mucho peor. */
+  it.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['lista vacía', []],
+  ])('no filtra nada si el vocabulario llega como %s', (_, vocabulario) => {
+    expect(brandProductFilters(['rojo'], vocabulario)).toBeNull();
+  });
+
+  /* La distinción entera, en una línea: la MISMA paleta da 0 productos con
+     vocabulario y el catálogo completo sin él. */
+  it('separa "no hay tonos de esa familia" de "no hay vocabulario"', () => {
+    expect(brandProductFilters(['morado'], VOCABULARIO)).toEqual([SIN_COINCIDENCIA]);
+    expect(brandProductFilters(['morado'], null)).toBeNull();
+  });
+});
+
+describe('hayVocabulario', () => {
+  it('sólo una lista con valores cuenta como vocabulario leído', () => {
+    expect(hayVocabulario(VOCABULARIO)).toBe(true);
+  });
+
+  it.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['lista vacía', []],
+    ['algo que no es lista', {ROJO: 1}],
+  ])('%s es "no lo sé", no "no hay ninguno"', (_, valor) => {
+    expect(hayVocabulario(valor)).toBe(false);
   });
 });
 

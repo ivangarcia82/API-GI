@@ -113,4 +113,32 @@ describe('catálogo · colores de marca', () => {
     await pedir('/catalogo?color=rojo');
     expect(storefrontQuery).toHaveBeenCalledTimes(1);
   });
+
+  /* Fail-closed: el vocabulario llegó entero y no hay un solo tono morado en
+     la tienda. 0 productos es la verdad. */
+  it('con vocabulario y sin tonos de su paleta pide lo imposible', async () => {
+    getBrandColors.mockResolvedValue({families: ['morado'], raw: '["Morado"]'});
+    await pedir('/catalogo');
+    expect(coloresPedidos()).toEqual(['GI-SIN-COINCIDENCIA']);
+  });
+
+  /* Fail-open: sin vocabulario no se puede afirmar que su paleta no exista en
+     la tienda, y un hipo de la faceta no puede apagarle el catálogo entero a
+     un cliente que paga. */
+  it('sin vocabulario sirve el catálogo sin filtrar, no una pantalla vacía', async () => {
+    getBrandColors.mockResolvedValue({families: ['rojo'], raw: '["Rojo"]'});
+    getColorVocabulary.mockResolvedValue(null);
+    await pedir('/catalogo');
+    const [, opciones] = storefrontQuery.mock.calls.at(-1);
+    expect(opciones.variables.productFilters).toBeNull();
+  });
+
+  it('sin vocabulario tampoco vacía la ruta por colección', async () => {
+    getBrandColors.mockResolvedValue({families: ['rojo'], raw: '["Rojo"]'});
+    getColorVocabulary.mockResolvedValue(null);
+    storefrontQuery.mockResolvedValue({collection: null});
+    await pedir('/catalogo?cat=textil');
+    const [, opciones] = storefrontQuery.mock.calls.at(-1);
+    expect(opciones.variables.productFilters).toBeNull();
+  });
 });

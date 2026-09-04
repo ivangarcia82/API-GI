@@ -10,18 +10,27 @@ vi.mock('./auth/session.js', () => ({
   getSessionUser: (...a) => getSessionUser(...a),
 }));
 
-import {getBrandColors} from './brand-colors.server.js';
+import {getBrandColors, getColorVocabulary} from './brand-colors.server.js';
 
 /* withCache se salta la caché y ejecuta: aquí se prueba la lógica, no Hydrogen. */
+const storefrontQuery = vi.fn();
+
 const hazContexto = () => ({
   env: {PRIVATE_ADMIN_API_TOKEN: 't'},
   session: {},
+  storefront: {query: (...a) => storefrontQuery(...a)},
   withCache: {run: (_opciones, fn) => fn({addDebugData: () => {}})},
+});
+
+/** Respuesta de la faceta de color con los tonos indicados. */
+const conFaceta = (values) => ({
+  search: {productFilters: [{id: 'filter.v.option.color', values}]},
 });
 
 beforeEach(() => {
   getCustomerBrandColors.mockReset();
   getSessionUser.mockReset();
+  storefrontQuery.mockReset();
 });
 
 describe('getBrandColors', () => {
@@ -93,5 +102,58 @@ describe('getBrandColors', () => {
     const dos = await getBrandColors(hazContexto());
     expect(uno.families).toEqual(['rojo']);
     expect(dos.families).toEqual(['verde']);
+  });
+});
+
+/* El vocabulario es lo que permite expandir "Rojo" a ROJO/VINO/GUINDA. Cuando
+   no llega, quien lo consume tiene que poder notarlo: una lista vacía se
+   confundiría con "la tienda no vende nada de color" y le apagaría el catálogo
+   al cliente con paleta. */
+describe('getColorVocabulary', () => {
+  it('devuelve los tonos con existencias de la faceta de color', async () => {
+    storefrontQuery.mockResolvedValue(
+      conFaceta([
+        {label: 'ROJO', count: 66},
+        {label: 'AZUL MARINO', count: 15},
+        {label: 'DESCATALOGADO', count: 0},
+      ]),
+    );
+    expect(await getColorVocabulary(hazContexto())).toEqual([
+      {label: 'ROJO', count: 66},
+      {label: 'AZUL MARINO', count: 15},
+    ]);
+  });
+
+  it('devuelve null, y avisa, si la faceta llega vacía', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    storefrontQuery.mockResolvedValue(conFaceta([]));
+    expect(await getColorVocabulary(hazContexto())).toBeNull();
+    expect(error).toHaveBeenCalled();
+    error.mockRestore();
+  });
+
+  /* El índice de búsqueda degradado del 2026-09-04: la consulta respondía, sin
+     una sola faceta. */
+  it('devuelve null, y avisa, si la respuesta no trae facetas', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    storefrontQuery.mockResolvedValue({search: {productFilters: []}});
+    expect(await getColorVocabulary(hazContexto())).toBeNull();
+    expect(error).toHaveBeenCalled();
+    error.mockRestore();
+  });
+
+  it('devuelve null, y avisa, si la consulta falla', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    storefrontQuery.mockRejectedValue(new Error('502'));
+    expect(await getColorVocabulary(hazContexto())).toBeNull();
+    expect(error).toHaveBeenCalled();
+    error.mockRestore();
+  });
+
+  it('memoiza por request', async () => {
+    storefrontQuery.mockResolvedValue(conFaceta([{label: 'ROJO', count: 1}]));
+    const context = hazContexto();
+    await Promise.all([getColorVocabulary(context), getColorVocabulary(context)]);
+    expect(storefrontQuery).toHaveBeenCalledTimes(1);
   });
 });
