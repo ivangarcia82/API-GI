@@ -6,6 +6,7 @@ import {
   serializeGuestQuote,
   guestMergePayload,
   priceGuestLine,
+  guestMergeOutcome,
   MAX_GUEST_LINES,
   GUEST_TTL_MS,
 } from './quote-guest.js';
@@ -244,5 +245,67 @@ describe('priceGuestLine', () => {
     expect(p.title).toBe('Playera');
     expect(p.variantId).toBe('gid://v1');
     expect(p.qty).toBe(100);
+  });
+});
+
+/* La migración es de un solo tiro: si se borra el localStorage antes de que el
+   servidor confirme, un 500 o una red caída se lleva el carrito para siempre.
+   Eso es justo lo que hace hoy la migración de favoritos (AppContext.jsx:143)
+   y lo que aquí no se repite: sólo se borra contra una respuesta buena. */
+describe('guestMergeOutcome', () => {
+  it('borra el carrito local sólo cuando el servidor confirmó', () => {
+    const r = guestMergeOutcome({ok: true, migradas: 3, descartadas: 0});
+    expect(r.clearLocal).toBe(true);
+    expect(r.message).toMatch(/3/);
+  });
+
+  it('CONSERVA el carrito local si la migración falló', () => {
+    expect(guestMergeOutcome(null).clearLocal).toBe(false);
+    expect(guestMergeOutcome({error: 'boom'}).clearLocal).toBe(false);
+    expect(guestMergeOutcome({ok: false}).clearLocal).toBe(false);
+    expect(guestMergeOutcome(undefined).clearLocal).toBe(false);
+  });
+
+  it('avisa del fallo en vez de quedarse callado', () => {
+    expect(guestMergeOutcome(null).message).toBeTruthy();
+    expect(guestMergeOutcome(null).isError).toBe(true);
+  });
+
+  it('dice cuántos artículos se quedaron fuera y no los esconde', () => {
+    const r = guestMergeOutcome({ok: true, migradas: 2, descartadas: 1});
+    expect(r.clearLocal).toBe(true);
+    expect(r.message).toMatch(/2/);
+    expect(r.message).toMatch(/1/);
+  });
+
+  it('no dice nada cuando no había nada que migrar', () => {
+    const r = guestMergeOutcome({ok: true, migradas: 0, descartadas: 0});
+    expect(r.clearLocal).toBe(true);
+    expect(r.message).toBeNull();
+  });
+
+  it('usa singular cuando es un solo artículo', () => {
+    expect(guestMergeOutcome({ok: true, migradas: 1, descartadas: 0}).message).toMatch(
+      /1 artículo /,
+    );
+  });
+});
+
+/* El mensaje lo lee un cliente real: concordar el plural no es cosmético
+   cuando el aviso ya trae la mala noticia de que le quitamos algo. */
+describe('guestMergeOutcome · concordancia', () => {
+  const msg = (migradas, descartadas) =>
+    guestMergeOutcome({ok: true, migradas, descartadas}).message;
+
+  it('concuerda en singular con un solo descartado', () => {
+    expect(msg(3, 1)).toContain('1 que ya no está disponible');
+  });
+
+  it('concuerda en plural con varios descartados', () => {
+    expect(msg(3, 2)).toContain('2 que ya no están disponibles');
+  });
+
+  it('lo dice bien aunque no se haya migrado nada', () => {
+    expect(msg(0, 2)).toContain('2 que ya no están disponibles');
   });
 });

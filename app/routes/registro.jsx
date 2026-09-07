@@ -5,6 +5,7 @@ import {Button} from '~/components/gi/ui';
 import {ROUTES} from '~/lib/site-content';
 import {listAdvisors} from '~/lib/admin/operations';
 import {MARKETING_HANDLE, UNKNOWN_ADVISOR} from '~/lib/auth/advisor-choice';
+import {safeRedirectTo} from '~/lib/auth/redirect-to';
 import {
   AREAS,
   COMO_NOS_CONOCISTE,
@@ -23,21 +24,27 @@ export const meta = () => [{title: 'Crear cuenta · Generando Ideas'}];
  * list rather than failing the page: no advisor list must never block signup.
  * @param {import('./+types/registro').Route.LoaderArgs} args
  */
-export async function loader({context}) {
+export async function loader({context, request}) {
   let advisors = [];
   try {
     advisors = await listAdvisors(context.env);
   } catch (err) {
     console.error('[registro] advisor list failed (non-fatal):', err);
   }
-  return {advisors};
+  // A dónde volver una vez verificada la cuenta: el invitado que llegó aquí
+  // desde su cotización tiene que caer en la página donde se quedó.
+  const redirectTo = safeRedirectTo(
+    new URL(request.url).searchParams.get('redirectTo'),
+    '',
+  );
+  return {advisors, redirectTo};
 }
 
 export default function Registro() {
   const actionData = useActionData();
   // `?? {}` sostiene el render si el loader no corrió (p.ej. en tests de otros
   // pasos); la lista vacía tiene su propio camino más abajo.
-  const {advisors = []} = useLoaderData() ?? {};
+  const {advisors = [], redirectTo = ''} = useLoaderData() ?? {};
   // Blindaje del contrato del select: marketing es el respaldo, nunca una
   // opción. El loader ya lo filtra; esto lo sostiene si eso cambiara.
   const asesores = advisors.filter((a) => a.handle !== MARKETING_HANDLE);
@@ -159,6 +166,7 @@ export default function Registro() {
             }
           }}
         >
+          <input type="hidden" name="redirectTo" value={redirectTo} />
           {/* Hidden mirrors so values from non-active wizard steps still post. */}
           <input type="hidden" name="firstName" value={form.name} />
           <input type="hidden" name="lastName" value={form.lastName} />

@@ -6,6 +6,7 @@ import {linkSignupCustomer} from '~/lib/auth/signup-link';
 import {claimedAdvisorHandle} from '~/lib/auth/advisor-choice';
 import {AREAS, UBICACIONES, esOpcionValida, esOrigenValido} from './registro.catalogos.js';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
+import {safeRedirectTo} from '~/lib/auth/redirect-to';
 
 /**
  * @param {import('./+types/auth.signup').Route.ActionArgs} args
@@ -110,5 +111,11 @@ export async function action({request, context}) {
 
   // Account access requires a verified email — do NOT create a session here.
   // The user verifies via the emailed link (which logs them in), then can sign in.
-  return redirect('/login?registrado=1');
+  // El invitado venía armando su cotización: el destino viaja hasta el login
+  // para que al entrar caiga en la página donde se quedó y no en /account.
+  const volverA = safeRedirectTo(form.get('redirectTo'), '');
+  const destino = volverA
+    ? `/login?registrado=1&redirectTo=${encodeURIComponent(volverA)}`
+    : '/login?registrado=1';
+  return redirect(destino);
 }

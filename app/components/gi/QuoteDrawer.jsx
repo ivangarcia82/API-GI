@@ -19,6 +19,7 @@ export function QuoteDrawer() {
     updateQuoteQty,
     removeFromQuote,
     clearQuote,
+    markQuoteIntent,
   } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
@@ -102,25 +103,17 @@ export function QuoteDrawer() {
     navigate(to);
   };
 
+  /* Deja la marca de "venía a cotizar" y manda de vuelta a esta misma página:
+     al volver con sesión, la migración reabre el cajón con la lista completa. */
+  const irAAutenticarse = (ruta) => {
+    markQuoteIntent();
+    const volverA = window.location.pathname + window.location.search;
+    goAndClose(`${ruta}?redirectTo=${encodeURIComponent(volverA)}`);
+  };
+
   let body;
   if (!hydrated) {
     body = <div className="qd-body" />;
-  } else if (!isLoggedIn) {
-    body = (
-      <div className="qd-message">
-        <Icon name="quote" size={32} className="muted-2" />
-        <h3>Inicia sesión para cotizar</h3>
-        <p>Arma tu lista y envíala como solicitud cuando estés listo.</p>
-        <div style={{display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap'}}>
-          <Button variant="accent" iconRight="arrow_right" onClick={() => goAndClose('/login')}>
-            Iniciar sesión
-          </Button>
-          <Button variant="ghost" onClick={() => goAndClose('/catalogo')}>
-            Explorar catálogo
-          </Button>
-        </div>
-      </div>
-    );
   } else if (result) {
     body = (
       <div className="qd-message">
@@ -214,6 +207,8 @@ export function QuoteDrawer() {
             </div>
           ))}
 
+          {isLoggedIn && (
+          <>
           <div className="field" style={{marginTop: 8}}>
             <label htmlFor="qd-deadline">Fecha objetivo</label>
             <input
@@ -237,6 +232,8 @@ export function QuoteDrawer() {
               style={{resize: 'vertical', fontFamily: 'inherit'}}
             />
           </div>
+          </>
+          )}
 
           {confirmandoVaciar ? (
             <div className="qd-confirm" role="group" aria-label="Confirmar vaciar la lista">
@@ -277,18 +274,44 @@ export function QuoteDrawer() {
             <span>Total estimado</span>
             <span className="mono">{formatPrice(estTotal)}</span>
           </div>
-          <Button
-            variant="accent"
-            size="lg"
-            iconRight="arrow_right"
-            disabled={submitting}
-            style={{width: '100%', justifyContent: 'center', marginTop: 12}}
-            onClick={submit}
-          >
-            {submitting ? 'Enviando…' : 'Enviar solicitud'}
-          </Button>
+          {isLoggedIn ? (
+            <Button
+              variant="accent"
+              size="lg"
+              iconRight="arrow_right"
+              disabled={submitting}
+              style={{width: '100%', justifyContent: 'center', marginTop: 12}}
+              onClick={submit}
+            >
+              {submitting ? 'Enviando…' : 'Enviar solicitud'}
+            </Button>
+          ) : (
+            /* El único muro que queda. La lista ya está armada y guardada, así
+               que aquí se pide la cuenta con el trabajo hecho enfrente, no
+               antes de dejarlo empezar. */
+            <div style={{marginTop: 12, display: 'grid', gap: 8}}>
+              <Button
+                variant="accent"
+                size="lg"
+                iconRight="arrow_right"
+                style={{width: '100%', justifyContent: 'center'}}
+                onClick={() => irAAutenticarse('/registro')}
+              >
+                Crear cuenta y enviar
+              </Button>
+              <Button
+                variant="ghost"
+                style={{width: '100%', justifyContent: 'center'}}
+                onClick={() => irAAutenticarse('/login')}
+              >
+                Ya tengo cuenta
+              </Button>
+            </div>
+          )}
           <p className="qd-foot-note">
-            Precios estimados · sin compromiso de compra. Respuesta &lt; 24h hábiles.
+            {isLoggedIn
+              ? 'Precios estimados · sin compromiso de compra. Respuesta < 24h hábiles.'
+              : 'Tu lista se guarda y te espera: al entrar la vas a encontrar completa.'}
           </p>
         </div>
       </>
@@ -317,7 +340,7 @@ export function QuoteDrawer() {
             <div className="eyebrow">// Cotización</div>
             <h2 className="qd-title">
               Tu cotización
-              {hydrated && isLoggedIn && quote.length > 0 && !result
+              {hydrated && quote.length > 0 && !result
                 ? ` · ${quote.length} ${quote.length === 1 ? 'producto' : 'productos'}`
                 : ''}
             </h2>

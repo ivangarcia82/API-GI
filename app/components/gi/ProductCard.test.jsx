@@ -42,6 +42,10 @@ function montar(
 }
 
 afterEach(cleanup);
+/* El carrito de invitado vive en localStorage y sobrevive al desmontaje: sin
+   limpiarlo, la prueba siguiente monta con sesión, dispara la migración y ve
+   una petición a /api/quote/merge que no pidió. */
+afterEach(() => window.localStorage.clear());
 
 describe('ProductCard como enlace real', () => {
   it('expone el título como <a> hacia la ficha', () => {
@@ -114,10 +118,26 @@ describe('precio visible sin sesión', () => {
     expect(screen.queryByText('desde')).toBeNull();
   });
 
-  it('sigue sin dejar cotizar sin sesión', () => {
+  /* Cotizar dejó de estar tras el login: el invitado arma su lista y la cuenta
+     se le pide al enviarla, con el trabajo ya hecho enfrente. */
+  it('deja cotizar sin sesión', () => {
     montar({}, {isLoggedIn: false});
-    expect(screen.getByRole('button', {name: /Ver detalles/i})).toBeTruthy();
-    expect(screen.queryByRole('button', {name: /cotizaci[oó]n/i})).toBeNull();
+    expect(screen.getByRole('button', {name: /Añadir a cotización/i})).toBeTruthy();
+  });
+
+  it('sin sesión guarda en el navegador y no llama al servidor', async () => {
+    const enviadas = capturarCotizadas();
+    window.localStorage.clear();
+    montar({}, {isLoggedIn: false});
+    fireEvent.click(screen.getByRole('button', {name: /Añadir a cotización/i}));
+
+    await vi.waitFor(() => {
+      const guardado = JSON.parse(window.localStorage.getItem('gi_quote') || '{}');
+      expect(guardado.lines?.[0]?.variantId).toBe(PRODUCTO.firstVariantId);
+    });
+    // Sin sesión el servidor rechazaría la petición con un redirect a /login,
+    // así que ni se intenta: el carrito del invitado es puramente local.
+    expect(enviadas).toHaveLength(0);
   });
 });
 

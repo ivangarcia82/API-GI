@@ -6,6 +6,7 @@ import {verifyPassword, hashPassword} from '~/lib/auth/password';
 import {loginSession} from '~/lib/auth/session';
 import {clientIp, recentFailures, recordAttempt, MAX_ATTEMPTS} from '~/lib/auth/attempts';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
+import {safeRedirectTo} from '~/lib/auth/redirect-to';
 
 /**
  * @param {import('./+types/auth.login').Route.ActionArgs} args
@@ -83,5 +84,8 @@ export async function action({request, context}) {
     sessionVersion: user.sessionVersion,
   });
 
-  return redirect('/account');
+  // De vuelta a donde venía. `safeRedirectTo` acota el destino a rutas
+  // internas: sin eso, /login?redirectTo=https://sitio-falso/ usaría nuestro
+  // login de trampolín para un phishing.
+  return redirect(safeRedirectTo(form.get('redirectTo')));
 }

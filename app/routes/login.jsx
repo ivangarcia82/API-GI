@@ -4,17 +4,24 @@ import {Button} from '~/components/gi/ui';
 
 export {action} from './auth.login.jsx';
 
+import {safeRedirectTo} from '~/lib/auth/redirect-to';
+
 export const meta = () => [{title: 'Iniciar sesión · Generando Ideas'}];
 
 /** @param {{request: Request}} args */
 export function loader({request}) {
   const url = new URL(request.url);
-  return {registrado: url.searchParams.get('registrado') === '1'};
+  return {
+    registrado: url.searchParams.get('registrado') === '1',
+    // A dónde volver al entrar. Se acota aquí y el `action` lo vuelve a acotar:
+    // el campo oculto es tan manipulable como la URL.
+    redirectTo: safeRedirectTo(url.searchParams.get('redirectTo')),
+  };
 }
 
 export default function Login() {
   const actionData = useActionData();
-  const {registrado} = useLoaderData();
+  const {registrado, redirectTo} = useLoaderData();
   const nav = useNavigation();
   const busy = nav.state !== 'idle';
 
@@ -49,6 +56,7 @@ export default function Login() {
         )}
 
         <Form className="auth-form" method="post">
+          <input type="hidden" name="redirectTo" value={redirectTo} />
           <div className="field">
             <label htmlFor="login-email">Correo corporativo</label>
             <input

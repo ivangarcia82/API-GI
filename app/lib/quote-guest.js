@@ -161,3 +161,39 @@ export function priceGuestLine(line) {
   });
   return {...line, decorationTotal, effectiveUnitPrice};
 }
+
+/**
+ * Qué hacer con el carrito local después de intentar migrarlo.
+ *
+ * Se borra SÓLO contra una respuesta buena. La migración de favoritos hace lo
+ * contrario —borra pase lo que pase— y por eso un 500 o una red caída se lleva
+ * la lista para siempre; aquí el carrito se queda y el siguiente intento lo
+ * vuelve a subir.
+ *
+ * @param {{ok?: boolean, migradas?: number, descartadas?: number}|null|undefined} data
+ * @returns {{clearLocal: boolean, message: string|null, isError: boolean}}
+ */
+export function guestMergeOutcome(data) {
+  if (!data || data.ok !== true) {
+    return {
+      clearLocal: false,
+      message: 'No pudimos pasar tu lista a tu cuenta. Sigue guardada; vuelve a intentarlo.',
+      isError: true,
+    };
+  }
+  const migradas = Number(data.migradas) || 0;
+  const descartadas = Number(data.descartadas) || 0;
+  if (migradas === 0 && descartadas === 0) {
+    return {clearLocal: true, message: null, isError: false};
+  }
+  const cuantos = `${migradas} ${migradas === 1 ? 'artículo' : 'artículos'}`;
+  const fuera =
+    descartadas === 1
+      ? '1 que ya no está disponible'
+      : `${descartadas} que ya no están disponibles`;
+  const message =
+    descartadas > 0
+      ? `${cuantos} en tu cotización. Quitamos ${fuera}.`
+      : `${cuantos} en tu cotización.`;
+  return {clearLocal: true, message, isError: false};
+}

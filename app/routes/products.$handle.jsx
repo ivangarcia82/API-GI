@@ -129,10 +129,39 @@ async function loadCriticalData({context, params, request}) {
   };
 }
 
+/**
+ * Arma la línea que la ficha manda a cotizar.
+ *
+ * Va aparte y exportada porque sirve a dos destinos: con sesión el servidor
+ * sólo lee las cinco claves de intención y vuelve a pedirle a Shopify precio,
+ * título e imagen; sin sesión el carrito de invitado pinta el cajón con lo que
+ * traiga la línea, así que el precio de lista tiene que viajar o el usuario
+ * vería $0 hasta que se registre.
+ */
+export function lineaDeFicha({product, selectedVariant, mainImage, unit, decoDetail, qty}) {
+  return {
+    variantId: selectedVariant.id,
+    // Display del carrito de invitado; con sesión el servidor los ignora.
+    productId: product.id,
+    handle: product.handle,
+    title: product.title,
+    sku: selectedVariant.sku,
+    image: mainImage,
+    price: unit,
+    options: selectedVariant.selectedOptions,
+    // Las cinco claves que el servidor lee; sin decorado mientras el selector
+    // no haya emitido un detalle.
+    technique: decoDetail?.technique ?? 'Sin decorado',
+    surface: decoDetail?.surface ?? '',
+    size: decoDetail?.size ?? '',
+    qty,
+  };
+}
+
 export default function Product() {
   const {product, stock, recommendations = [], marcaColores = []} = useLoaderData();
   const navigate = useNavigate();
-  const {isLoggedIn, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
+  const {favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
 
   const selectedVariant = useOptimisticVariant(
@@ -242,22 +271,16 @@ export default function Product() {
     // (e.g. a stale click queued before a variant change re-renders it).
     if (!selectedVariant?.id || isOutOfStock) return;
     try {
-      await addToQuote({
-        variantId: selectedVariant.id,
-        // metadata used only by the anonymous client-side fallback render:
-        productId: product.id,
-        handle: product.handle,
-        title: product.title,
-        sku: selectedVariant.sku,
-        image: mainImage,
-        options: selectedVariant.selectedOptions,
-        // the five fields the server reads (spec §7.2); default to no decoration
-        // when the selector has not emitted a detail yet:
-        technique: decoDetail?.technique ?? 'Sin decorado',
-        surface: decoDetail?.surface ?? '',
-        size: decoDetail?.size ?? '',
-        qty: qtyNum,
-      });
+      await addToQuote(
+        lineaDeFicha({
+          product,
+          selectedVariant,
+          mainImage,
+          unit,
+          decoDetail,
+          qty: qtyNum,
+        }),
+      );
       toast(`${product.title} en tu lista de cotización`, {icon: 'quote', accent: true});
       openQuoteDrawer();
     } catch (err) {
@@ -404,7 +427,6 @@ export default function Product() {
           {unit != null && (
             <p className="pdp-price-note">
               {currency} · sin IVA · precio de lista
-              {!isLoggedIn && ' · inicia sesión para cotizar'}
             </p>
           )}
 
@@ -542,41 +564,23 @@ export default function Product() {
 
           {/* ACTIONS */}
           <div className="pdp-actions">
-            {!isLoggedIn ? (
-              <Button
-                variant="accent"
-                size="lg"
-                iconRight="arrow_right"
-                onClick={() => navigate('/login')}
-                style={{width: '100%', justifyContent: 'center'}}
-              >
-                Iniciar sesión para cotizar
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="accent"
-                  size="lg"
-                  icon="quote"
-                  onClick={handleQuote}
-                  disabled={Boolean(decoError) || !selectedVariant?.id || isOutOfStock}
-                >
-                  {isOutOfStock ? 'Agotado' : 'Añadir a cotización'}
-                </Button>
-                <button
-                  className="appbar-iconbtn"
-                  style={{width: 48, height: 48, border: '1px solid var(--line-strong)'}}
-                  onClick={() => toggleFav(product.id)}
-                  aria-label="Favorito"
-                >
-                  <Icon
-                    name={isFav ? 'heart_fill' : 'heart_outline'}
-                    size={18}
-                    className=""
-                  />
-                </button>
-              </>
-            )}
+            <Button
+              variant="accent"
+              size="lg"
+              icon="quote"
+              onClick={handleQuote}
+              disabled={Boolean(decoError) || !selectedVariant?.id || isOutOfStock}
+            >
+              {isOutOfStock ? 'Agotado' : 'Añadir a cotización'}
+            </Button>
+            <button
+              className="appbar-iconbtn"
+              style={{width: 48, height: 48, border: '1px solid var(--line-strong)'}}
+              onClick={() => toggleFav(product.id)}
+              aria-label="Favorito"
+            >
+              <Icon name={isFav ? 'heart_fill' : 'heart_outline'} size={18} className="" />
+            </button>
           </div>
 
           {/* DELIVERY GRID */}

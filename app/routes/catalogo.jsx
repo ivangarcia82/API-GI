@@ -305,7 +305,7 @@ export default function Catalogo() {
   const [, setParams] = useSearchParams();
   const navigate = useNavigate();
   const navigation = useNavigation();
-  const {isLoggedIn, addToQuote, openQuoteDrawer} = useApp();
+  const {addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
   const [view, setView] = useState('grid');
   const [panelAbierto, setPanelAbierto] = useState(false);
@@ -565,7 +565,7 @@ export default function Catalogo() {
                           key={p.id}
                           product={p}
                           view={view === 'list' ? 'list' : undefined}
-                          selectable={isLoggedIn}
+                          selectable
                           selected={seleccion.has(p.id)}
                           onToggleSelect={alternarSeleccion}
                         />

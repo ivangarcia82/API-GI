@@ -13,10 +13,24 @@ import {
 } from 'react';
 import {useFetcher} from 'react-router';
 import {mergeQuoteState, quotePieceCount} from '~/lib/quote-state';
+import {
+  normalizeGuestLine,
+  addGuestLine,
+  parseGuestQuote,
+  serializeGuestQuote,
+  guestMergePayload,
+  guestMergeOutcome,
+  priceGuestLine,
+} from '~/lib/quote-guest';
 import {Icon} from '~/components/gi/Icon';
 
 const STORE = {
   quote: 'gi_quote',
+  // Se marca cuando un invitado toca "enviar cotización" y lo mandamos a
+  // crear cuenta: al volver con sesión, el cajón se abre solo y ve que su
+  // lista sigue ahí. Sobrevive al rodeo del correo de verificación, que es
+  // donde se perdía el hilo.
+  quoteIntent: 'gi_quote_intent',
   favs: 'gi_favs',
   tweaks: 'gi_tweaks',
 };
@@ -41,6 +55,16 @@ function read(key, fallback) {
   } catch {
     return fallback;
   }
+}
+
+/* El carrito del invitado se re-tarifica al leerlo: `normalizeGuestLine` sólo
+   conserva intención, así que el precio por pieza se recalcula con el mismo
+   motor que usa el servidor en vez de confiar en lo que quedó guardado. */
+function readGuestQuote() {
+  if (typeof window === 'undefined') return [];
+  return parseGuestQuote(window.localStorage.getItem(STORE.quote), Date.now()).map(
+    priceGuestLine,
+  );
 }
 
 const AppCtx = createContext(null);
@@ -110,7 +134,7 @@ export function AppProvider({
   // anonymous-only fallback (server is authoritative once logged in).
   useEffect(() => {
     if (!isLoggedIn) {
-      setQuote(read(STORE.quote, []));
+      setQuote(readGuestQuote());
       setFavs(read(STORE.favs, []));
     }
     setTweaks({...DEFAULT_TWEAKS, ...read(STORE.tweaks, {})});
@@ -121,7 +145,7 @@ export function AppProvider({
   // Persist UI prefs. quote/favs only mirror to localStorage when anonymous.
   useEffect(() => {
     if (hydrated && !isLoggedIn)
-      window.localStorage.setItem(STORE.quote, JSON.stringify(quote));
+      window.localStorage.setItem(STORE.quote, serializeGuestQuote(quote, Date.now()));
   }, [quote, hydrated, isLoggedIn]);
   useEffect(() => {
     if (hydrated && !isLoggedIn)
@@ -160,12 +184,13 @@ export function AppProvider({
   const addToQuote = useCallback(
     (item) => {
       if (!isLoggedIn) {
-        setQuote((q) => {
-          const key = (i) => i.variantId === item.variantId;
-          const found = q.find(key);
-          if (found) return q.map((i) => (key(i) ? {...i, qty: i.qty + item.qty} : i));
-          return [...q, {...item, addedAt: Date.now()}];
-        });
+        // Sin sesión el carrito vive en localStorage y se re-tarifica entero:
+        // sumar piezas puede cruzar la cantidad mínima del decorado y abaratar
+        // el precio por pieza de esa línea.
+        const ahora = Date.now();
+        setQuote((q) =>
+          addGuestLine(q, normalizeGuestLine(item, ahora), ahora).map(priceGuestLine),
+        );
         return Promise.resolve();
       }
       return postQuote('add', {
@@ -182,7 +207,9 @@ export function AppProvider({
     (itemId, qty) => {
       const nextQty = Math.max(1, qty);
       if (!isLoggedIn) {
-        setQuote((q) => q.map((i) => (i.id === itemId ? {...i, qty: nextQty} : i)));
+        setQuote((q) =>
+          q.map((i) => (i.id === itemId ? priceGuestLine({...i, qty: nextQty}) : i)),
+        );
         return Promise.resolve();
       }
       // optimistic: patch qty locally, server reconciles effectiveUnitPrice
@@ -267,6 +294,71 @@ export function AppProvider({
     );
   }, []);
 
+  /* Marca "venía a cotizar" antes de mandarlo a crear cuenta. Va en
+     localStorage y no en la URL porque el registro pasa por un correo de
+     verificación: el link aterriza en /account y ahí ya no queda rastro de
+     dónde venía. */
+  const markQuoteIntent = useCallback(() => {
+    try {
+      window.localStorage.setItem(STORE.quoteIntent, '1');
+    } catch {
+      /* modo privado sin cuota: la migración funciona igual, sólo no se
+         reabre el cajón solo. */
+    }
+  }, []);
+
+  /* Migración de un solo tiro del carrito de invitado, tras la primera carga
+     con sesión. Va aquí y no en el `action` del login porque tiene que cubrir
+     los tres caminos —login normal, link de verificación y sesión ya abierta—
+     y el correo puede abrirse en otro navegador que no tiene este carrito. */
+  const [migratedQuote, setMigratedQuote] = useState(false);
+  useEffect(() => {
+    if (!hydrated || !isLoggedIn || migratedQuote) return;
+    setMigratedQuote(true);
+
+    const abrirSiVeniaACotizar = () => {
+      if (window.localStorage.getItem(STORE.quoteIntent)) {
+        window.localStorage.removeItem(STORE.quoteIntent);
+        openQuoteDrawer();
+      }
+    };
+
+    const locales = readGuestQuote();
+    if (locales.length === 0) {
+      window.localStorage.removeItem(STORE.quote);
+      abrirSiVeniaACotizar();
+      return;
+    }
+
+    const body = new URLSearchParams();
+    body.set('lines', JSON.stringify(guestMergePayload(locales)));
+    setQuotePending(true);
+    fetch('/api/quote/merge', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body,
+    })
+      .then((res) => (res.ok ? res.json().catch(() => null) : null))
+      .then((data) => {
+        const resultado = guestMergeOutcome(data);
+        // Sólo se borra contra una respuesta buena: si falló, el carrito sigue
+        // en el navegador y el siguiente intento lo vuelve a subir.
+        if (resultado.clearLocal) window.localStorage.removeItem(STORE.quote);
+        if (data?.items) setQuote((prev) => mergeQuoteState(prev, {items: data.items}));
+        if (resultado.message)
+          pushToast(resultado.message, {
+            icon: resultado.isError ? 'alert' : 'quote',
+            accent: !resultado.isError,
+          });
+        if (!resultado.isError) abrirSiVeniaACotizar();
+      })
+      .catch(() => {
+        const fallo = guestMergeOutcome(null);
+        pushToast(fallo.message, {icon: 'alert'});
+      })
+      .finally(() => setQuotePending(false));
+  }, [hydrated, isLoggedIn, migratedQuote, openQuoteDrawer, pushToast]);
+
   const quoteCount = quotePieceCount(quote);
 
   const value = {
@@ -281,6 +373,7 @@ export function AppProvider({
     removeFromQuote,
     clearQuote,
     reorderQuote,
+    markQuoteIntent,
     quoteDrawerOpen,
     openQuoteDrawer,
     closeQuoteDrawer,

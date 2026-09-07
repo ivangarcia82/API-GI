@@ -66,34 +66,18 @@ function Precio({product, view}) {
 }
 
 /**
- * Add control: logged-in users add to the client-side quote list; guests are
- * routed to the product detail. (No purchase flow — quote-only.)
+ * Add control: añade a la lista de cotización. Con sesión va al servidor; sin
+ * ella al carrito de invitado en localStorage, que se migra al entrar.
+ * (No hay flujo de compra — sólo cotización.)
  */
 export function AddControl({product, label, variant, size = 'sm', className = ''}) {
   const navigate = useNavigate();
-  const {isLoggedIn, addToQuote, openQuoteDrawer, brandColors} = useApp();
+  const {addToQuote, openQuoteDrawer, brandColors} = useApp();
   /* `firstVariantId` es la primera variante que devolvió la consulta y puede
      ser de cualquier color: a un cliente con paleta le metería en la cotización
      una variante que no puede pedir. */
   const variantId = brandVariantId(product, brandColors);
   const toast = useToast();
-
-  if (!isLoggedIn) {
-    return (
-      <Button
-        variant={variant}
-        size={size}
-        className={className}
-        iconRight="arrow_right"
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate(`/products/${product.handle}`);
-        }}
-      >
-        Ver detalles
-      </Button>
-    );
-  }
 
   return (
     <Button
