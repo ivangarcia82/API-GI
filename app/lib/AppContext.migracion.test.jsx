@@ -6,7 +6,7 @@
 import {describe, it, expect, vi, afterEach, beforeEach} from 'vitest';
 import {render, cleanup} from '@testing-library/react';
 import {createRoutesStub} from 'react-router';
-import {AppProvider} from './AppContext.jsx';
+import {AppProvider, useApp} from './AppContext.jsx';
 import {serializeGuestQuote, normalizeGuestLine} from './quote-guest.js';
 
 function sembrarCarrito() {
@@ -135,5 +135,60 @@ describe('migración del carrito de invitado al entrar', () => {
       ['gid://v1', 120],
       ['gid://v2', 100],
     ]);
+  });
+});
+
+/* El comprador B2B compara con varias pestañas abiertas (ver ProductCard.test).
+   Si entra en una, esa migra el carrito y lo borra; la otra sigue creyéndose
+   invitada y con las mismas líneas en memoria. Sin escuchar el borrado, la
+   primera interacción las vuelve a escribir y el siguiente recargue las migra
+   OTRA VEZ: el cliente ve su cotización duplicada. */
+describe('varias pestañas', () => {
+  function montarConCuenta() {
+    let visto = null;
+    function Espia() {
+      const {quoteCount} = useApp();
+      visto = quoteCount;
+      return null;
+    }
+    const Stub = createRoutesStub([
+      {
+        path: '/',
+        Component: () => (
+          <AppProvider isLoggedIn={false} quote={[]}>
+            <Espia />
+          </AppProvider>
+        ),
+      },
+    ]);
+    render(<Stub initialEntries={['/']} />);
+    return () => visto;
+  }
+
+  it('suelta su carrito cuando otra pestaña lo migró', async () => {
+    sembrarCarrito();
+    const piezas = montarConCuenta();
+    await vi.waitFor(() => expect(piezas()).toBe(220));
+
+    // La otra pestaña entró, migró y borró la clave.
+    window.localStorage.removeItem('gi_quote');
+    window.dispatchEvent(
+      new StorageEvent('storage', {key: 'gi_quote', newValue: null}),
+    );
+
+    await vi.waitFor(() => expect(piezas()).toBe(0));
+  });
+
+  it('no se inmuta por el cambio de otra clave cualquiera', async () => {
+    sembrarCarrito();
+    const piezas = montarConCuenta();
+    await vi.waitFor(() => expect(piezas()).toBe(220));
+
+    window.dispatchEvent(
+      new StorageEvent('storage', {key: 'gi_tweaks', newValue: '{}'}),
+    );
+
+    await new Promise((r) => setTimeout(r, 30));
+    expect(piezas()).toBe(220);
   });
 });

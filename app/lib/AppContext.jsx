@@ -294,6 +294,20 @@ export function AppProvider({
     );
   }, []);
 
+  /* El comprador B2B compara con varias pestañas abiertas. Cuando entra en
+     una, esa migra el carrito y borra la clave; esta sigue creyéndose invitada
+     y con las mismas líneas en memoria. Sin soltarlas, su primera interacción
+     las vuelve a escribir y el siguiente recargue las migra OTRA VEZ: el
+     cliente vería su cotización duplicada. */
+  useEffect(() => {
+    if (isLoggedIn) return undefined;
+    const alCambiarOtraPestaña = (e) => {
+      if (e.key === STORE.quote && e.newValue == null) setQuote([]);
+    };
+    window.addEventListener('storage', alCambiarOtraPestaña);
+    return () => window.removeEventListener('storage', alCambiarOtraPestaña);
+  }, [isLoggedIn]);
+
   /* Marca "venía a cotizar" antes de mandarlo a crear cuenta. Va en
      localStorage y no en la URL porque el registro pasa por un correo de
      verificación: el link aterriza en /account y ahí ya no queda rastro de
