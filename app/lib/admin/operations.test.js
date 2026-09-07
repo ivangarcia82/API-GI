@@ -686,6 +686,86 @@ describe('listAdvisors · líderes fuera del select', () => {
   });
 });
 
+/* La regla de "un líder no se ofrece" se pensó para un piso de ventas donde el
+   jefe reparte cuentas entre seis. En Sonora y Mérida el equipo entero es una
+   persona, así que su Local Sales Manager sí atiende clientes: excluirlo
+   borraba a la mitad de la oficina del formulario de registro. El puesto lo
+   mantiene marketing en Shopify, así que una promoción se refleja sola. */
+describe('listAdvisors · el líder de una oficina regional sí atiende', () => {
+  const gabriela = () =>
+    advisorNode(
+      'gabriela-maldonado',
+      'Gabriela Maldonado',
+      'Local Sales Manager',
+      'ACTIVE',
+      'merida2@generandoideas.com',
+    );
+
+  it('ofrece al Local Sales Manager aunque lidere a alguien', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({metaobjects: {nodes: [gabriela()]}});
+
+    expect((await listAdvisors({})).map((a) => a.handle)).toEqual(['gabriela-maldonado']);
+  });
+
+  it('sigue ocultando a los demás líderes', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          gabriela(),
+          advisorNode('jesus-rios', 'Jesús Ríos', 'Strategic Sales Manager', 'ACTIVE', 'jrios@generandoideas.com'),
+          advisorNode('seide', 'Seide Jiménez', 'Inside Sales Manager', 'ACTIVE', 'sjimenez@generandoideas.com'),
+        ],
+      },
+    });
+
+    expect((await listAdvisors({})).map((a) => a.handle)).toEqual(['gabriela-maldonado']);
+  });
+
+  /* El puesto es texto libre que alguien teclea en el admin. */
+  it('tolera mayúsculas y espacios sobrantes en el puesto', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('carlos-marmolejo', 'Carlos Marmolejo', '  local  SALES manager ', 'ACTIVE', 'sonora@generandoideas.com'),
+        ],
+      },
+    });
+
+    expect((await listAdvisors({})).map((a) => a.handle)).toEqual(['carlos-marmolejo']);
+  });
+
+  it('el puesto no rescata a quien no es líder ni cambia nada para él', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('laura-vega', 'Laura Vega', 'Inside Sales Executive', 'ACTIVE', 'lvega@generandoideas.com'),
+        ],
+      },
+    });
+
+    expect((await listAdvisors({})).map((a) => a.handle)).toEqual(['laura-vega']);
+  });
+
+  /* El puesto sólo levanta la exclusión de líder: un borrador o el entry de
+     respaldo siguen fuera pase lo que pase. */
+  it('no rescata a un Local Sales Manager en borrador', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({
+      metaobjects: {
+        nodes: [
+          advisorNode('gabriela-maldonado', 'Gabriela Maldonado', 'Local Sales Manager', 'DRAFT', 'merida2@generandoideas.com'),
+        ],
+      },
+    });
+
+    expect(await listAdvisors({})).toEqual([]);
+  });
+});
+
 describe('setCustomerRequestedAdvisor', () => {
   beforeEach(() => {
     isStubMode.mockReturnValue(false);

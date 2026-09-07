@@ -236,6 +236,25 @@ const ADVISOR_FALLBACK_HANDLE = 'marketing';
 /** Correos de quienes lideran a alguien: no aparecen en el select del registro. */
 const LIDERES = new Set(Object.values(MANAGERS).map((c) => c.trim().toLowerCase()));
 
+/* La excepción a esa regla. Se pensó para un piso de ventas donde el líder
+   reparte cuentas entre seis, pero en Sonora y Mérida el equipo entero es una
+   persona: su Local Sales Manager atiende clientes como cualquiera, y
+   excluirlo borraba a media oficina del formulario de registro.
+   Se decide por el puesto, que marketing ya mantiene en Shopify, y no por una
+   lista de correos aparte: así una promoción o una oficina nueva se reflejan
+   sin tocar código. */
+const PUESTO_QUE_ATIENDE = 'local sales manager';
+
+/** Compara el puesto sin depender de cómo lo tecleó quien lo capturó. */
+function atiendeAunqueLidere(puesto) {
+  return (
+    String(puesto ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ') === PUESTO_QUE_ATIENDE
+  );
+}
+
 const ADVISORS_LIST = `
   query advisors($type: String!) {
     metaobjects(type: $type, first: 250, sortKey: "display_name") {
@@ -326,8 +345,9 @@ export async function listAdvisors(env) {
     })
     // Un líder no se ofrece como asesor: quien ya eres cliente lo es de alguien
     // de su equipo, no de él. Se deriva de la matriz para que no haya que
-    // mantener una lista de nombres aparte.
-    .filter((a) => !LIDERES.has(a.correo))
+    // mantener una lista de nombres aparte. La excepción son las oficinas
+    // regionales — ver PUESTO_QUE_ATIENDE.
+    .filter((a) => !LIDERES.has(a.correo) || atiendeAunqueLidere(a.puesto))
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 }
 
