@@ -309,3 +309,22 @@ describe('guestMergeOutcome · concordancia', () => {
     expect(msg(0, 2)).toContain('2 que ya no están disponibles');
   });
 });
+
+/* El código anterior guardaba `gi_quote` como un array pelón (JSON.stringify
+   del estado). Ese formato sigue en el navegador de gente que ya visitó el
+   sitio, así que leerlo no puede reventar: se empieza en blanco, que además es
+   lo correcto —esos carritos nunca llegaron a tener nada. */
+describe('parseGuestQuote · formato anterior', () => {
+  const AHORA = 1_700_000_000_000;
+
+  it('ignora el array pelón que dejó la versión anterior', () => {
+    expect(parseGuestQuote('[]', AHORA)).toEqual([]);
+    expect(
+      parseGuestQuote('[{"variantId":"gid://v1","qty":10}]', AHORA),
+    ).toEqual([]);
+  });
+
+  it('tampoco se atraganta con un array anidado raro', () => {
+    expect(parseGuestQuote('[[1,2],[3]]', AHORA)).toEqual([]);
+  });
+});
