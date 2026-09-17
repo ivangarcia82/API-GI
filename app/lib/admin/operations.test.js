@@ -20,6 +20,7 @@ import {
   setCustomerRequestedAdvisor,
   setDraftOrderAdvisor,
   getCustomerBrandColors,
+  getDiscountByCode,
 } from './operations.js';
 
 beforeEach(() => {
@@ -934,6 +935,128 @@ describe('getCustomerBrandColors', () => {
   it('no llama a la red sin gid', async () => {
     isStubMode.mockReturnValue(false);
     expect(await getCustomerBrandColors({PRIVATE_ADMIN_API_TOKEN: 't'}, null)).toBeNull();
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('getDiscountByCode', () => {
+  /** Respuesta de Shopify para un cupón sano de 20% sobre todo el carrito. */
+  function nodo(over = {}) {
+    return {
+      codeDiscountNodeByCode: {
+        id: 'gid://shopify/DiscountCodeNode/1',
+        codeDiscount: {
+          __typename: 'DiscountCodeBasic',
+          title: 'Bienvenida ANDANAC',
+          status: 'ACTIVE',
+          customerGets: {
+            value: {__typename: 'DiscountPercentage', percentage: 0.2},
+            items: {__typename: 'AllDiscountItems', allItems: true},
+          },
+          minimumRequirement: null,
+          ...over,
+        },
+      },
+    };
+  }
+
+  it('convierte la fracción de Shopify (0.2) al porcentaje que se pinta (20)', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce(nodo());
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, 'BIENVENIDOANDANAC');
+    expect(r).toEqual({
+      ok: true,
+      code: 'BIENVENIDOANDANAC',
+      title: 'Bienvenida ANDANAC',
+      percentage: 20,
+    });
+  });
+
+  it('normaliza el código a mayúsculas y sin espacios antes de preguntar', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce(nodo());
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, '  bienvenidoandanac ');
+    expect(r.code).toBe('BIENVENIDOANDANAC');
+    const [, , vars] = adminFetch.mock.calls[0];
+    expect(vars).toEqual({code: 'BIENVENIDOANDANAC'});
+  });
+
+  it('un código que no existe se reporta como tal', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({codeDiscountNodeByCode: null});
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, 'NOEXISTE');
+    expect(r).toEqual({ok: false, reason: 'no-existe'});
+  });
+
+  it('un cupón vencido no se aplica aunque exista', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce(nodo({status: 'EXPIRED'}));
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, 'X');
+    expect(r).toEqual({ok: false, reason: 'inactivo'});
+  });
+
+  it('un descuento de monto fijo se rechaza en vez de pintarse como porcentaje', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce(
+      nodo({
+        customerGets: {
+          value: {__typename: 'DiscountAmount', amount: {amount: '100.0'}},
+          items: {__typename: 'AllDiscountItems', allItems: true},
+        },
+      }),
+    );
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, 'X');
+    expect(r).toEqual({ok: false, reason: 'no-porcentaje'});
+  });
+
+  it('un cupón limitado a ciertos productos se rechaza: el % plano mentiría', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce(
+      nodo({
+        customerGets: {
+          value: {__typename: 'DiscountPercentage', percentage: 0.2},
+          items: {__typename: 'DiscountProducts'},
+        },
+      }),
+    );
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, 'X');
+    expect(r).toEqual({ok: false, reason: 'restringido'});
+  });
+
+  it('un cupón con monto mínimo de compra también se rechaza', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce(
+      nodo({minimumRequirement: {__typename: 'DiscountMinimumSubtotal'}}),
+    );
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, 'X');
+    expect(r).toEqual({ok: false, reason: 'restringido'});
+  });
+
+  it('un tipo de descuento que no es "amount off" (envío gratis, BXGY) se rechaza', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({
+      codeDiscountNodeByCode: {
+        id: 'gid://shopify/DiscountCodeNode/1',
+        codeDiscount: {__typename: 'DiscountCodeFreeShipping'},
+      },
+    });
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, 'X');
+    expect(r).toEqual({ok: false, reason: 'no-porcentaje'});
+  });
+
+  it('un código vacío no gasta una llamada al Admin API', async () => {
+    isStubMode.mockReturnValue(false);
+    const r = await getDiscountByCode({PRIVATE_ADMIN_API_TOKEN: 't'}, '   ');
+    expect(r).toEqual({ok: false, reason: 'no-existe'});
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+
+  it('en stub (dev sin token) el código conocido pasa y cualquier otro no', async () => {
+    isStubMode.mockReturnValue(true);
+    const bueno = await getDiscountByCode({}, 'bienvenidoandanac');
+    expect(bueno).toMatchObject({ok: true, code: 'BIENVENIDOANDANAC', percentage: 20});
+    const malo = await getDiscountByCode({}, 'OTRO');
+    expect(malo).toEqual({ok: false, reason: 'no-existe'});
     expect(adminFetch).not.toHaveBeenCalled();
   });
 });

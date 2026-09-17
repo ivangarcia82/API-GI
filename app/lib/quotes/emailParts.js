@@ -1,6 +1,7 @@
 // Shared, pure building blocks for the quote emails (advisor + customer).
 // Kept in one place so both templates render an identical items table.
 import {escapeHtml} from '../email/escape.js';
+import {quoteTotals} from './discount.js';
 
 // Re-exportado para no romper a quien ya lo importa desde aquí.
 export {escapeHtml};
@@ -23,12 +24,22 @@ export function quoteTotal(items) {
   return items.reduce((s, i) => s + Number(i.effectiveUnitPrice) * i.qty, 0);
 }
 
+/** Una fila del pie de la tabla. */
+function filaPie(etiqueta, importe) {
+  return `
+          <tr>
+            <td colspan="4" style="padding:10px;text-align:right;font-weight:bold">${escapeHtml(etiqueta)}</td>
+            <td style="padding:10px;text-align:right;font-weight:bold">${importe}</td>
+          </tr>`;
+}
+
 /**
  * @param {Array<{title: string, qty: number, technique?: string, size?: string, effectiveUnitPrice: number}>} items
- * @param {{totalLabel?: string}} [opts]
+ * @param {{totalLabel?: string, discount?: {code?: string, percentage?: number}|null}} [opts]
  * @returns {string}
  */
-export function itemsTableHtml(items, {totalLabel = 'Total'} = {}) {
+export function itemsTableHtml(items, {totalLabel = 'Total', discount = null} = {}) {
+  const totales = quoteTotals(items, discount);
   const rows = items
     .map(
       (i) => `
@@ -54,11 +65,18 @@ export function itemsTableHtml(items, {totalLabel = 'Total'} = {}) {
           </tr>
         </thead>
         <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td colspan="4" style="padding:10px;text-align:right;font-weight:bold">${escapeHtml(totalLabel)}</td>
-            <td style="padding:10px;text-align:right;font-weight:bold">$${money(quoteTotal(items))}</td>
-          </tr>
+        <tfoot>${
+          // Con cupón el pie se desglosa; sin él se queda en una sola línea,
+          // que es como han salido todos los correos hasta hoy.
+          totales.descuento > 0
+            ? filaPie('Subtotal', `$${money(totales.subtotal)}`) +
+              filaPie(
+                `Descuento (${discount.code})`,
+                `-$${money(totales.descuento)}`,
+              ) +
+              filaPie(totalLabel, `$${money(totales.subtotalNeto)}`)
+            : filaPie(totalLabel, `$${money(totales.subtotal)}`)
+        }
         </tfoot>
       </table>`;
 }

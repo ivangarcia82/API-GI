@@ -5,6 +5,7 @@ import {getQuoteWithItems} from '~/lib/quotes/repo';
 import {findById} from '~/lib/auth/users';
 import {advisorCanSee} from '~/lib/quotes/advisorAccess';
 import {folioVisible} from '~/lib/quotes/folio';
+import {quoteTotals} from '~/lib/quotes/discount';
 import {formatPrice} from '~/lib/gi';
 
 export const meta = () => [{title: 'Cotización asignada · Generando Ideas'}];
@@ -45,7 +46,10 @@ const STATUS_LABEL = {
 
 export default function AsesorCotizacionDetalle() {
   const {quote, items, comprador} = useLoaderData();
-  const subtotal = items.reduce((s, i) => s + i.effectiveUnitPrice * i.qty, 0);
+  const {subtotal, descuento, subtotalNeto} = quoteTotals(items, {
+    code: quote.discountCode,
+    percentage: quote.discountPercentage,
+  });
 
   return (
     <>
@@ -122,7 +126,16 @@ export default function AsesorCotizacionDetalle() {
       </div>
 
       <div style={{textAlign: 'right', marginTop: 16, fontWeight: 700}}>
-        Subtotal: {formatPrice(subtotal)}
+        <div>Subtotal: {formatPrice(subtotal)}</div>
+        {descuento > 0 && (
+          <>
+            <div style={{color: 'var(--ink-3)', fontWeight: 400}}>
+              Descuento {quote.discountCode} ({quote.discountPercentage}%): -
+              {formatPrice(descuento)}
+            </div>
+            <div>Total: {formatPrice(subtotalNeto)}</div>
+          </>
+        )}
       </div>
 
       {quote.notes && (

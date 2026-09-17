@@ -158,6 +158,7 @@ async function loadCriticalData({context}) {
 
   let favs = [];
   let quote = [];
+  let discount = null;
   if (sessionUser) {
     try {
       const db = getDb(context.env);
@@ -168,11 +169,19 @@ async function loadCriticalData({context}) {
         getOrCreateDraftQuote(db, sessionUser.userId),
       ]);
       favs = favIds ?? [];
-      const {items} = await getQuoteWithItems(db, draft.id);
+      const {quote: fila, items} = await getQuoteWithItems(db, draft.id);
       quote = items ?? [];
+      /* El cupón se lee de la cotización, no se le vuelve a preguntar a
+         Shopify en cada carga: se validó al aplicarlo y se revalida al enviar,
+         que es cuando importa. Así una cotización con cupón no cuesta una
+         llamada al Admin API por pantalla. */
+      if (fila?.discountCode) {
+        discount = {code: fila.discountCode, percentage: fila.discountPercentage, title: null};
+      }
     } catch {
       favs = [];
       quote = [];
+      discount = null;
     }
   }
 
@@ -182,6 +191,7 @@ async function loadCriticalData({context}) {
     brandColors: marca?.families || [],
     favs,
     quote,
+    discount,
   };
 }
 
@@ -284,6 +294,7 @@ export default function App() {
         isLoggedIn={data.isLoggedIn}
         brandColors={data.brandColors}
         quote={data.quote}
+        discount={data.discount}
         favs={data.favs}
       >
         <PageLayout {...data}>

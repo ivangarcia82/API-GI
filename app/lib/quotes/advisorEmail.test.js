@@ -149,3 +149,17 @@ describe('buildAdvisorEmail · botón al portal', () => {
     expect(msg.html).not.toContain('<a href');
   });
 });
+
+describe('buildAdvisorEmail · cupón', () => {
+  it('el ejecutivo ve el descuento que el cliente aplicó', () => {
+    const {html} = buildAdvisorEmail({
+      advisorEmail: 'ase@gi.com',
+      quote: {id: 'q1', folio: 'GI-1', discountCode: 'BIENVENIDOANDANAC', discountPercentage: 20},
+      user: {email: 'a@b.com', firstName: 'Ana'},
+      items: [{title: 'Termo', qty: 100, technique: 'Sin decorado', effectiveUnitPrice: 100}],
+      portalUrl: 'https://gi.test/asesor/q1',
+    });
+    expect(html).toMatch(/Descuento \(BIENVENIDOANDANAC\)/);
+    expect(html).toMatch(/-\$2,000\.00/);
+  });
+});

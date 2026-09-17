@@ -196,3 +196,36 @@ describe('formato de cotización · pie fiscal', () => {
     expect(html).toContain('RFC: ESI130515FI3');
   });
 });
+
+describe('formato de cotización · cupón', () => {
+  /** Los importes de la caja de totales, en orden. */
+  function totales(html) {
+    const caja = html.split('class="totales"')[1]?.split('</div>\n    </div>')[0] ?? '';
+    return [...caja.matchAll(/class="val">([^<]+)</g)].map((m) => m[1]);
+  }
+
+  it('sin cupón el PDF no inventa una línea de descuento', async () => {
+    const html = await render();
+    expect(html).not.toMatch(/Descuento/);
+  });
+
+  it('con cupón imprime el descuento y calcula el IVA sobre el neto', async () => {
+    // 300 x 29.97 = 8,991 + 100 x 55 = 5,500 -> subtotal 14,491
+    getQuoteWithItems.mockResolvedValue({
+      quote: {
+        id: 'q1', userId: 'u1', folio: 'GIV.CDMX.20260007', notes: null, deadline: null,
+        discountCode: 'BIENVENIDOANDANAC', discountPercentage: 20,
+      },
+      items: ITEMS,
+    });
+    const html = await render();
+    expect(html).toMatch(/Descuento/);
+    expect(html).toMatch(/BIENVENIDOANDANAC/);
+    const [subtotal, descuento, iva, total] = totales(html);
+    expect(subtotal).toContain('14,491');
+    expect(descuento).toContain('2,898.20');
+    // IVA del neto (11,592.80), no de los 14,491 originales.
+    expect(iva).toContain('1,854.85');
+    expect(total).toContain('13,447.65');
+  });
+});

@@ -24,6 +24,9 @@ function mapQuoteRow(r) {
     deadline: r.deadline ?? null,
     shopifyDraftOrderGid: r.shopify_draft_order_gid ?? null,
     shopifyInvoiceUrl: r.shopify_invoice_url ?? null,
+    discountCode: r.discount_code ?? null,
+    discountPercentage:
+      r.discount_percentage == null ? null : Number(r.discount_percentage),
   };
 }
 
@@ -71,6 +74,8 @@ export async function getOrCreateDraftQuote(db, userId) {
       deadline: null,
       shopifyDraftOrderGid: null,
       shopifyInvoiceUrl: null,
+      discountCode: null,
+      discountPercentage: null,
     };
   } catch (err) {
     // Lost the race against idx_one_draft_per_user: re-select the winning draft.
@@ -142,6 +147,28 @@ export async function clearQuote(db, quoteId) {
   await db.execute({
     sql: `UPDATE quotes SET updated_at=? WHERE id=?`,
     args: [nowIso(), quoteId],
+  });
+}
+
+/**
+ * Aplica o quita el cupón de una cotización.
+ *
+ * Guarda lo que Shopify ya validó (ver getDiscountByCode); este módulo no juzga
+ * el cupón, sólo lo persiste. `null` lo quita: las dos columnas vuelven a NULL,
+ * no a cero, para que "sin cupón" y "cupón del 0%" no se confundan.
+ *
+ * @param {import('@libsql/client/web').Client} db
+ * @param {string} quoteId
+ * @param {{code: string, percentage: number}|null} discount
+ */
+export async function setQuoteDiscount(db, quoteId, discount) {
+  const code = discount ? String(discount.code ?? '').trim() || null : null;
+  const percentage = code && Number.isFinite(Number(discount.percentage))
+    ? Number(discount.percentage)
+    : null;
+  await db.execute({
+    sql: `UPDATE quotes SET discount_code=?, discount_percentage=?, updated_at=? WHERE id=?`,
+    args: [code, percentage, nowIso(), quoteId],
   });
 }
 

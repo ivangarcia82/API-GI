@@ -27,7 +27,10 @@ export function buildCustomerEmail({quote, user, items, quoteUrl}) {
   <p>Recibimos tu solicitud. Un asesor la revisará y te contactará con la propuesta formal.</p>
   <p><strong>Folio:</strong> ${escapeHtml(folioVisible(quote))}</p>
   ${deadlineBlock}
-  ${itemsTableHtml(items, {totalLabel: 'Total estimado'})}
+  ${itemsTableHtml(items, {
+    totalLabel: 'Total estimado',
+    discount: {code: quote.discountCode, percentage: quote.discountPercentage},
+  })}
   <p style="margin:24px 0">
     <a href="${url}" style="background:#111;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Ver mi cotización</a>
   </p>

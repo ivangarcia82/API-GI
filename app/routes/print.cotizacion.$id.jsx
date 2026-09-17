@@ -5,6 +5,7 @@
 import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {getQuoteWithItems} from '~/lib/quotes/repo';
+import {quoteTotals} from '~/lib/quotes/discount';
 import {findById} from '~/lib/auth/users';
 import {advisorCanSee} from '~/lib/quotes/advisorAccess';
 import {getCustomerAdvisor} from '~/lib/admin/operations';
@@ -77,9 +78,13 @@ export async function loader({params, context}) {
   ).catch(() => null);
   const atte = firma(advisor);
 
-  const subtotal = items.reduce((s, i) => s + i.effectiveUnitPrice * i.qty, 0);
-  const iva = subtotal * 0.16;
-  const total = subtotal + iva;
+  /* La MISMA aritmética que el cajón y los correos. Este documento es el que el
+     cliente archiva: si su total no coincidiera con el de la draft order de
+     Shopify, el descuento sería una promesa que la orden no cumple. */
+  const {subtotal, descuento, iva, total} = quoteTotals(items, {
+    code: quote.discountCode,
+    percentage: quote.discountPercentage,
+  });
   const issued = new Date().toLocaleDateString('es-MX', {
     year: 'numeric',
     month: 'short',
@@ -220,6 +225,11 @@ export async function loader({params, context}) {
 
     <div class="totales">
       <div class="fila"><span class="etq">Subtotal</span><span class="val">${money(subtotal)}</span></div>
+      ${
+        descuento > 0
+          ? `<div class="fila"><span class="etq">Descuento (${esc(quote.discountCode)})</span><span class="val">-${money(descuento)}</span></div>`
+          : ''
+      }
       <div class="fila"><span class="etq">I.V.A.</span><span class="val">${money(iva)}</span></div>
       <div class="fila"><span class="etq">Total</span><span class="val">${money(total)}</span></div>
     </div>

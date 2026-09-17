@@ -9,6 +9,7 @@ import {formatPrice} from '~/lib/gi';
 import {useApp, useToast} from '~/lib/AppContext';
 import {Button} from '~/components/gi/ui';
 import {folioVisible} from '~/lib/quotes/folio';
+import {quoteTotals} from '~/lib/quotes/discount';
 
 export const meta = () => [{title: 'Cotización · Generando Ideas'}];
 
@@ -43,7 +44,10 @@ export default function CotizacionDetail() {
   const {reorderQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
   const [reordering, setReordering] = useState(false);
-  const total = items.reduce((s, i) => s + i.effectiveUnitPrice * i.qty, 0);
+  const {subtotal, descuento, subtotalNeto: total} = quoteTotals(items, {
+    code: quote.discountCode,
+    percentage: quote.discountPercentage,
+  });
   const totalPieces = items.reduce((n, i) => n + i.qty, 0);
 
   const handleReorder = async () => {
@@ -185,6 +189,20 @@ export default function CotizacionDetail() {
             ))}
           </tbody>
           <tfoot>
+            {descuento > 0 && (
+              <>
+                <tr>
+                  <td colSpan={2}>Subtotal</td>
+                  <td className="num" colSpan={3}>{formatPrice(subtotal)}</td>
+                </tr>
+                <tr>
+                  <td colSpan={2}>
+                    Descuento · {quote.discountCode} ({quote.discountPercentage}%)
+                  </td>
+                  <td className="num" colSpan={3}>-{formatPrice(descuento)}</td>
+                </tr>
+              </>
+            )}
             <tr>
               <td colSpan={2}>Total · {totalPieces} pz</td>
               <td className="num" colSpan={3}>{formatPrice(total)}</td>

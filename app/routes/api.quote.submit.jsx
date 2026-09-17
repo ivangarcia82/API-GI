@@ -7,10 +7,16 @@ import {
   createCustomer,
   createDraftOrder,
   getCustomerAdvisor,
+  getDiscountByCode,
   setDraftOrderAdvisor,
 } from '~/lib/admin/operations';
 import {notifyQuoteSubmitted, resolveAdvisorRecipient} from '~/lib/quotes/notify';
-import {getOrCreateDraftQuote, getQuoteWithItems, markSubmitted} from '~/lib/quotes/repo';
+import {
+  getOrCreateDraftQuote,
+  getQuoteWithItems,
+  markSubmitted,
+  setQuoteDiscount,
+} from '~/lib/quotes/repo';
 import {buildDraftOrderInput} from '~/lib/quotes/draftInput';
 
 export async function action({request, context}) {
@@ -42,6 +48,33 @@ export async function action({request, context}) {
 
   const user = await findById(db, sessionUser.userId);
 
+  /* El cupón se revalida JUSTO antes de emitir el documento. Entre que el
+     comprador lo aplicó y que envía pueden pasar días: si venció, Shopify lo
+     ignoraría en silencio al calcular la draft order y el PDF acabaría
+     prometiendo un descuento que la orden no tiene. Un cupón muerto se retira
+     aquí; uno que cambió de porcentaje se refresca.
+
+     Si la consulta misma falla, se sigue con lo guardado: una cotización ya
+     armada no se pierde por un hipo del Admin API. */
+  let quoteParaDraft = quote;
+  if (quote.discountCode) {
+    try {
+      const vigente = await getDiscountByCode(env, quote.discountCode);
+      if (vigente.ok) {
+        await setQuoteDiscount(db, quote.id, {
+          code: vigente.code,
+          percentage: vigente.percentage,
+        });
+        quoteParaDraft = {...quote, discountCode: vigente.code, discountPercentage: vigente.percentage};
+      } else {
+        await setQuoteDiscount(db, quote.id, null);
+        quoteParaDraft = {...quote, discountCode: null, discountPercentage: null};
+      }
+    } catch (err) {
+      console.error('[quote.submit] discount revalidation failed; keeping stored:', err);
+    }
+  }
+
   // Best-effort customer reconcile. If it fails (e.g. email taken but not
   // surfaced by search), DON'T abort — the draft order links by email and we
   // capture the real customer gid from the draft response below.
@@ -67,7 +100,12 @@ export async function action({request, context}) {
   let gid;
   let invoiceUrl;
   try {
-    const input = buildDraftOrderInput({quote, items, customerGid, email: user.email});
+    const input = buildDraftOrderInput({
+      quote: quoteParaDraft,
+      items,
+      customerGid,
+      email: user.email,
+    });
     const result = await createDraftOrder(env, input);
     gid = result.gid;
     invoiceUrl = result.invoiceUrl;
@@ -123,7 +161,16 @@ export async function action({request, context}) {
   await notifyQuoteSubmitted(
     env,
     {
-      quote: {id: quote.id, folio, notes: quote.notes, deadline: quote.deadline},
+      quote: {
+        id: quote.id,
+        folio,
+        notes: quote.notes,
+        deadline: quote.deadline,
+        // El cupón ya revalidado, no el guardado: si venció, el correo y el PDF
+        // no pueden prometer un descuento que la draft order no lleva.
+        discountCode: quoteParaDraft.discountCode ?? null,
+        discountPercentage: quoteParaDraft.discountPercentage ?? null,
+      },
       user,
       items,
       customerGid,

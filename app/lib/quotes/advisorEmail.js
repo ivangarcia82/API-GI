@@ -49,7 +49,9 @@ export function buildAdvisorEmail({
       </p>
       ${deadlineBlock}
       ${notesBlock}
-      ${itemsTableHtml(items)}
+      ${itemsTableHtml(items, {
+        discount: {code: quote.discountCode, percentage: quote.discountPercentage},
+      })}
       ${invoiceBlock}
     </div>`;
 

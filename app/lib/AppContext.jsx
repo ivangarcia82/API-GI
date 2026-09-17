@@ -75,11 +75,16 @@ export function AppProvider({
   isLoggedIn = false,
   brandColors = DEFAULT_BRAND_COLORS,
   quote: quoteProp = [],
+  discount: discountProp = null,
   favs: favsProp = [],
 }) {
   // hydrated=false during SSR + first client paint to avoid mismatch
   const [hydrated, setHydrated] = useState(false);
   const [quote, setQuote] = useState(quoteProp);
+  /* El cupón va aparte de `quote` y no dentro: es del documento, no de una
+     línea. Mezclarlo en la lista obligaría a que mergeQuoteState —cuyo trato es
+     "el servidor manda sobre los items"— supiera además de descuentos. */
+  const [quoteDiscount, setQuoteDiscount] = useState(discountProp);
   const [favs, setFavs] = useState(favsProp);
   const wishlistFetcher = useFetcher();
   const [tweaks, setTweaks] = useState(DEFAULT_TWEAKS);
@@ -121,6 +126,9 @@ export function AppProvider({
         // Phase 4 routes return the authoritative item list at the top level
         // ({ok, quoteId, items}); wrap it into the {items} shape the reducer expects.
         setQuote((prev) => mergeQuoteState(prev, {items: data.items}));
+        // `discount: null` es una respuesta legítima (cupón retirado), así que
+        // se mira la llave, no su valor.
+        if (data && 'discount' in data) setQuoteDiscount(data.discount ?? null);
         return data.items;
       } finally {
         setQuotePending(false);
@@ -373,11 +381,28 @@ export function AppProvider({
       .finally(() => setQuotePending(false));
   }, [hydrated, isLoggedIn, migratedQuote, openQuoteDrawer, pushToast]);
 
+  /* Aplicar y quitar el cupón. El porcentaje NUNCA se decide aquí: se postea el
+     código, el servidor se lo pregunta a Shopify y lo que vuelve es lo que se
+     pinta. Un rechazo se propaga como error (el cajón lo enseña como toast) y
+     deja intacto el cupón anterior, porque perder uno válido por teclear mal
+     otro sería castigar el intento. */
+  const applyQuoteDiscount = useCallback(
+    (code) => postQuote('discount', {code: String(code ?? '').trim()}).then(() => undefined),
+    [postQuote],
+  );
+  const removeQuoteDiscount = useCallback(
+    () => postQuote('discount', {clear: 'true'}).then(() => undefined),
+    [postQuote],
+  );
+
   const quoteCount = quotePieceCount(quote);
 
   const value = {
     hydrated,
     isLoggedIn,
+    quoteDiscount,
+    applyQuoteDiscount,
+    removeQuoteDiscount,
     brandColors,
     quote,
     quoteCount,

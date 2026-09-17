@@ -141,3 +141,39 @@ describe('buildDraftOrderInput', () => {
     expect(input.lineItems[0].priceOverride.amount).toBe('5.00');
   });
 });
+
+describe('buildDraftOrderInput · cupón', () => {
+  it('manda el código a Shopify para que sea ÉL quien aplique el descuento', () => {
+    const input = buildDraftOrderInput({
+      quote: {...QUOTE, discountCode: 'BIENVENIDOANDANAC'},
+      items: ITEMS,
+      customerGid: null,
+      email: 'a@b.com',
+    });
+    expect(input.discountCodes).toEqual(['BIENVENIDOANDANAC']);
+    // El descuento NO se pre-calcula en los precios de línea: si lo hiciéramos
+    // y Shopify lo aplicara otra vez, el cliente vería el 20% dos veces.
+    expect(input.appliedDiscount).toBeUndefined();
+    expect(input.lineItems[0].priceOverride.amount).toBe('29.97');
+  });
+
+  it('sin cupón no manda la llave vacía', () => {
+    const input = buildDraftOrderInput({
+      quote: QUOTE,
+      items: ITEMS,
+      customerGid: null,
+      email: 'a@b.com',
+    });
+    expect(input).not.toHaveProperty('discountCodes');
+  });
+
+  it('un código en blanco cuenta como sin cupón', () => {
+    const input = buildDraftOrderInput({
+      quote: {...QUOTE, discountCode: '   '},
+      items: ITEMS,
+      customerGid: null,
+      email: 'a@b.com',
+    });
+    expect(input).not.toHaveProperty('discountCodes');
+  });
+});

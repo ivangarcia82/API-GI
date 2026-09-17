@@ -112,3 +112,17 @@ describe('buildCustomerEmail', () => {
     expect(msg.html).toContain('A &amp; B &lt;Co&gt;');
   });
 });
+
+describe('buildCustomerEmail · cupón', () => {
+  it('el correo del cliente refleja el descuento que trae la cotización', () => {
+    const {html} = buildCustomerEmail({
+      quote: {id: 'q1', folio: 'GI-1', discountCode: 'BIENVENIDOANDANAC', discountPercentage: 20},
+      user: {email: 'a@b.com', firstName: 'Ana'},
+      items: [{title: 'Termo', qty: 100, technique: 'Sin decorado', effectiveUnitPrice: 100}],
+      quoteUrl: 'https://gi.test/q',
+    });
+    expect(html).toMatch(/Descuento \(BIENVENIDOANDANAC\)/);
+    expect(html).toMatch(/-\$2,000\.00/);
+    expect(html).toMatch(/8,000\.00/);
+  });
+});

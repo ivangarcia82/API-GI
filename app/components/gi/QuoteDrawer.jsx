@@ -8,6 +8,7 @@ import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
 import {useDialogBehavior} from '~/lib/dialog';
 import {formatPrice} from '~/lib/gi';
+import {quoteTotals} from '~/lib/quotes/discount';
 
 export function QuoteDrawer() {
   const {
@@ -20,6 +21,9 @@ export function QuoteDrawer() {
     removeFromQuote,
     clearQuote,
     markQuoteIntent,
+    quoteDiscount,
+    applyQuoteDiscount,
+    removeQuoteDiscount,
   } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
@@ -29,6 +33,8 @@ export function QuoteDrawer() {
   const [notes, setNotes] = useState('');
   const [deadline, setDeadline] = useState('');
   const [confirmandoVaciar, setConfirmandoVaciar] = useState(false);
+  const [codigo, setCodigo] = useState('');
+  const [validandoCupon, setValidandoCupon] = useState(false);
   const submitting = submitFetcher.state !== 'idle';
   // Una fecha objetivo en el pasado no es un objetivo. El input la rechaza en
   // el propio calendario en vez de dejar que llegue al asesor.
@@ -44,6 +50,7 @@ export function QuoteDrawer() {
       setNotes('');
       setDeadline('');
       setConfirmandoVaciar(false);
+      setCodigo('');
     }
   }, [quoteDrawerOpen]);
 
@@ -66,8 +73,9 @@ export function QuoteDrawer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitFetcher.state, submitFetcher.data]);
 
-  const subtotal = quote.reduce((s, i) => s + (i.effectiveUnitPrice || 0) * i.qty, 0);
-  const estTotal = subtotal * 1.16;
+  /* Una sola fuente para la aritmética: la misma que usan el PDF, los correos y
+     los dos portales. Descuento sobre el subtotal, IVA sobre el ya descontado. */
+  const totales = quoteTotals(quote, quoteDiscount);
   const totalPieces = quote.reduce((n, i) => n + i.qty, 0);
 
   const submit = () => {
@@ -96,6 +104,28 @@ export function QuoteDrawer() {
     return clearQuote()
       .then(() => toast('Lista vaciada'))
       .catch((e) => toast(e?.message || 'No se pudo vaciar la lista', {icon: 'alert'}));
+  };
+
+  /* El servidor le pregunta a Shopify y contesta con el porcentaje real. Un
+     rechazo llega como error con el motivo ya redactado por la ruta. */
+  const aplicarCupon = () => {
+    const limpio = codigo.trim();
+    if (!limpio || validandoCupon) return;
+    setValidandoCupon(true);
+    applyQuoteDiscount(limpio)
+      .then(() => {
+        setCodigo('');
+        toast('Cupón aplicado', {icon: 'check', accent: true});
+      })
+      .catch((e) => toast(e?.message || 'No se pudo aplicar el cupón', {icon: 'alert'}))
+      .finally(() => setValidandoCupon(false));
+  };
+  const quitarCupon = () => {
+    setValidandoCupon(true);
+    removeQuoteDiscount()
+      .then(() => toast('Cupón retirado'))
+      .catch((e) => toast(e?.message || 'No se pudo quitar el cupón', {icon: 'alert'}))
+      .finally(() => setValidandoCupon(false));
   };
 
   const goAndClose = (to) => {
@@ -221,6 +251,48 @@ export function QuoteDrawer() {
             />
           </div>
           <div className="field">
+            <label htmlFor="qd-discount">Código de descuento</label>
+            {quoteDiscount ? (
+              <div className="qd-cupon-aplicado">
+                <Icon name="check" size={13} />
+                <span>{quoteDiscount.code}</span>
+                <button
+                  type="button"
+                  aria-label="Quitar cupón"
+                  onClick={quitarCupon}
+                  disabled={validandoCupon}
+                >
+                  Quitar
+                </button>
+              </div>
+            ) : (
+              <div className="qd-cupon">
+                <input
+                  id="qd-discount"
+                  className="input"
+                  value={codigo}
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  placeholder="Ej: BIENVENIDOANDANAC"
+                  onChange={(e) => setCodigo(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      aplicarCupon();
+                    }
+                  }}
+                />
+                <Button
+                  variant="ghost"
+                  onClick={aplicarCupon}
+                  disabled={!codigo.trim() || validandoCupon}
+                >
+                  {validandoCupon ? 'Validando…' : 'Aplicar'}
+                </Button>
+              </div>
+            )}
+          </div>
+          <div className="field">
             <label htmlFor="qd-notes">Notas para el asesor</label>
             <textarea
               id="qd-notes"
@@ -264,15 +336,23 @@ export function QuoteDrawer() {
           </div>
           <div className="cart-summary-line">
             <span>Subtotal estimado</span>
-            <span className="mono">{formatPrice(subtotal)}</span>
+            <span className="mono">{formatPrice(totales.subtotal)}</span>
           </div>
+          {quoteDiscount && (
+            <div className="cart-summary-line qd-linea-descuento">
+              <span>
+                Descuento · {quoteDiscount.code} ({quoteDiscount.percentage}%)
+              </span>
+              <span className="mono">-{formatPrice(totales.descuento)}</span>
+            </div>
+          )}
           <div className="cart-summary-line">
             <span>IVA estimado</span>
-            <span className="mono">{formatPrice(estTotal - subtotal)}</span>
+            <span className="mono">{formatPrice(totales.iva)}</span>
           </div>
           <div className="cart-summary-line total">
             <span>Total estimado</span>
-            <span className="mono">{formatPrice(estTotal)}</span>
+            <span className="mono">{formatPrice(totales.total)}</span>
           </div>
           {isLoggedIn ? (
             <Button

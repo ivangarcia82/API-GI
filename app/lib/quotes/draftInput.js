@@ -72,6 +72,12 @@ export function buildDraftOrderInput({quote, items, customerGid, email}) {
     note: composeNote(quote),
     lineItems: items.map(lineItem),
   };
+  // El cupón se manda como CÓDIGO, no como descuento ya calculado: Shopify lo
+  // valida (vigencia, límites de uso, elegibilidad) y lo aplica él mismo sobre
+  // la draft order. Por eso los precios de línea van SIN descontar — si además
+  // los descontáramos aquí, el 20% se aplicaría dos veces.
+  const codigo = String(quote.discountCode ?? '').trim();
+  if (codigo) input.discountCodes = [codigo];
   // Link the customer explicitly when we resolved a real gid; otherwise Shopify
   // associates the draft order with the customer by email (existing or new).
   if (customerGid && !String(customerGid).includes('STUB-')) {

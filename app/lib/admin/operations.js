@@ -4,6 +4,7 @@
 // mutation (purchasingEntity.customerId + originalUnitPriceWithCurrency); it is
 // consumed in Phase 4. env is always passed explicitly.
 
+import {round2} from '../decoration/engine.js';
 import {MANAGERS} from '../quotes/managers.js';
 import {adminFetch, isStubMode} from './client.js';
 
@@ -560,4 +561,93 @@ export async function getCustomerBrandColors(env, customerGid) {
   if (isStubMode(env) || !customerGid) return null;
   const data = await adminFetch(env, CUSTOMER_BRAND_COLORS, {gid: customerGid});
   return data?.customer?.metafield?.value ?? null;
+}
+
+const DISCOUNT_BY_CODE = `
+  query discountByCode($code: String!) {
+    codeDiscountNodeByCode(code: $code) {
+      id
+      codeDiscount {
+        __typename
+        ... on DiscountCodeBasic {
+          title
+          status
+          customerGets {
+            value {
+              __typename
+              ... on DiscountPercentage { percentage }
+            }
+            items {
+              __typename
+              ... on AllDiscountItems { allItems }
+            }
+          }
+          minimumRequirement { __typename }
+        }
+      }
+    }
+  }
+`;
+
+/** Cupón que reconoce el stub cuando se corre `dev` sin token de Admin.
+ *  Sólo vive aquí: isStubMode revienta si ENVIRONMENT=production sin token,
+ *  así que este 20% no puede alcanzar a un cliente real. */
+const STUB_DISCOUNT = {code: 'BIENVENIDOANDANAC', title: 'Bienvenida ANDANAC (stub)', percentage: 20};
+
+/**
+ * Lee un cupón de Shopify por su código. Requiere el scope `read_discounts`.
+ *
+ * Devuelve el porcentaje EN PORCENTAJE (20), no en la fracción que manda
+ * Shopify (0.2): confundir las dos unidades convierte un 20% en un 0.2%.
+ *
+ * Sólo acepta cupones que se pueden reflejar honestamente en la cotización: un
+ * porcentaje, activo, sobre todo el carrito y sin monto mínimo. Cualquier otra
+ * cosa (monto fijo, envío gratis, BXGY, limitado a productos, con mínimo) se
+ * rechaza con una razón, porque un % plano sobre el subtotal no coincidiría con
+ * lo que Shopify acabe calculando en la draft order.
+ *
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} code
+ * @returns {Promise<{ok:true, code:string, title:string, percentage:number}
+ *                 | {ok:false, reason:'no-existe'|'inactivo'|'no-porcentaje'|'restringido'}>}
+ */
+export async function getDiscountByCode(env, code) {
+  const normalizado = String(code ?? '').trim().toUpperCase();
+  if (!normalizado) return {ok: false, reason: 'no-existe'};
+
+  if (isStubMode(env)) {
+    return normalizado === STUB_DISCOUNT.code
+      ? {ok: true, ...STUB_DISCOUNT}
+      : {ok: false, reason: 'no-existe'};
+  }
+
+  const data = await adminFetch(env, DISCOUNT_BY_CODE, {code: normalizado});
+  const descuento = data?.codeDiscountNodeByCode?.codeDiscount;
+  if (!descuento) return {ok: false, reason: 'no-existe'};
+  // Envío gratis y BXGY no son un porcentaje sobre el subtotal.
+  if (descuento.__typename !== 'DiscountCodeBasic') return {ok: false, reason: 'no-porcentaje'};
+
+  const valor = descuento.customerGets?.value;
+  if (valor?.__typename !== 'DiscountPercentage') return {ok: false, reason: 'no-porcentaje'};
+
+  // Vencido o programado para después: existe, pero hoy no aplica.
+  if (descuento.status !== 'ACTIVE') return {ok: false, reason: 'inactivo'};
+
+  const items = descuento.customerGets?.items;
+  if (items?.__typename !== 'AllDiscountItems' || items.allItems !== true) {
+    return {ok: false, reason: 'restringido'};
+  }
+  if (descuento.minimumRequirement) return {ok: false, reason: 'restringido'};
+
+  const fraccion = Number(valor.percentage);
+  if (!Number.isFinite(fraccion) || fraccion <= 0 || fraccion > 1) {
+    return {ok: false, reason: 'no-porcentaje'};
+  }
+
+  return {
+    ok: true,
+    code: normalizado,
+    title: String(descuento.title ?? '').trim() || normalizado,
+    percentage: round2(fraccion * 100),
+  };
 }

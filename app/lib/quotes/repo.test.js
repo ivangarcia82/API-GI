@@ -10,6 +10,7 @@ import {
   listUserQuotes,
   markSubmitted,
   listAdvisorQuotes,
+  setQuoteDiscount,
 } from './repo.js';
 
 const USER = 'user-1';
@@ -198,5 +199,47 @@ describe('asignación de ejecutivo a la cotización', () => {
     const a = await getOrCreateDraftQuote(db, USER);
     await markSubmitted(db, a.id, {gid: null, invoiceUrl: null, advisorEmail: 'lvega@gi.com'});
     expect((await listAdvisorQuotes(db, 'LVega@GI.com')).map((q) => q.id)).toEqual([a.id]);
+  });
+});
+
+describe('quotes/repo · cupón', () => {
+  let db;
+  beforeEach(async () => {
+    db = await makeDb();
+  });
+
+  it('una cotización nueva nace sin cupón', async () => {
+    const draft = await getOrCreateDraftQuote(db, USER);
+    const {quote} = await getQuoteWithItems(db, draft.id);
+    expect(quote.discountCode).toBeNull();
+    expect(quote.discountPercentage).toBeNull();
+  });
+
+  it('guarda el código y el porcentaje que devolvió Shopify', async () => {
+    const draft = await getOrCreateDraftQuote(db, USER);
+    await setQuoteDiscount(db, draft.id, {code: 'BIENVENIDOANDANAC', percentage: 20});
+    const {quote} = await getQuoteWithItems(db, draft.id);
+    expect(quote.discountCode).toBe('BIENVENIDOANDANAC');
+    expect(quote.discountPercentage).toBe(20);
+  });
+
+  it('quitar el cupón deja ambas columnas vacías, no en cero', async () => {
+    const draft = await getOrCreateDraftQuote(db, USER);
+    await setQuoteDiscount(db, draft.id, {code: 'BIENVENIDOANDANAC', percentage: 20});
+    await setQuoteDiscount(db, draft.id, null);
+    const {quote} = await getQuoteWithItems(db, draft.id);
+    expect(quote.discountCode).toBeNull();
+    expect(quote.discountPercentage).toBeNull();
+  });
+
+  it('el cupón sobrevive al envío, porque el PDF y los correos lo necesitan', async () => {
+    const draft = await getOrCreateDraftQuote(db, USER);
+    await upsertQuoteItem(db, draft.id, {id: crypto.randomUUID(), ...sampleItem()});
+    await setQuoteDiscount(db, draft.id, {code: 'BIENVENIDOANDANAC', percentage: 20});
+    await markSubmitted(db, draft.id, {gid: 'gid://x', invoiceUrl: 'https://x'});
+    const {quote} = await getQuoteWithItems(db, draft.id);
+    expect(quote.status).toBe('submitted');
+    expect(quote.discountCode).toBe('BIENVENIDOANDANAC');
+    expect(quote.discountPercentage).toBe(20);
   });
 });

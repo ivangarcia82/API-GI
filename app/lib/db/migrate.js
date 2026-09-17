@@ -116,6 +116,13 @@ export async function migrate(db) {
   // Ejecutivo que atiende la cotización, para el portal del asesor. NULL en las
   // anteriores al cambio: su lista arranca vacía salvo que se rellene.
   await addColumnIfMissing(db, 'quotes', 'advisor_email', 'TEXT');
+  // Cupón de Shopify aplicado a la cotización. Se guardan las DOS cosas: el
+  // código (es lo que viaja a la draft order, donde Shopify lo aplica de
+  // verdad) y el porcentaje que Shopify devolvió al validarlo. El porcentaje no
+  // es la fuente de verdad, es lo que permite que el PDF, los correos y los dos
+  // portales pinten el mismo total sin volver a preguntarle a Shopify.
+  await addColumnIfMissing(db, 'quotes', 'discount_code', 'TEXT');
+  await addColumnIfMissing(db, 'quotes', 'discount_percentage', 'REAL');
   // Después de las altas de columna, no en STATEMENTS: en una base nueva la
   // columna todavía no existe cuando corre ese bloque.
   await db.execute(
