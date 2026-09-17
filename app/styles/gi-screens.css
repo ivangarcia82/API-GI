@@ -2635,10 +2635,12 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
   text-align: center;
   margin: 10px 0 0;
 }
-/* Cupón: el campo y su botón comparten renglón; en pantallas estrechas el
-   botón baja entero en vez de estrujar el input hasta que no se lee el código. */
-.qd-cupon { display: flex; gap: 8px; flex-wrap: wrap; }
-.qd-cupon .input { flex: 1 1 11rem; min-width: 0; text-transform: uppercase; }
+/* Cupón. El botón va DEBAJO del campo, no a su lado: en el ancho del cajón un
+   botón lateral estruja el input justo cuando el código es largo y hay que
+   releerlo. El campo no lleva placeholder a propósito: un cupón no se anuncia
+   solo, lo trae quien ya lo tiene. */
+.qd-cupon { display: grid; gap: 8px; justify-items: start; }
+.qd-cupon .input { width: 100%; min-width: 0; text-transform: uppercase; }
 .qd-cupon-aplicado {
   display: flex;
   align-items: center;

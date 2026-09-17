@@ -83,6 +83,13 @@ describe('QuoteDrawer · cupón', () => {
     expect(importe('Total')).toBe('$9,280');
   });
 
+  it('el campo no sugiere ningún código: el cupón no se anuncia solo', () => {
+    montar();
+    const campo = screen.getByLabelText(/código de descuento/i);
+    expect(campo.getAttribute('placeholder')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/BIENVENIDOANDANAC/);
+  });
+
   it('escribir un código y aplicarlo lo postea a /api/quote/discount', async () => {
     const peticiones = [];
     vi.stubGlobal('fetch', async (url, init) => {

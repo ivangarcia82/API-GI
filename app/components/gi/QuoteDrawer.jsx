@@ -273,7 +273,6 @@ export function QuoteDrawer() {
                   value={codigo}
                   autoCapitalize="characters"
                   spellCheck={false}
-                  placeholder="Ej: BIENVENIDOANDANAC"
                   onChange={(e) => setCodigo(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
