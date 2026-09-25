@@ -831,6 +831,39 @@ export type GiCatalogCollectionQuery = {
   >;
 };
 
+export type CampanaMochilasQueryVariables = StorefrontAPI.Exact<{
+  query: StorefrontAPI.Scalars['String']['input'];
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type CampanaMochilasQuery = {
+  products: {
+    nodes: Array<
+      Pick<
+        StorefrontAPI.Product,
+        'id' | 'handle' | 'title' | 'description' | 'tags'
+      > & {
+        featuredImage?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Image, 'url' | 'altText'>
+        >;
+        variants: {
+          nodes: Array<
+            Pick<
+              StorefrontAPI.ProductVariant,
+              'id' | 'title' | 'availableForSale'
+            > & {
+              image?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Image, 'url' | 'altText'>
+              >;
+            }
+          >;
+        };
+      }
+    >;
+  };
+};
+
 export type FavoritosNodesQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -1693,6 +1726,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCatalogCollection(\n    $handle: String!\n    $productFilters: [ProductFilter!]\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      handle\n      title\n      products(\n        filters: $productFilters\n        sortKey: $sortKey\n        reverse: $reverse\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        filters {\n          id\n          label\n          type\n          values { id label count input }\n        }\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
     return: GiCatalogCollectionQuery;
     variables: GiCatalogCollectionQueryVariables;
+  };
+  '#graphql\n  query CampanaMochilas(\n    $query: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    products(first: 100, query: $query) {\n      nodes {\n        id\n        handle\n        title\n        description\n        tags\n        featuredImage { url altText }\n        variants(first: 20) {\n          nodes { id title availableForSale image { url altText } }\n        }\n      }\n    }\n  }\n': {
+    return: CampanaMochilasQuery;
+    variables: CampanaMochilasQueryVariables;
   };
   '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        options { name optionValues { name } }\n        variants(first: 1) { nodes { id } }\n      }\n    }\n  }\n': {
     return: FavoritosNodesQuery;
