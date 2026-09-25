@@ -8,6 +8,12 @@ import {fetchCatalog, findVariant} from '~/lib/mochilas/catalog';
 import {validateMochilaRequest} from '~/lib/mochilas/validate';
 import {buildMochilaEmail, mochilasRecipient} from '~/lib/mochilas/email';
 import {sendEmail} from '~/lib/email/resend';
+import {getDb} from '~/lib/db/client';
+import {
+  createMochilaRequest,
+  deleteMochilaRequest,
+  findMochilaRequest,
+} from '~/lib/mochilas/requests';
 import MochilasLanding from '~/components/mochilas/MochilasLanding';
 import mochilasStyles from '~/styles/gi-mochilas.css?url';
 
@@ -28,18 +34,16 @@ export async function loader({context}) {
   const {user, allowed} = await loadCollaborator(context, PATH);
   if (!allowed) return data({denied: true}, {status: 403, headers: NO_STORE});
 
+  const collaborator = {
+    email: user.email,
+    fullName: [user.firstName, user.lastName].filter(Boolean).join(' '),
+  };
+  // Quien ya pidió sólo ve su solicitud: el catálogo no le sirve de nada.
+  const existing = await findMochilaRequest(getDb(context.env), user.id);
+  if (existing) return data({denied: false, collaborator, existing}, {headers: NO_STORE});
+
   const lines = await fetchCatalog(context.storefront);
-  return data(
-    {
-      denied: false,
-      collaborator: {
-        email: user.email,
-        fullName: [user.firstName, user.lastName].filter(Boolean).join(' '),
-      },
-      lines,
-    },
-    {headers: NO_STORE},
-  );
+  return data({denied: false, collaborator, existing: null, lines}, {headers: NO_STORE});
 }
 
 /**
@@ -69,7 +73,38 @@ export async function action({request, context}) {
     );
   }
 
-  const {subject, html} = buildMochilaEmail({email: user.email, values: result.values, ...match});
+  // Primero se aparta el lugar: la llave primaria decide quién ya pidió, aun
+  // con dos envíos simultáneos. El correo sale sólo si esto entró.
+  const db = getDb(context.env);
+  const {values} = result;
+  const {created} = await createMochilaRequest(db, {
+    userId: user.id,
+    email: user.email,
+    line: match.line.name,
+    model: match.product.name,
+    color: match.variant.color,
+    variantId: match.variant.id,
+    image: match.variant.image,
+    foraneo: values.foraneo,
+    details: {
+      fullName: values.fullName,
+      position: values.position,
+      phone: values.phone,
+      shipping: values.shipping,
+    },
+  });
+  if (!created) {
+    return data(
+      {
+        ok: false,
+        formError: 'Ya enviaste tu solicitud.',
+        existing: await findMochilaRequest(db, user.id),
+      },
+      {status: 409},
+    );
+  }
+
+  const {subject, html} = buildMochilaEmail({email: user.email, values, ...match});
   try {
     await sendEmail(context.env, {
       to: mochilasRecipient(context.env),
@@ -80,6 +115,8 @@ export async function action({request, context}) {
     });
   } catch (err) {
     console.error('[campana-mochilas] send failed:', err);
+    // Sin correo, igarcia@ no se entera: se libera para que el colaborador reintente.
+    await deleteMochilaRequest(db, user.id);
     return data(
       {ok: false, formError: 'No pudimos enviar tu elección, intenta de nuevo.'},
       {status: 502},
@@ -92,7 +129,8 @@ export async function action({request, context}) {
       line: match.line.name,
       model: match.product.name,
       color: match.variant.color,
-      foraneo: result.values.foraneo,
+      image: match.variant.image,
+      foraneo: values.foraneo,
     },
   });
 }

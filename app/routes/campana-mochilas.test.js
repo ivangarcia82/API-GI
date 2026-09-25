@@ -9,6 +9,16 @@ vi.mock('~/lib/auth/collaborator-guard', () => ({
 }));
 vi.mock('~/lib/email/resend', () => ({sendEmail: (...a) => sendEmail(...a)}));
 
+const findMochilaRequest = vi.fn();
+const createMochilaRequest = vi.fn();
+const deleteMochilaRequest = vi.fn();
+vi.mock('~/lib/db/client', () => ({getDb: () => ({__db: true})}));
+vi.mock('~/lib/mochilas/requests', () => ({
+  findMochilaRequest: (...a) => findMochilaRequest(...a),
+  createMochilaRequest: (...a) => createMochilaRequest(...a),
+  deleteMochilaRequest: (...a) => deleteMochilaRequest(...a),
+}));
+
 import {loader, action} from './campana-mochilas.jsx';
 
 async function read(res) {
@@ -76,6 +86,77 @@ beforeEach(() => {
     allowed: true,
   });
   sendEmail.mockReset().mockResolvedValue({stub: false, id: 'e1'});
+  findMochilaRequest.mockReset().mockResolvedValue(null);
+  createMochilaRequest.mockReset().mockResolvedValue({created: true});
+  deleteMochilaRequest.mockReset().mockResolvedValue(undefined);
+});
+
+const EXISTING = {
+  line: 'Wagner',
+  model: 'Space',
+  color: 'Azul',
+  image: 'https://cdn/spa.png',
+  foraneo: false,
+  createdAt: '2026-09-25T17:00:00.000Z',
+};
+
+describe('una sola solicitud por colaborador', () => {
+  it('loader: quien ya pidió ve su solicitud y no el catálogo', async () => {
+    findMochilaRequest.mockResolvedValue(EXISTING);
+    const context = makeContext();
+    const r = await read(await loader({context}));
+    expect(findMochilaRequest).toHaveBeenCalledWith({__db: true}, 'u1');
+    expect(r.body.existing).toEqual(EXISTING);
+    expect(r.body.lines).toBeUndefined();
+    expect(context.storefront.query).not.toHaveBeenCalled();
+  });
+
+  it('loader: quien no ha pedido recibe existing null y el catálogo', async () => {
+    const r = await read(await loader({context: makeContext()}));
+    expect(r.body.existing).toBeNull();
+    expect(r.body.lines).toHaveLength(2);
+  });
+
+  it('action: guarda la solicitud antes de mandar el correo', async () => {
+    await action({request: post(VALID), context: makeContext()});
+    expect(createMochilaRequest).toHaveBeenCalledWith(
+      {__db: true},
+      expect.objectContaining({
+        userId: 'u1',
+        email: 'ana@generandoideas.com',
+        line: 'Takayama',
+        model: 'Zen',
+        color: 'Negro',
+        variantId: 'v-ok',
+        image: 'https://cdn/zen.png',
+        foraneo: false,
+      }),
+    );
+    expect(createMochilaRequest.mock.invocationCallOrder[0]).toBeLessThan(
+      sendEmail.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('action: una segunda solicitud responde 409 sin correo', async () => {
+    createMochilaRequest.mockResolvedValue({created: false});
+    findMochilaRequest.mockResolvedValue(EXISTING);
+    const r = await read(await action({request: post(VALID), context: makeContext()}));
+    expect(r.status).toBe(409);
+    expect(r.body).toMatchObject({ok: false, existing: EXISTING});
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('action: si el correo falla se libera la solicitud para reintentar', async () => {
+    sendEmail.mockRejectedValue(new Error('Resend caído'));
+    const r = await read(await action({request: post(VALID), context: makeContext()}));
+    expect(r.status).toBe(502);
+    expect(deleteMochilaRequest).toHaveBeenCalledWith({__db: true}, 'u1');
+  });
+
+  it('action: el éxito devuelve la foto para el cierre', async () => {
+    const r = await read(await action({request: post(VALID), context: makeContext()}));
+    expect(r.body.summary.image).toBe('https://cdn/zen.png');
+  });
 });
 
 describe('loader', () => {
@@ -112,7 +193,13 @@ describe('action', () => {
     const r = await read(await action({request: post(VALID), context: makeContext()}));
     expect(r.body).toEqual({
       ok: true,
-      summary: {line: 'Takayama', model: 'Zen', color: 'Negro', foraneo: false},
+      summary: {
+        line: 'Takayama',
+        model: 'Zen',
+        color: 'Negro',
+        image: 'https://cdn/zen.png',
+        foraneo: false,
+      },
     });
     const [, msg] = sendEmail.mock.calls[0];
     expect(msg.to).toBe('igarcia@generandoideas.com');
