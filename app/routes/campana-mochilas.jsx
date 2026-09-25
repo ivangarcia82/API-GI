@@ -8,6 +8,8 @@ import {fetchCatalog, findVariant} from '~/lib/mochilas/catalog';
 import {validateMochilaRequest} from '~/lib/mochilas/validate';
 import {buildMochilaEmail, mochilasRecipient} from '~/lib/mochilas/email';
 import {sendEmail} from '~/lib/email/resend';
+import MochilasLanding from '~/components/mochilas/MochilasLanding';
+import mochilasStyles from '~/styles/gi-mochilas.css?url';
 
 const PATH = '/campana-mochilas';
 const NO_STORE = {'Cache-Control': 'no-cache, no-store, must-revalidate'};
@@ -16,6 +18,8 @@ export const meta = () => [
   {title: 'Campaña de mochilas · Generando Ideas'},
   {name: 'robots', content: 'noindex, nofollow'},
 ];
+
+export const links = () => [{rel: 'stylesheet', href: mochilasStyles}];
 
 /**
  * @param {import('./+types/campana-mochilas').Route.LoaderArgs} args
@@ -95,6 +99,21 @@ export async function action({request, context}) {
 
 export default function CampanaMochilas() {
   const loaderData = useLoaderData();
-  if (loaderData.denied) return <p>Esta página es sólo para colaboradores de Generando Ideas.</p>;
-  return <pre>{JSON.stringify(loaderData.lines.map((l) => l.name))}</pre>;
+  if (loaderData.denied) {
+    return (
+      <main className="mc-denied">
+        <span className="eyebrow">Acceso restringido</span>
+        <h1 className="display">Esta página es sólo para colaboradores.</h1>
+        <p className="mc-muted">
+          Entra con tu correo @generandoideas.com para elegir tu mochila.
+        </p>
+        <form method="post" action="/auth/logout">
+          <button type="submit" className="mc-submit">
+            Cerrar sesión
+          </button>
+        </form>
+      </main>
+    );
+  }
+  return <MochilasLanding lines={loaderData.lines} collaborator={loaderData.collaborator} />;
 }
