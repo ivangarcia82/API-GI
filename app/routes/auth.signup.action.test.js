@@ -166,3 +166,21 @@ describe('signup action · reclamo de asesor', () => {
     expect(created().advisorHandle).toBeNull();
   });
 });
+
+describe('signup action · colaboradores', () => {
+  it('no crea customer en Shopify para un correo @generandoideas.com', async () => {
+    createUser.mockResolvedValue({id: 'u2', email: 'ana@generandoideas.com'});
+    const res = await action({
+      request: signupRequest({email: 'Ana@GenerandoIdeas.com'}),
+      context,
+    });
+    expect(linkSignupCustomer).not.toHaveBeenCalled();
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe('/login?registrado=1');
+  });
+
+  it('sí lo crea para cualquier otro dominio', async () => {
+    await action({request: signupRequest(), context});
+    expect(linkSignupCustomer).toHaveBeenCalledTimes(1);
+  });
+});

@@ -97,3 +97,17 @@ describe('verify action · aviso al asesor', () => {
     expect(notifyAdvisorOfSignup).not.toHaveBeenCalled();
   });
 });
+
+describe('verify action · colaboradores', () => {
+  it('no avisa a marketing ni a la ejecutiva por un colaborador', async () => {
+    findById.mockResolvedValue({...USER, email: 'ana@generandoideas.com', shopifyCustomerGid: null});
+    const context = makeContext();
+
+    const res = await action({request: verifyRequest(), context});
+
+    expect(notifyAdvisorOfSignup).not.toHaveBeenCalled();
+    expect(context.waitUntil).not.toHaveBeenCalled();
+    expect(loginSession).toHaveBeenCalledTimes(1);
+    expect(res.status).toBe(302);
+  });
+});

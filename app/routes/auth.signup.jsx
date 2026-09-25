@@ -7,6 +7,7 @@ import {claimedAdvisorHandle} from '~/lib/auth/advisor-choice';
 import {AREAS, UBICACIONES, esOpcionValida, esOrigenValido} from './registro.catalogos.js';
 import {sendVerificationEmail} from '~/lib/auth/verify-link';
 import {safeRedirectTo} from '~/lib/auth/redirect-to';
+import {isCollaboratorEmail} from '~/lib/auth/collaborator';
 
 /**
  * @param {import('./+types/auth.signup').Route.ActionArgs} args
@@ -103,7 +104,11 @@ export async function action({request, context}) {
   // Link to Shopify (best-effort; reconciled later if it fails). Ya no se
   // asigna asesor: el customer queda etiquetado como `lead-pendiente` y
   // marketing valida la asignación en el admin.
-  const shopifyGid = await linkSignupCustomer(db, context.env, user, {newsletterOptIn});
+  // Un colaborador se registra para las páginas internas, no como lead: sin
+  // customer en Shopify, marketing no lo ve con `lead-pendiente` por asignar.
+  const shopifyGid = isCollaboratorEmail(email)
+    ? null
+    : await linkSignupCustomer(db, context.env, user, {newsletterOptIn});
   user.shopifyCustomerGid = shopifyGid;
 
   // Send the verification email (best-effort; signup succeeds even if it fails).
