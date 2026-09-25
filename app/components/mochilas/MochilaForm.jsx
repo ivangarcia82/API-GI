@@ -1,75 +1,97 @@
-import {useState} from 'react';
-import {useFetcher} from 'react-router';
+import {useEffect, useRef, useState} from 'react';
+import {Icon} from '~/components/gi/Icon';
 
-function Field({label, name, error, children, ...input}) {
+function Field({label, name, error, className = '', children, ...input}) {
   const id = `mc-${name}`;
+  const errorId = `${id}-error`;
   return (
-    <div className={`mc-field${error ? ' has-error' : ''}`}>
+    <div className={`mc-field${error ? ' has-error' : ''} ${className}`.trim()}>
       <label htmlFor={id}>{label}</label>
-      {children ?? <input id={id} name={name} aria-invalid={error ? 'true' : undefined} {...input} />}
-      {error ? <p className="mc-error">{error}</p> : null}
+      {children ?? (
+        <input
+          id={id}
+          name={name}
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={error ? errorId : undefined}
+          {...input}
+        />
+      )}
+      {error ? (
+        <p id={errorId} className="mc-error">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
 
+const ENTREGAS = [
+  {value: 'no', icon: 'home', title: 'En la oficina', desc: 'La recoges con el equipo.'},
+  {value: 'si', icon: 'truck', title: 'Envío a domicilio', desc: 'Si eres foráneo, te la mandamos.'},
+];
+
 /**
- * @param {{lines: any[], collaborator: {email: string, fullName: string},
- *   selectedVariantId: string, onSelectVariant: (id: string) => void}} props
+ * @param {{fetcher: any, collaborator: {email: string, fullName: string},
+ *   selection: null | {line: {name: string}, product: {name: string},
+ *     variant: {id: string, color: string, image?: string|null, imageAlt?: string|null}},
+ *   onChange: () => void}} props
  */
-export function MochilaForm({lines, collaborator, selectedVariantId, onSelectVariant}) {
-  const fetcher = useFetcher();
+export function MochilaForm({fetcher, collaborator, selection, onChange}) {
   const [foraneo, setForaneo] = useState('');
+  const formRef = useRef(null);
   const busy = fetcher.state !== 'idle';
   const result = fetcher.data;
   const errors = result?.errors ?? {};
 
-  if (result?.ok) {
-    const {line, model, color, foraneo: esForaneo} = result.summary;
-    return (
-      <div className="mc-done" role="status">
-        <span className="eyebrow">Listo</span>
-        <h3>¡Tu elección fue enviada!</h3>
-        <p>
-          Elegiste la <strong>{line} {model}</strong> en <strong>{color}</strong>.{' '}
-          {esForaneo
-            ? 'Te la enviaremos a la dirección que registraste.'
-            : 'Te avisaremos cuando puedas recogerla en la oficina.'}
-        </p>
-        <p className="mc-muted">Te mandamos una copia a {collaborator.email}.</p>
-      </div>
-    );
-  }
+  // Tras un 400, el foco va al primer campo con error para que se anuncie.
+  useEffect(() => {
+    if (!result?.errors) return;
+    const first = formRef.current?.querySelector('[aria-invalid="true"], [data-invalid="true"]');
+    first?.focus();
+  }, [result]);
 
   return (
-    <fetcher.Form method="post" className="mc-form">
+    <fetcher.Form method="post" className="mc-form" ref={formRef} noValidate>
       {result?.formError ? (
         <p className="mc-form-error" role="alert">
           {result.formError}
         </p>
       ) : null}
 
-      <Field label="Mochila" name="variantId" error={errors.variantId}>
-        <select
-          id="mc-variantId"
-          name="variantId"
-          required
-          value={selectedVariantId}
-          onChange={(e) => onSelectVariant(e.target.value)}
-        >
-          <option value="">Elige tu mochila…</option>
-          {lines.map((line) => (
-            <optgroup key={line.id} label={line.name}>
-              {line.products.flatMap((p) =>
-                p.variants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {p.name} · {v.color}
-                  </option>
-                )),
-              )}
-            </optgroup>
-          ))}
-        </select>
-      </Field>
+      <div className={`mc-choice${selection ? '' : ' is-empty'}`}>
+        {selection ? (
+          <>
+            <input type="hidden" name="variantId" value={selection.variant.id} />
+            <div className="mc-choice-thumb">
+              {selection.variant.image ? (
+                <img src={selection.variant.image} alt="" width="96" height="120" />
+              ) : null}
+            </div>
+            <div className="mc-choice-text">
+              <span className="mc-choice-label">Tu mochila</span>
+              <strong>{`${selection.line.name} ${selection.product.name}`}</strong>
+              <span>{selection.variant.color}</span>
+            </div>
+            <button type="button" className="mc-btn mc-btn-quiet" onClick={onChange}>
+              Cambiar
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="mc-choice-thumb" aria-hidden="true">
+              <Icon name="bag" size={28} />
+            </div>
+            <div className="mc-choice-text">
+              <strong>Aún no eliges tu mochila</strong>
+              <span>Escoge un modelo y aquí aparece.</span>
+            </div>
+            <button type="button" className="mc-btn mc-btn-quiet" onClick={onChange}>
+              Ver modelos
+            </button>
+          </>
+        )}
+        {errors.variantId ? <p className="mc-error mc-choice-error">{errors.variantId}</p> : null}
+      </div>
 
       <div className="mc-grid-2">
         <Field
@@ -81,10 +103,16 @@ export function MochilaForm({lines, collaborator, selectedVariantId, onSelectVar
           error={errors.fullName}
         />
         <div className="mc-field">
-          <span className="mc-label">Correo</span>
-          <p className="mc-static">{collaborator.email}</p>
+          <label htmlFor="mc-email">Correo</label>
+          <input id="mc-email" type="email" value={collaborator.email} readOnly />
         </div>
-        <Field label="Área o puesto" name="position" required error={errors.position} />
+        <Field
+          label="Área o puesto"
+          name="position"
+          required
+          autoComplete="organization-title"
+          error={errors.position}
+        />
         <Field
           label="Teléfono (WhatsApp)"
           name="phone"
@@ -97,35 +125,34 @@ export function MochilaForm({lines, collaborator, selectedVariantId, onSelectVar
         />
       </div>
 
-      <fieldset className="mc-field mc-choice">
-        <legend>¿Eres foráneo?</legend>
-        <label>
-          <input
-            type="radio"
-            name="foraneo"
-            value="no"
-            required
-            checked={foraneo === 'no'}
-            onChange={() => setForaneo('no')}
-          />
-          No, recojo en oficina
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="foraneo"
-            value="si"
-            checked={foraneo === 'si'}
-            onChange={() => setForaneo('si')}
-          />
-          Sí, necesito envío
-        </label>
-        {errors.foraneo ? <p className="mc-error">{errors.foraneo}</p> : null}
+      <fieldset className="mc-delivery" aria-describedby={errors.foraneo ? 'mc-foraneo-error' : undefined}>
+        <legend>¿Dónde la recibes?</legend>
+        <div className="mc-delivery-options">
+          {ENTREGAS.map((o) => (
+            <label key={o.value} className={`mc-delivery-option${foraneo === o.value ? ' is-on' : ''}`}>
+              <input
+                type="radio"
+                name="foraneo"
+                value={o.value}
+                checked={foraneo === o.value}
+                onChange={() => setForaneo(o.value)}
+                data-invalid={errors.foraneo ? 'true' : undefined}
+              />
+              <Icon name={o.icon} size={22} />
+              <span className="mc-delivery-title">{o.title}</span>
+              <span className="mc-delivery-desc">{o.desc}</span>
+            </label>
+          ))}
+        </div>
+        {errors.foraneo ? (
+          <p id="mc-foraneo-error" className="mc-error">
+            {errors.foraneo}
+          </p>
+        ) : null}
       </fieldset>
 
       {foraneo === 'si' ? (
         <div className="mc-shipping">
-          <h4>Datos de envío</h4>
           <div className="mc-grid-2">
             <Field
               label="Calle y número"
@@ -133,6 +160,7 @@ export function MochilaForm({lines, collaborator, selectedVariantId, onSelectVar
               required
               autoComplete="address-line1"
               error={errors.street}
+              className="mc-span-2"
             />
             <Field label="Colonia" name="neighborhood" required error={errors.neighborhood} />
             <Field
@@ -145,34 +173,27 @@ export function MochilaForm({lines, collaborator, selectedVariantId, onSelectVar
               autoComplete="postal-code"
               error={errors.zip}
             />
+            <Field label="Ciudad" name="city" required autoComplete="address-level2" error={errors.city} />
+            <Field label="Estado" name="state" required autoComplete="address-level1" error={errors.state} />
             <Field
-              label="Ciudad"
-              name="city"
-              required
-              autoComplete="address-level2"
-              error={errors.city}
+              label="Quién recibe (opcional)"
+              name="recipient"
+              placeholder="Si no eres tú"
+              className="mc-span-2"
             />
-            <Field
-              label="Estado"
-              name="state"
-              required
-              autoComplete="address-level1"
-              error={errors.state}
-            />
-            <Field label="Quién recibe (opcional)" name="recipient" placeholder="Si no eres tú" />
+            <Field label="Referencias (opcional)" name="references" className="mc-span-2">
+              <textarea
+                id="mc-references"
+                name="references"
+                rows={2}
+                placeholder="Entre calles, color de fachada…"
+              />
+            </Field>
           </div>
-          <Field label="Referencias (opcional)" name="references">
-            <textarea
-              id="mc-references"
-              name="references"
-              rows={2}
-              placeholder="Entre calles, color de fachada…"
-            />
-          </Field>
         </div>
       ) : null}
 
-      <button type="submit" className="mc-submit" disabled={busy}>
+      <button type="submit" className="mc-btn mc-btn-primary mc-btn-lg mc-submit" disabled={busy || !selection}>
         {busy ? 'Enviando…' : 'Enviar mi elección'}
       </button>
     </fetcher.Form>

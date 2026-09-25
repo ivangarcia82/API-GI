@@ -15,6 +15,8 @@ import {
   findMochilaRequest,
 } from '~/lib/mochilas/requests';
 import MochilasLanding from '~/components/mochilas/MochilasLanding';
+import {RequestDone} from '~/components/mochilas/RequestDone';
+import MarketingLayout from '~/components/marketing/MarketingLayout';
 import mochilasStyles from '~/styles/gi-mochilas.css?url';
 
 const PATH = '/campana-mochilas';
@@ -139,18 +141,26 @@ export default function CampanaMochilas() {
   const loaderData = useLoaderData();
   if (loaderData.denied) {
     return (
-      <main className="mc-denied">
-        <span className="eyebrow">Acceso restringido</span>
-        <h1 className="display">Esta página es sólo para colaboradores.</h1>
-        <p className="mc-muted">
-          Entra con tu correo @generandoideas.com para elegir tu mochila.
-        </p>
-        <form method="post" action="/auth/logout">
-          <button type="submit" className="mc-submit">
-            Cerrar sesión
-          </button>
-        </form>
-      </main>
+      <MarketingLayout className="mc-page">
+        <section className="mc-denied">
+          <h1 className="mc-denied-title">Esta página es sólo para colaboradores.</h1>
+          <p className="mc-lede">
+            Entra con tu correo @generandoideas.com para elegir tu mochila.
+          </p>
+          <form method="post" action="/auth/logout">
+            <button type="submit" className="mc-btn mc-btn-primary mc-btn-lg">
+              Cerrar sesión
+            </button>
+          </form>
+        </section>
+      </MarketingLayout>
+    );
+  }
+  if (loaderData.existing) {
+    return (
+      <MarketingLayout className="mc-page">
+        <RequestDone request={loaderData.existing} collaborator={loaderData.collaborator} />
+      </MarketingLayout>
     );
   }
   return <MochilasLanding lines={loaderData.lines} collaborator={loaderData.collaborator} />;
