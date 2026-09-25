@@ -1,22 +1,23 @@
-# Mochilas Takayama — Implementation Plan
+# Campaña de mochilas (Takayama + Wagner) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Landing interna `/mochilas-takayama`, visible sólo para cuentas `@generandoideas.com`, que presenta las mochilas con tag `mochila-takayama`, deja elegir una (modelo + color) y manda la elección con los datos de entrega a igarcia@generandoideas.com.
+**Goal:** Landing interna `/campana-mochilas`, visible sólo para cuentas `@generandoideas.com`, que presenta las líneas Takayama (`mochila-takayama`) y Wagner (`mochila-wagner`), deja elegir una mochila (línea + modelo + color) y manda la elección con los datos de entrega a igarcia@generandoideas.com.
 
-**Architecture:** Una ruta de React Router (Hydrogen) con `loader` (puerta de colaborador + productos de Storefront) y `action` (validación + correo por Resend). La lógica pura vive en `app/lib/takayama/` (productos, validación, correo) y en `app/lib/auth/collaborator*.js` (dominio y puerta). El registro deja de crear customer en Shopify y de avisar a marketing cuando el correo es del dominio. Sin tablas nuevas.
+**Architecture:** Una ruta de React Router (Hydrogen) con `loader` (puerta de colaborador + catálogo de Storefront agrupado por línea) y `action` (validación + correo por Resend). La lógica pura vive en `app/lib/mochilas/` (catálogo, validación, correo) y en `app/lib/auth/collaborator*.js` (dominio y puerta). El registro deja de crear customer en Shopify y de avisar a marketing cuando el correo es del dominio. Sin tablas nuevas.
 
 **Tech Stack:** Hydrogen 2026.4 / React Router 7.14, libSQL (Turso) para usuarios, Storefront API, Resend vía `fetch`, GSAP (`~/lib/motion`), CSS plano con tokens de `gi-tokens.css`, Vitest (+ jsdom por archivo).
 
-**Spec:** `docs/superpowers/specs/2026-09-25-mochilas-takayama-design.md`
+**Spec:** `docs/superpowers/specs/2026-09-25-campana-mochilas-design.md`
 
 ## Global Constraints
 
-- Ruta: `/mochilas-takayama`.
-- Tag de productos: `mochila-takayama`.
-- Dominio de colaboradores: exactamente `@generandoideas.com` (trim + minúsculas; sin subdominios, sin `generandoideas.com.mx`).
-- Destinatario: `env.TAKAYAMA_EMAIL` con fallback `igarcia@generandoideas.com`; copia (`cc`) y `replyTo` al colaborador.
-- Asunto: `Mochila Takayama – {Nombre} – {Modelo} / {Color}`.
+- Ruta: `/campana-mochilas`.
+- Líneas: `{id: 'takayama', name: 'Takayama', tag: 'mochila-takayama'}`, `{id: 'wagner', name: 'Wagner', tag: 'mochila-wagner'}`, en ese orden.
+- Una sola mochila por envío, de cualquiera de las dos líneas.
+- Dominio de colaboradores: exactamente `@generandoideas.com` (trim + minúsculas; una sola `@`; sin subdominios, sin `generandoideas.com.mx`).
+- Destinatario: `env.MOCHILAS_EMAIL` con fallback `igarcia@generandoideas.com`; `cc` y `replyTo` al colaborador.
+- Asunto: `Mochila – {Nombre} – {Línea} {Modelo} / {Color}`.
 - Sin precios en la landing. Se ocultan variantes sin inventario y productos sin variantes disponibles.
 - Sin base de datos nueva; la elección sólo viaja por correo.
 - Teléfono: 10 dígitos. CP: 5 dígitos.
@@ -28,8 +29,8 @@
 ## Review Focus
 
 1. Cuenta guardada con mayúsculas/espacios (`IGarcia@GenerandoIdeas.com `) → debe entrar. Prueba en Task 1.
-2. Sesión caducada (cambio de contraseña sube `session_version`) → debe ir a `/login?redirectTo=/mochilas-takayama`, no a `/login` pelón. Prueba en Task 2.
-3. `variantId` manipulado (variante de un producto sin el tag, o sin inventario) → 400 "Esa mochila ya no está disponible", no se manda correo. Prueba en Task 7.
+2. Sesión caducada (cambio de contraseña sube `session_version`) → debe ir a `/login?redirectTo=%2Fcampana-mochilas`, no a `/login` pelón. Prueba en Task 2.
+3. `variantId` manipulado (variante de un producto sin tag de campaña, o sin inventario) → 400 "Esa mochila ya no está disponible. Elige otra.", sin correo. Prueba en Task 7.
 4. Teléfono con espacios, guiones o `+52` (`+52 55 1234-5678`) → aceptado y normalizado a 10 dígitos. Prueba en Task 5.
 5. Nombre con salto de línea o HTML (`Ana\n<b>x</b>`) → asunto en una sola línea, HTML escapado. Prueba en Task 6.
 
@@ -43,14 +44,14 @@
 | `app/lib/auth/collaborator-guard.js` (nuevo) | `loadCollaborator(context, returnTo)` |
 | `app/routes/auth.signup.jsx` (mod) | omitir `linkSignupCustomer` para colaboradores |
 | `app/routes/auth.verify.jsx` (mod) | omitir `notifyAdvisorOfSignup` para colaboradores |
-| `app/lib/takayama/products.js` (nuevo) | query, normalización, `findVariant`, `fetchTakayamaProducts` |
-| `app/lib/takayama/validate.js` (nuevo) | `validateTakayamaRequest(form)` |
-| `app/lib/takayama/email.js` (nuevo) | `buildTakayamaEmail`, `takayamaRecipient` |
-| `app/routes/mochilas-takayama.jsx` (nuevo) | loader, action, meta, links, render |
-| `app/components/takayama/TakayamaLanding.jsx` (nuevo) | hero, línea, grid, detalle |
-| `app/components/takayama/TakayamaForm.jsx` (nuevo) | formulario + confirmación |
-| `app/styles/gi-takayama.css` (nuevo) | estilos de la landing |
-| `.env.example` (mod) | `TAKAYAMA_EMAIL` |
+| `app/lib/mochilas/catalog.js` (nuevo) | `LINES`, query, normalización por línea, `findVariant`, `fetchCatalog` |
+| `app/lib/mochilas/validate.js` (nuevo) | `validateMochilaRequest(form)` |
+| `app/lib/mochilas/email.js` (nuevo) | `buildMochilaEmail`, `mochilasRecipient` |
+| `app/routes/campana-mochilas.jsx` (nuevo) | loader, action, meta, links, render |
+| `app/components/mochilas/MochilasLanding.jsx` (nuevo) | hero, secciones por línea, tarjetas, detalle |
+| `app/components/mochilas/MochilaForm.jsx` (nuevo) | formulario + confirmación |
+| `app/styles/gi-mochilas.css` (nuevo) | estilos de la landing |
+| `.env.example` (mod) | `MOCHILAS_EMAIL` |
 
 ---
 
@@ -168,7 +169,8 @@ vi.mock('~/lib/db/client', () => ({getDb: () => ({__db: true})}));
 import {loadCollaborator} from './collaborator-guard.js';
 
 const context = {env: {}, session: {}};
-const LOGIN = '/login?redirectTo=%2Fmochilas-takayama';
+const PATH = '/campana-mochilas';
+const LOGIN = '/login?redirectTo=%2Fcampana-mochilas';
 
 async function thrown(p) {
   try {
@@ -188,7 +190,7 @@ beforeEach(() => {
 describe('loadCollaborator', () => {
   it('sin sesión manda a login con regreso a la página', async () => {
     getSessionUser.mockReturnValue(null);
-    const res = await thrown(loadCollaborator(context, '/mochilas-takayama'));
+    const res = await thrown(loadCollaborator(context, PATH));
     expect(res.status).toBe(302);
     expect(res.headers.get('Location')).toBe(LOGIN);
     expect(requireUser).not.toHaveBeenCalled();
@@ -196,30 +198,30 @@ describe('loadCollaborator', () => {
 
   it('sesión caducada también regresa a la página, no a /login pelón', async () => {
     requireUser.mockRejectedValue(new Response(null, {status: 302, headers: {Location: '/login'}}));
-    const res = await thrown(loadCollaborator(context, '/mochilas-takayama'));
+    const res = await thrown(loadCollaborator(context, PATH));
     expect(res.headers.get('Location')).toBe(LOGIN);
   });
 
   it('usuario borrado manda a login', async () => {
     findById.mockResolvedValue(null);
-    const res = await thrown(loadCollaborator(context, '/mochilas-takayama'));
+    const res = await thrown(loadCollaborator(context, PATH));
     expect(res.headers.get('Location')).toBe(LOGIN);
   });
 
   it('propaga errores que no son redirect', async () => {
     requireUser.mockRejectedValue(new Error('db caída'));
-    const err = await thrown(loadCollaborator(context, '/mochilas-takayama'));
+    const err = await thrown(loadCollaborator(context, PATH));
     expect(err.message).toBe('db caída');
   });
 
   it('colaborador: allowed true', async () => {
-    const r = await loadCollaborator(context, '/mochilas-takayama');
+    const r = await loadCollaborator(context, PATH);
     expect(r).toEqual({user: {id: 'u1', email: 'ana@generandoideas.com'}, allowed: true});
   });
 
   it('otro dominio: allowed false', async () => {
     findById.mockResolvedValue({id: 'u1', email: 'ana@empresa.mx'});
-    const r = await loadCollaborator(context, '/mochilas-takayama');
+    const r = await loadCollaborator(context, PATH);
     expect(r.allowed).toBe(false);
   });
 });
@@ -380,7 +382,7 @@ En `app/routes/auth.verify.jsx`, agregar el import:
 import {isCollaboratorEmail} from '~/lib/auth/collaborator';
 ```
 
-y envolver el aviso:
+y envolver el aviso (conservando el comentario existente encima):
 
 ```js
     // Un colaborador no es un lead: nadie tiene que asignarlo.
@@ -394,8 +396,6 @@ y envolver el aviso:
       else await avisando;
     }
 ```
-
-(conservar el comentario existente encima del bloque).
 
 - [ ] **Step 4: Run tests to verify they pass**
 
@@ -413,37 +413,41 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 
 ---
 
-### Task 4: Productos Takayama
+### Task 4: Catálogo por línea
 
 **Files:**
-- Create: `app/lib/takayama/products.js`
-- Test: `app/lib/takayama/products.test.js`
+- Create: `app/lib/mochilas/catalog.js`
+- Test: `app/lib/mochilas/catalog.test.js`
 
 **Interfaces:**
 - Produces:
-  - `TAKAYAMA_TAG = 'mochila-takayama'`
-  - `TAKAYAMA_PRODUCTS_QUERY` (string `#graphql`)
-  - `modelName(title: string): string` — "MOCHILA TAKAYAMA TAKTIK TROLLEY MOC-TAT" → "Taktik Trolley"
-  - `colorName(variantTitle: string): string` — "AZUL/NEGRO" → "Azul / Negro"
-  - `tidyDescription(text: string): string`
-  - `normalizeTakayamaProducts(nodes): TakayamaProduct[]` con `TakayamaProduct = {id, handle, name, description, variants: {id, color, image: string|null, imageAlt: string|null}[]}`
-  - `findVariant(products, variantId): {product, variant} | null`
-  - `fetchTakayamaProducts(storefront): Promise<TakayamaProduct[]>`
+  - `LINES: {id, name, tag}[]` (Takayama, Wagner)
+  - `CATALOG_SEARCH: 'tag:mochila-takayama OR tag:mochila-wagner'`
+  - `CATALOG_QUERY` (string `#graphql`)
+  - `modelName(title, lineName): string` — ("MOCHILA WAGNER ARMOR MAX MOC-ARX", "Wagner") → "Armor Max"
+  - `colorName(variantTitle): string` — "NEGRO/GRIS" → "Negro / Gris"
+  - `tidyDescription(text): string`
+  - `normalizeCatalog(nodes): CatalogLine[]` con
+    `CatalogLine = {id, name, products: Product[]}`,
+    `Product = {id, handle, name, description, variants: {id, color, image: string|null, imageAlt: string|null}[]}`
+  - `findVariant(lines, variantId): {line, product, variant} | null`
+  - `fetchCatalog(storefront): Promise<CatalogLine[]>`
 
 - [ ] **Step 1: Write the failing test**
 
 ```js
-// app/lib/takayama/products.test.js
+// app/lib/mochilas/catalog.test.js
 import {describe, it, expect, vi} from 'vitest';
 import {
-  TAKAYAMA_TAG,
+  LINES,
+  CATALOG_SEARCH,
   modelName,
   colorName,
   tidyDescription,
-  normalizeTakayamaProducts,
+  normalizeCatalog,
   findVariant,
-  fetchTakayamaProducts,
-} from './products.js';
+  fetchCatalog,
+} from './catalog.js';
 
 const img = (url) => ({url, altText: null});
 
@@ -453,22 +457,42 @@ function node(over = {}) {
     handle: 'g4-moc-zen',
     title: 'MOCHILA TAKAYAMA ZEN MOC-ZEN',
     description: 'Mochila ligera.',
-    tags: [TAKAYAMA_TAG, 'textil'],
+    tags: ['mochila-takayama', 'textil'],
     featuredImage: img('https://cdn/zen.png'),
     variants: {nodes: [{id: 'v1', title: 'NEGRO', availableForSale: true, image: null}]},
     ...over,
   };
 }
 
+const wagner = (over = {}) =>
+  node({
+    id: 'gid://shopify/Product/9',
+    handle: 'g4-moc-arx',
+    title: 'MOCHILA WAGNER ARMOR MAX MOC-ARX',
+    tags: ['mochila-wagner'],
+    variants: {nodes: [{id: 'w1', title: 'NEGRO/GRIS', availableForSale: true, image: null}]},
+    ...over,
+  });
+
+describe('LINES', () => {
+  it('declara Takayama y Wagner en ese orden', () => {
+    expect(LINES).toEqual([
+      {id: 'takayama', name: 'Takayama', tag: 'mochila-takayama'},
+      {id: 'wagner', name: 'Wagner', tag: 'mochila-wagner'},
+    ]);
+    expect(CATALOG_SEARCH).toBe('tag:mochila-takayama OR tag:mochila-wagner');
+  });
+});
+
 describe('nombres', () => {
-  it('limpia el título del modelo', () => {
-    expect(modelName('MOCHILA TAKAYAMA ZEN MOC-ZEN')).toBe('Zen');
-    expect(modelName('MOCHILA TAKAYAMA TAKTIK TROLLEY MOC-TAT')).toBe('Taktik Trolley');
-    expect(modelName('MOCHILA TAKAYAMA ATOMIK DELUXE MOC-ATD')).toBe('Atomik Deluxe');
+  it('limpia el título según la línea', () => {
+    expect(modelName('MOCHILA TAKAYAMA ZEN MOC-ZEN', 'Takayama')).toBe('Zen');
+    expect(modelName('MOCHILA TAKAYAMA TAKTIK TROLLEY MOC-TAT', 'Takayama')).toBe('Taktik Trolley');
+    expect(modelName('MOCHILA WAGNER ARMOR MAX MOC-ARX', 'Wagner')).toBe('Armor Max');
   });
 
   it('formatea colores compuestos', () => {
-    expect(colorName('AZUL/NEGRO')).toBe('Azul / Negro');
+    expect(colorName('NEGRO/GRIS')).toBe('Negro / Gris');
     expect(colorName('NEGRO')).toBe('Negro');
   });
 
@@ -479,27 +503,35 @@ describe('nombres', () => {
   });
 });
 
-describe('normalizeTakayamaProducts', () => {
-  it('normaliza y usa la imagen del producto si la variante no trae', () => {
-    const [p] = normalizeTakayamaProducts([node()]);
-    expect(p).toEqual({
-      id: 'gid://shopify/Product/1',
-      handle: 'g4-moc-zen',
-      name: 'Zen',
-      description: 'Mochila ligera.',
-      variants: [{id: 'v1', color: 'Negro', image: 'https://cdn/zen.png', imageAlt: null}],
+describe('normalizeCatalog', () => {
+  it('agrupa por línea en el orden de LINES', () => {
+    const out = normalizeCatalog([wagner(), node()]);
+    expect(out.map((l) => l.id)).toEqual(['takayama', 'wagner']);
+    expect(out[0]).toEqual({
+      id: 'takayama',
+      name: 'Takayama',
+      products: [
+        {
+          id: 'gid://shopify/Product/1',
+          handle: 'g4-moc-zen',
+          name: 'Zen',
+          description: 'Mochila ligera.',
+          variants: [{id: 'v1', color: 'Negro', image: 'https://cdn/zen.png', imageAlt: null}],
+        },
+      ],
     });
+    expect(out[1].products[0]).toMatchObject({name: 'Armor Max', variants: [{color: 'Negro / Gris'}]});
   });
 
   it('prefiere la imagen de la variante', () => {
-    const [p] = normalizeTakayamaProducts([
+    const [line] = normalizeCatalog([
       node({variants: {nodes: [{id: 'v1', title: 'ROJO', availableForSale: true, image: img('https://cdn/rojo.png')}]}}),
     ]);
-    expect(p.variants[0].image).toBe('https://cdn/rojo.png');
+    expect(line.products[0].variants[0].image).toBe('https://cdn/rojo.png');
   });
 
   it('descarta variantes y productos sin inventario', () => {
-    const out = normalizeTakayamaProducts([
+    const out = normalizeCatalog([
       node({
         id: 'p1',
         variants: {
@@ -511,74 +543,85 @@ describe('normalizeTakayamaProducts', () => {
       }),
       node({id: 'p2', title: 'MOCHILA TAKAYAMA MAIKO MOC-MAI', variants: {nodes: [{id: 'c', title: 'GRIS', availableForSale: false, image: null}]}}),
     ]);
-    expect(out.map((p) => p.id)).toEqual(['p1']);
-    expect(out[0].variants.map((v) => v.id)).toEqual(['b']);
+    expect(out[0].products.map((p) => p.id)).toEqual(['p1']);
+    expect(out[0].products[0].variants.map((v) => v.id)).toEqual(['b']);
   });
 
-  it('descarta productos que no traen el tag (la búsqueda puede colar otros)', () => {
-    expect(normalizeTakayamaProducts([node({tags: ['textil']})])).toEqual([]);
+  it('descarta productos sin tag de campaña y omite líneas vacías', () => {
+    const out = normalizeCatalog([node({tags: ['textil']}), wagner()]);
+    expect(out.map((l) => l.id)).toEqual(['wagner']);
   });
 
-  it('ordena por nombre', () => {
-    const out = normalizeTakayamaProducts([
+  it('ordena los modelos por nombre dentro de cada línea', () => {
+    const out = normalizeCatalog([
       node({id: 'z', title: 'MOCHILA TAKAYAMA ZEN MOC-ZEN'}),
       node({id: 'a', title: 'MOCHILA TAKAYAMA EVO MOC-EVO'}),
     ]);
-    expect(out.map((p) => p.name)).toEqual(['Evo', 'Zen']);
+    expect(out[0].products.map((p) => p.name)).toEqual(['Evo', 'Zen']);
   });
 
   it('tolera null', () => {
-    expect(normalizeTakayamaProducts(null)).toEqual([]);
+    expect(normalizeCatalog(null)).toEqual([]);
   });
 });
 
 describe('findVariant', () => {
-  const products = normalizeTakayamaProducts([node()]);
-  it('encuentra la variante y su producto', () => {
-    expect(findVariant(products, 'v1')).toMatchObject({product: {name: 'Zen'}, variant: {color: 'Negro'}});
+  const lines = normalizeCatalog([node(), wagner()]);
+  it('encuentra la variante con su producto y su línea', () => {
+    expect(findVariant(lines, 'w1')).toMatchObject({
+      line: {id: 'wagner', name: 'Wagner'},
+      product: {name: 'Armor Max'},
+      variant: {color: 'Negro / Gris'},
+    });
   });
   it('null si no existe', () => {
-    expect(findVariant(products, 'otra')).toBeNull();
+    expect(findVariant(lines, 'otra')).toBeNull();
   });
 });
 
-describe('fetchTakayamaProducts', () => {
-  it('consulta por tag y normaliza', async () => {
+describe('fetchCatalog', () => {
+  it('consulta ambos tags y normaliza', async () => {
     const storefront = {
-      query: vi.fn().mockResolvedValue({products: {nodes: [node()]}}),
+      query: vi.fn().mockResolvedValue({products: {nodes: [node(), wagner()]}}),
       CacheShort: () => 'short',
     };
-    const out = await fetchTakayamaProducts(storefront);
+    const out = await fetchCatalog(storefront);
     expect(storefront.query.mock.calls[0][1]).toEqual({
-      variables: {query: 'tag:mochila-takayama'},
+      variables: {query: 'tag:mochila-takayama OR tag:mochila-wagner'},
       cache: 'short',
     });
-    expect(out).toHaveLength(1);
+    expect(out).toHaveLength(2);
   });
 });
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run app/lib/takayama/products.test.js`
-Expected: FAIL — no se resuelve `./products.js`.
+Run: `npx vitest run app/lib/mochilas/catalog.test.js`
+Expected: FAIL — no se resuelve `./catalog.js`.
 
 - [ ] **Step 3: Write minimal implementation**
 
 ```js
-// app/lib/takayama/products.js
-// Catálogo de la landing interna de mochilas Takayama. Los productos se
-// eligen por tag en Shopify; la búsqueda de Storefront no es del todo estricta
-// con los tags (ver lib/filters.js), así que además se filtra aquí.
-export const TAKAYAMA_TAG = 'mochila-takayama';
+// app/lib/mochilas/catalog.js
+// Catálogo de la campaña interna de mochilas. Cada línea se elige por tag en
+// Shopify; la búsqueda de Storefront no es del todo estricta con los tags (ver
+// lib/filters.js), así que además se filtra aquí. Sumar una línea a la campaña
+// es agregarla a LINES.
+export const LINES = [
+  {id: 'takayama', name: 'Takayama', tag: 'mochila-takayama'},
+  {id: 'wagner', name: 'Wagner', tag: 'mochila-wagner'},
+];
 
-export const TAKAYAMA_PRODUCTS_QUERY = `#graphql
-  query TakayamaProducts(
+export const CATALOG_SEARCH = LINES.map((l) => `tag:${l.tag}`).join(' OR ');
+
+export const CATALOG_QUERY = `#graphql
+  query CampanaMochilas(
     $query: String!
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    products(first: 50, query: $query) {
+    products(first: 100, query: $query) {
       nodes {
         id
         handle
@@ -600,16 +643,17 @@ function titleCase(s) {
     .replace(/(^|[\s/])(\p{L})/gu, (_m, sep, ch) => sep + ch.toUpperCase());
 }
 
-/** "MOCHILA TAKAYAMA ZEN MOC-ZEN" → "Zen" */
-export function modelName(title) {
+/** ("MOCHILA WAGNER ARMOR MAX MOC-ARX", "Wagner") → "Armor Max" */
+export function modelName(title, lineName) {
+  const prefix = new RegExp(`^mochila\\s+${lineName}\\s+`, 'i');
   const core = String(title ?? '')
     .trim()
-    .replace(/^mochila\s+takayama\s+/i, '')
+    .replace(prefix, '')
     .replace(/\s+moc-[a-z0-9]+$/i, '');
   return titleCase(core);
 }
 
-/** "AZUL/NEGRO" → "Azul / Negro" */
+/** "NEGRO/GRIS" → "Negro / Gris" */
 export function colorName(variantTitle) {
   return String(variantTitle ?? '')
     .split('/')
@@ -626,61 +670,76 @@ export function tidyDescription(text) {
   return String(text ?? '').replace(/([a-záéíóúñ])([A-ZÁÉÍÓÚÑ])/g, '$1. $2');
 }
 
-export function normalizeTakayamaProducts(nodes) {
-  return (nodes ?? [])
-    .filter((p) => (p.tags ?? []).includes(TAKAYAMA_TAG))
-    .map((p) => {
-      const fallback = p.featuredImage ?? null;
-      const variants = (p.variants?.nodes ?? [])
-        .filter((v) => v.availableForSale)
-        .map((v) => {
-          const image = v.image ?? fallback;
-          return {
-            id: v.id,
-            color: colorName(v.title),
-            image: image?.url ?? null,
-            imageAlt: image?.altText ?? null,
-          };
-        });
-      return {
-        id: p.id,
-        handle: p.handle,
-        name: modelName(p.title),
-        description: tidyDescription(p.description),
-        variants,
-      };
-    })
-    .filter((p) => p.variants.length > 0)
-    .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+function lineForTags(tags) {
+  return LINES.find((l) => (tags ?? []).includes(l.tag)) ?? null;
 }
 
-export function findVariant(products, variantId) {
-  for (const product of products) {
-    const variant = product.variants.find((v) => v.id === variantId);
-    if (variant) return {product, variant};
+export function normalizeCatalog(nodes) {
+  const byLine = new Map(LINES.map((l) => [l.id, []]));
+
+  for (const p of nodes ?? []) {
+    const line = lineForTags(p.tags);
+    if (!line) continue;
+
+    const fallback = p.featuredImage ?? null;
+    const variants = (p.variants?.nodes ?? [])
+      .filter((v) => v.availableForSale)
+      .map((v) => {
+        const image = v.image ?? fallback;
+        return {
+          id: v.id,
+          color: colorName(v.title),
+          image: image?.url ?? null,
+          imageAlt: image?.altText ?? null,
+        };
+      });
+    if (variants.length === 0) continue;
+
+    byLine.get(line.id).push({
+      id: p.id,
+      handle: p.handle,
+      name: modelName(p.title, line.name),
+      description: tidyDescription(p.description),
+      variants,
+    });
+  }
+
+  return LINES.map((l) => ({
+    id: l.id,
+    name: l.name,
+    products: byLine.get(l.id).sort((a, b) => a.name.localeCompare(b.name, 'es')),
+  })).filter((l) => l.products.length > 0);
+}
+
+export function findVariant(lines, variantId) {
+  for (const line of lines) {
+    for (const product of line.products) {
+      const variant = product.variants.find((v) => v.id === variantId);
+      if (variant) return {line, product, variant};
+    }
   }
   return null;
 }
 
-export async function fetchTakayamaProducts(storefront) {
-  const {products} = await storefront.query(TAKAYAMA_PRODUCTS_QUERY, {
-    variables: {query: `tag:${TAKAYAMA_TAG}`},
+export async function fetchCatalog(storefront) {
+  const {products} = await storefront.query(CATALOG_QUERY, {
+    variables: {query: CATALOG_SEARCH},
     cache: storefront.CacheShort(),
   });
-  return normalizeTakayamaProducts(products?.nodes);
+  return normalizeCatalog(products?.nodes);
 }
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run app/lib/takayama/products.test.js`
+Run: `npx vitest run app/lib/mochilas/catalog.test.js`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add app/lib/takayama/products.js app/lib/takayama/products.test.js
-git commit -m "feat(takayama): catálogo de mochilas por tag, sin agotadas
+git add app/lib/mochilas/catalog.js app/lib/mochilas/catalog.test.js
+git commit -m "feat(mochilas): catálogo de la campaña agrupado por línea, sin agotadas
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
@@ -690,11 +749,11 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ### Task 5: Validación del formulario
 
 **Files:**
-- Create: `app/lib/takayama/validate.js`
-- Test: `app/lib/takayama/validate.test.js`
+- Create: `app/lib/mochilas/validate.js`
+- Test: `app/lib/mochilas/validate.test.js`
 
 **Interfaces:**
-- Produces: `validateTakayamaRequest(form: FormData)` →
+- Produces: `validateMochilaRequest(form: FormData)` →
   `{ok: true, values: {fullName, position, phone, variantId, foraneo: boolean, shipping: null | {street, neighborhood, zip, city, state, references, recipient}}}`
   o `{ok: false, errors: Record<string, string>}`.
   `phone` sale normalizado a 10 dígitos. Si `foraneo` es false, `shipping` es `null` aunque lleguen campos.
@@ -702,9 +761,9 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 - [ ] **Step 1: Write the failing test**
 
 ```js
-// app/lib/takayama/validate.test.js
+// app/lib/mochilas/validate.test.js
 import {describe, it, expect} from 'vitest';
-import {validateTakayamaRequest} from './validate.js';
+import {validateMochilaRequest} from './validate.js';
 
 function form(fields) {
   const f = new FormData();
@@ -728,22 +787,20 @@ const SHIP = {
   state: 'Jalisco',
 };
 
-describe('validateTakayamaRequest · local', () => {
+describe('validateMochilaRequest · local', () => {
   it('acepta lo mínimo y no pide dirección', () => {
-    const r = validateTakayamaRequest(form(BASE));
-    expect(r).toEqual({
+    expect(validateMochilaRequest(form(BASE))).toEqual({
       ok: true,
       values: {...BASE, foraneo: false, shipping: null},
     });
   });
 
   it('ignora campos de envío si no es foráneo', () => {
-    const r = validateTakayamaRequest(form({...BASE, ...SHIP}));
-    expect(r.values.shipping).toBeNull();
+    expect(validateMochilaRequest(form({...BASE, ...SHIP})).values.shipping).toBeNull();
   });
 
   it('marca los obligatorios que faltan', () => {
-    const r = validateTakayamaRequest(form({}));
+    const r = validateMochilaRequest(form({}));
     expect(r.ok).toBe(false);
     expect(Object.keys(r.errors).sort()).toEqual(
       ['foraneo', 'fullName', 'phone', 'position', 'variantId'].sort(),
@@ -751,63 +808,62 @@ describe('validateTakayamaRequest · local', () => {
   });
 
   it('recorta espacios', () => {
-    const r = validateTakayamaRequest(form({...BASE, fullName: '  Ana López  '}));
-    expect(r.values.fullName).toBe('Ana López');
+    expect(validateMochilaRequest(form({...BASE, fullName: '  Ana López  '})).values.fullName).toBe(
+      'Ana López',
+    );
   });
 });
 
-describe('validateTakayamaRequest · teléfono', () => {
+describe('validateMochilaRequest · teléfono', () => {
   it.each(['55 1234 5678', '55-1234-5678', '+52 55 1234-5678', '525512345678'])(
     'normaliza %s',
     (phone) => {
-      expect(validateTakayamaRequest(form({...BASE, phone})).values.phone).toBe('5512345678');
+      expect(validateMochilaRequest(form({...BASE, phone})).values.phone).toBe('5512345678');
     },
   );
 
   it.each(['12345', '551234567890123', 'abc'])('rechaza %s', (phone) => {
-    const r = validateTakayamaRequest(form({...BASE, phone}));
-    expect(r.errors.phone).toBeTruthy();
+    expect(validateMochilaRequest(form({...BASE, phone})).errors.phone).toBeTruthy();
   });
 });
 
-describe('validateTakayamaRequest · foráneo', () => {
+describe('validateMochilaRequest · foráneo', () => {
   it('exige la dirección', () => {
-    const r = validateTakayamaRequest(form({...BASE, foraneo: 'si'}));
+    const r = validateMochilaRequest(form({...BASE, foraneo: 'si'}));
     expect(Object.keys(r.errors).sort()).toEqual(
       ['city', 'neighborhood', 'state', 'street', 'zip'].sort(),
     );
   });
 
   it('valida el código postal', () => {
-    const r = validateTakayamaRequest(form({...BASE, foraneo: 'si', ...SHIP, zip: '4410'}));
+    const r = validateMochilaRequest(form({...BASE, foraneo: 'si', ...SHIP, zip: '4410'}));
     expect(r.errors.zip).toBeTruthy();
   });
 
   it('acepta la dirección completa; referencias y quien recibe son opcionales', () => {
-    const r = validateTakayamaRequest(form({...BASE, foraneo: 'si', ...SHIP}));
+    const r = validateMochilaRequest(form({...BASE, foraneo: 'si', ...SHIP}));
     expect(r.ok).toBe(true);
     expect(r.values.foraneo).toBe(true);
     expect(r.values.shipping).toEqual({...SHIP, references: '', recipient: ''});
   });
 
   it('rechaza un valor de foráneo fuera de catálogo', () => {
-    const r = validateTakayamaRequest(form({...BASE, foraneo: 'tal vez'}));
-    expect(r.errors.foraneo).toBeTruthy();
+    expect(validateMochilaRequest(form({...BASE, foraneo: 'tal vez'})).errors.foraneo).toBeTruthy();
   });
 });
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run app/lib/takayama/validate.test.js`
+Run: `npx vitest run app/lib/mochilas/validate.test.js`
 Expected: FAIL — no se resuelve `./validate.js`.
 
 - [ ] **Step 3: Write minimal implementation**
 
 ```js
-// app/lib/takayama/validate.js
-// Validación del formulario de la mochila. El navegador ya valida, pero el
-// action es la única puerta que cuenta.
+// app/lib/mochilas/validate.js
+// Validación del formulario de la campaña de mochilas. El navegador ya valida,
+// pero el action es la única puerta que cuenta.
 const MAX = 200;
 
 function field(form, name) {
@@ -824,7 +880,7 @@ function normalizePhone(raw) {
 /**
  * @param {FormData} form
  */
-export function validateTakayamaRequest(form) {
+export function validateMochilaRequest(form) {
   const errors = {};
 
   const fullName = field(form, 'fullName');
@@ -867,14 +923,14 @@ export function validateTakayamaRequest(form) {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run app/lib/takayama/validate.test.js`
+Run: `npx vitest run app/lib/mochilas/validate.test.js`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add app/lib/takayama/validate.js app/lib/takayama/validate.test.js
-git commit -m "feat(takayama): valida los datos de entrega y la rama foránea
+git add app/lib/mochilas/validate.js app/lib/mochilas/validate.test.js
+git commit -m "feat(mochilas): valida los datos de entrega y la rama foránea
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
@@ -884,23 +940,24 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ### Task 6: Correo de la elección
 
 **Files:**
-- Create: `app/lib/takayama/email.js`
-- Test: `app/lib/takayama/email.test.js`
+- Create: `app/lib/mochilas/email.js`
+- Test: `app/lib/mochilas/email.test.js`
 
 **Interfaces:**
-- Consumes: `escapeHtml` de `~/lib/email/escape.js`; `values` de Task 5; `product`/`variant` de Task 4 (`product.name`, `variant.color`, `variant.image`).
+- Consumes: `escapeHtml` de `~/lib/email/escape.js`; `values` de Task 5; `line`/`product`/`variant` de `findVariant` (Task 4): `line.name`, `product.name`, `variant.color`, `variant.image`.
 - Produces:
-  - `TAKAYAMA_DEFAULT_TO = 'igarcia@generandoideas.com'`
-  - `takayamaRecipient(env): string`
-  - `buildTakayamaEmail({email, values, product, variant}): {subject: string, html: string}`
+  - `MOCHILAS_DEFAULT_TO = 'igarcia@generandoideas.com'`
+  - `mochilasRecipient(env): string`
+  - `buildMochilaEmail({email, values, line, product, variant}): {subject: string, html: string}`
 
 - [ ] **Step 1: Write the failing test**
 
 ```js
-// app/lib/takayama/email.test.js
+// app/lib/mochilas/email.test.js
 import {describe, it, expect} from 'vitest';
-import {buildTakayamaEmail, takayamaRecipient, TAKAYAMA_DEFAULT_TO} from './email.js';
+import {buildMochilaEmail, mochilasRecipient, MOCHILAS_DEFAULT_TO} from './email.js';
 
+const line = {id: 'takayama', name: 'Takayama'};
 const product = {name: 'Zen'};
 const variant = {color: 'Azul / Negro', image: 'https://cdn/zen.png'};
 const local = {
@@ -913,22 +970,22 @@ const local = {
 };
 
 function build(values = local) {
-  return buildTakayamaEmail({email: 'ana@generandoideas.com', values, product, variant});
+  return buildMochilaEmail({email: 'ana@generandoideas.com', values, line, product, variant});
 }
 
-describe('takayamaRecipient', () => {
-  it('usa TAKAYAMA_EMAIL o el default', () => {
-    expect(TAKAYAMA_DEFAULT_TO).toBe('igarcia@generandoideas.com');
-    expect(takayamaRecipient({})).toBe('igarcia@generandoideas.com');
-    expect(takayamaRecipient({TAKAYAMA_EMAIL: 'otra@generandoideas.com'})).toBe(
+describe('mochilasRecipient', () => {
+  it('usa MOCHILAS_EMAIL o el default', () => {
+    expect(MOCHILAS_DEFAULT_TO).toBe('igarcia@generandoideas.com');
+    expect(mochilasRecipient({})).toBe('igarcia@generandoideas.com');
+    expect(mochilasRecipient({MOCHILAS_EMAIL: 'otra@generandoideas.com'})).toBe(
       'otra@generandoideas.com',
     );
   });
 });
 
-describe('buildTakayamaEmail', () => {
-  it('arma el asunto', () => {
-    expect(build().subject).toBe('Mochila Takayama – Ana López – Zen / Azul / Negro');
+describe('buildMochilaEmail', () => {
+  it('arma el asunto con la línea', () => {
+    expect(build().subject).toBe('Mochila – Ana López – Takayama Zen / Azul / Negro');
   });
 
   it('incluye los datos y la entrega en oficina', () => {
@@ -936,6 +993,7 @@ describe('buildTakayamaEmail', () => {
     expect(html).toContain('ana@generandoideas.com');
     expect(html).toContain('Diseño');
     expect(html).toContain('5512345678');
+    expect(html).toContain('Takayama Zen · Azul / Negro');
     expect(html).toContain('Entrega en oficina');
     expect(html).not.toContain('Código postal');
   });
@@ -958,7 +1016,7 @@ describe('buildTakayamaEmail', () => {
     expect(html).toContain('Av. Juárez 10');
     expect(html).toContain('44100');
     // Sin "quién recibe", recibe el colaborador.
-    expect(html).toContain('Ana López');
+    expect(html).toMatch(/Recibe<\/td><td[^>]*>Ana López/);
   });
 
   it('asunto en una línea y HTML escapado', () => {
@@ -972,20 +1030,20 @@ describe('buildTakayamaEmail', () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run app/lib/takayama/email.test.js`
+Run: `npx vitest run app/lib/mochilas/email.test.js`
 Expected: FAIL — no se resuelve `./email.js`.
 
 - [ ] **Step 3: Write minimal implementation**
 
 ```js
-// app/lib/takayama/email.js
+// app/lib/mochilas/email.js
 // Correo con la elección de mochila de un colaborador.
 import {escapeHtml} from '~/lib/email/escape.js';
 
-export const TAKAYAMA_DEFAULT_TO = 'igarcia@generandoideas.com';
+export const MOCHILAS_DEFAULT_TO = 'igarcia@generandoideas.com';
 
-export function takayamaRecipient(env) {
-  return (env && env.TAKAYAMA_EMAIL) || TAKAYAMA_DEFAULT_TO;
+export function mochilasRecipient(env) {
+  return (env && env.MOCHILAS_EMAIL) || MOCHILAS_DEFAULT_TO;
 }
 
 function oneLine(s) {
@@ -999,19 +1057,19 @@ function row(label, value) {
 }
 
 /**
- * @param {{email: string, values: any, product: {name: string}, variant: {color: string, image?: string|null}}} args
+ * @param {{email: string, values: any, line: {name: string}, product: {name: string},
+ *   variant: {color: string, image?: string|null}}} args
  */
-export function buildTakayamaEmail({email, values, product, variant}) {
-  const subject = oneLine(
-    `Mochila Takayama – ${values.fullName} – ${product.name} / ${variant.color}`,
-  );
+export function buildMochilaEmail({email, values, line, product, variant}) {
+  const mochila = `${line.name} ${product.name}`;
+  const subject = oneLine(`Mochila – ${values.fullName} – ${mochila} / ${variant.color}`);
 
   const datos = [
     row('Nombre', values.fullName),
     row('Correo', email),
     row('Área / puesto', values.position),
     row('Teléfono', values.phone),
-    row('Mochila', `${product.name} · ${variant.color}`),
+    row('Mochila', `${mochila} · ${variant.color}`),
     row('Entrega', values.foraneo ? 'Foráneo (envío)' : 'Entrega en oficina'),
   ].join('');
 
@@ -1031,12 +1089,12 @@ export function buildTakayamaEmail({email, values, product, variant}) {
 
   const foto = variant.image
     ? `<img src="${escapeHtml(variant.image)}" alt="${escapeHtml(
-        `${product.name} ${variant.color}`,
+        `${mochila} ${variant.color}`,
       )}" width="200" style="display:block;margin:0 0 16px;border-radius:12px">`
     : '';
 
   const html = `<div style="font:14px/1.5 sans-serif;color:#2e3033;max-width:560px">
-<h2 style="font:700 20px sans-serif;margin:0 0 16px">Nueva elección de mochila Takayama</h2>
+<h2 style="font:700 20px sans-serif;margin:0 0 16px">Nueva elección de mochila</h2>
 ${foto}<table>${datos}</table>${envio}
 </div>`;
 
@@ -1046,14 +1104,14 @@ ${foto}<table>${datos}</table>${envio}
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run app/lib/takayama/email.test.js`
+Run: `npx vitest run app/lib/mochilas/email.test.js`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add app/lib/takayama/email.js app/lib/takayama/email.test.js
-git commit -m "feat(takayama): correo con la elección y los datos de entrega
+git add app/lib/mochilas/email.js app/lib/mochilas/email.test.js
+git commit -m "feat(mochilas): correo con la elección y los datos de entrega
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
@@ -1063,21 +1121,21 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ### Task 7: Ruta — loader y action
 
 **Files:**
-- Create: `app/routes/mochilas-takayama.jsx` (servidor + render mínimo; el render completo llega en Task 8)
-- Test: `app/routes/mochilas-takayama.test.js`
-- Modify: `.env.example` (agregar `TAKAYAMA_EMAIL`)
+- Create: `app/routes/campana-mochilas.jsx` (servidor + render mínimo; el render completo llega en Task 8)
+- Test: `app/routes/campana-mochilas.test.js`
+- Modify: `.env.example` (agregar `MOCHILAS_EMAIL`)
 
 **Interfaces:**
-- Consumes: `loadCollaborator` (Task 2), `fetchTakayamaProducts`, `findVariant` (Task 4), `validateTakayamaRequest` (Task 5), `buildTakayamaEmail`, `takayamaRecipient` (Task 6), `sendEmail(env, {to, subject, html, replyTo, cc})` de `~/lib/email/resend`, `assertSameOrigin` de `~/lib/http/csrf`.
+- Consumes: `loadCollaborator` (Task 2), `fetchCatalog`, `findVariant` (Task 4), `validateMochilaRequest` (Task 5), `buildMochilaEmail`, `mochilasRecipient` (Task 6), `sendEmail(env, {to, subject, html, replyTo, cc})` de `~/lib/email/resend`, `assertSameOrigin` de `~/lib/http/csrf`.
 - Produces (datos que consume la UI de Task 8):
-  - loader permitido: `{denied: false, collaborator: {email, fullName}, products: TakayamaProduct[]}`
+  - loader permitido: `{denied: false, collaborator: {email, fullName}, lines: CatalogLine[]}`
   - loader denegado: `{denied: true}` con status 403
-  - action: `{ok: true, summary: {model, color, foraneo}}` | `{ok: false, errors}` (400) | `{ok: false, formError}` (403/502)
+  - action: `{ok: true, summary: {line, model, color, foraneo}}` | `{ok: false, errors}` (400) | `{ok: false, formError}` (403/502)
 
 - [ ] **Step 1: Write the failing test**
 
 ```js
-// app/routes/mochilas-takayama.test.js
+// app/routes/campana-mochilas.test.js
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 
 const loadCollaborator = vi.fn();
@@ -1089,7 +1147,7 @@ vi.mock('~/lib/auth/collaborator-guard', () => ({
 }));
 vi.mock('~/lib/email/resend', () => ({sendEmail: (...a) => sendEmail(...a)}));
 
-import {loader, action} from './mochilas-takayama.jsx';
+import {loader, action} from './campana-mochilas.jsx';
 
 async function read(res) {
   if (res instanceof Response) return {status: res.status, body: await res.json()};
@@ -1097,7 +1155,7 @@ async function read(res) {
   return {status: 200, body: res};
 }
 
-const NODE = {
+const ZEN = {
   id: 'p1',
   handle: 'g4-moc-zen',
   title: 'MOCHILA TAKAYAMA ZEN MOC-ZEN',
@@ -1112,12 +1170,22 @@ const NODE = {
   },
 };
 
+const ARMOR = {
+  id: 'p2',
+  handle: 'g4-moc-arx',
+  title: 'MOCHILA WAGNER ARMOR MAX MOC-ARX',
+  description: 'Estructura.',
+  tags: ['mochila-wagner'],
+  featuredImage: {url: 'https://cdn/arx.png', altText: null},
+  variants: {nodes: [{id: 'w-ok', title: 'NEGRO/GRIS', availableForSale: true, image: null}]},
+};
+
 function makeContext() {
   return {
     env: {},
     session: {},
     storefront: {
-      query: vi.fn().mockResolvedValue({products: {nodes: [NODE]}}),
+      query: vi.fn().mockResolvedValue({products: {nodes: [ZEN, ARMOR]}}),
       CacheShort: () => 'short',
     },
   };
@@ -1126,7 +1194,7 @@ function makeContext() {
 function post(fields) {
   const body = new FormData();
   for (const [k, v] of Object.entries(fields)) body.set(k, v);
-  return new Request('https://gi.test/mochilas-takayama', {method: 'POST', body});
+  return new Request('https://gi.test/campana-mochilas', {method: 'POST', body});
 }
 
 const VALID = {
@@ -1148,14 +1216,14 @@ beforeEach(() => {
 describe('loader', () => {
   it('pide la puerta con regreso a esta página', async () => {
     await loader({context: makeContext()});
-    expect(loadCollaborator.mock.calls[0][1]).toBe('/mochilas-takayama');
+    expect(loadCollaborator.mock.calls[0][1]).toBe('/campana-mochilas');
   });
 
-  it('colaborador: productos y datos, sin caché', async () => {
+  it('colaborador: líneas y datos, sin caché', async () => {
     const r = await read(await loader({context: makeContext()}));
     expect(r.body.denied).toBe(false);
     expect(r.body.collaborator).toEqual({email: 'ana@generandoideas.com', fullName: 'Ana López'});
-    expect(r.body.products.map((p) => p.name)).toEqual(['Zen']);
+    expect(r.body.lines.map((l) => l.name)).toEqual(['Takayama', 'Wagner']);
     expect(r.headers['Cache-Control']).toMatch(/no-store/);
   });
 
@@ -1177,17 +1245,27 @@ describe('loader', () => {
 describe('action', () => {
   it('manda el correo a igarcia con copia al colaborador', async () => {
     const r = await read(await action({request: post(VALID), context: makeContext()}));
-    expect(r.body).toEqual({ok: true, summary: {model: 'Zen', color: 'Negro', foraneo: false}});
+    expect(r.body).toEqual({
+      ok: true,
+      summary: {line: 'Takayama', model: 'Zen', color: 'Negro', foraneo: false},
+    });
     const [, msg] = sendEmail.mock.calls[0];
     expect(msg.to).toBe('igarcia@generandoideas.com');
     expect(msg.cc).toBe('ana@generandoideas.com');
     expect(msg.replyTo).toBe('ana@generandoideas.com');
-    expect(msg.subject).toBe('Mochila Takayama – Ana López – Zen / Negro');
+    expect(msg.subject).toBe('Mochila – Ana López – Takayama Zen / Negro');
   });
 
-  it('respeta TAKAYAMA_EMAIL', async () => {
+  it('acepta una mochila Wagner', async () => {
+    const r = await read(
+      await action({request: post({...VALID, variantId: 'w-ok'}), context: makeContext()}),
+    );
+    expect(r.body.summary).toMatchObject({line: 'Wagner', model: 'Armor Max', color: 'Negro / Gris'});
+  });
+
+  it('respeta MOCHILAS_EMAIL', async () => {
     const context = makeContext();
-    context.env.TAKAYAMA_EMAIL = 'rh@generandoideas.com';
+    context.env.MOCHILAS_EMAIL = 'rh@generandoideas.com';
     await action({request: post(VALID), context});
     expect(sendEmail.mock.calls[0][1].to).toBe('rh@generandoideas.com');
   });
@@ -1231,40 +1309,40 @@ describe('action', () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run app/routes/mochilas-takayama.test.js`
-Expected: FAIL — no se resuelve `./mochilas-takayama.jsx`.
+Run: `npx vitest run app/routes/campana-mochilas.test.js`
+Expected: FAIL — no se resuelve `./campana-mochilas.jsx`.
 
 - [ ] **Step 3: Write minimal implementation**
 
 ```jsx
-// app/routes/mochilas-takayama.jsx
-// Landing interna: los colaboradores eligen su mochila Takayama (regalo del
-// proveedor). Sólo cuentas @generandoideas.com; la elección se manda por
-// correo, no se guarda.
+// app/routes/campana-mochilas.jsx
+// Landing interna: los colaboradores eligen su mochila de la campaña
+// (Takayama o Wagner, regalo del proveedor). Sólo cuentas @generandoideas.com;
+// la elección se manda por correo, no se guarda.
 import {data, useLoaderData} from 'react-router';
 import {assertSameOrigin} from '~/lib/http/csrf';
 import {loadCollaborator} from '~/lib/auth/collaborator-guard';
-import {fetchTakayamaProducts, findVariant} from '~/lib/takayama/products';
-import {validateTakayamaRequest} from '~/lib/takayama/validate';
-import {buildTakayamaEmail, takayamaRecipient} from '~/lib/takayama/email';
+import {fetchCatalog, findVariant} from '~/lib/mochilas/catalog';
+import {validateMochilaRequest} from '~/lib/mochilas/validate';
+import {buildMochilaEmail, mochilasRecipient} from '~/lib/mochilas/email';
 import {sendEmail} from '~/lib/email/resend';
 
-const PATH = '/mochilas-takayama';
+const PATH = '/campana-mochilas';
 const NO_STORE = {'Cache-Control': 'no-cache, no-store, must-revalidate'};
 
 export const meta = () => [
-  {title: 'Mochilas Takayama · Generando Ideas'},
+  {title: 'Campaña de mochilas · Generando Ideas'},
   {name: 'robots', content: 'noindex, nofollow'},
 ];
 
 /**
- * @param {import('./+types/mochilas-takayama').Route.LoaderArgs} args
+ * @param {import('./+types/campana-mochilas').Route.LoaderArgs} args
  */
 export async function loader({context}) {
   const {user, allowed} = await loadCollaborator(context, PATH);
   if (!allowed) return data({denied: true}, {status: 403, headers: NO_STORE});
 
-  const products = await fetchTakayamaProducts(context.storefront);
+  const lines = await fetchCatalog(context.storefront);
   return data(
     {
       denied: false,
@@ -1272,14 +1350,14 @@ export async function loader({context}) {
         email: user.email,
         fullName: [user.firstName, user.lastName].filter(Boolean).join(' '),
       },
-      products,
+      lines,
     },
     {headers: NO_STORE},
   );
 }
 
 /**
- * @param {import('./+types/mochilas-takayama').Route.ActionArgs} args
+ * @param {import('./+types/campana-mochilas').Route.ActionArgs} args
  */
 export async function action({request, context}) {
   assertSameOrigin(request);
@@ -1291,13 +1369,13 @@ export async function action({request, context}) {
     );
   }
 
-  const result = validateTakayamaRequest(await request.formData());
+  const result = validateMochilaRequest(await request.formData());
   if (!result.ok) return data({ok: false, errors: result.errors}, {status: 400});
 
-  // No se confía en el cliente: la variante debe seguir en el catálogo del tag
-  // y con inventario al momento de enviar.
-  const products = await fetchTakayamaProducts(context.storefront);
-  const match = findVariant(products, result.values.variantId);
+  // No se confía en el cliente: la variante debe seguir en una línea de la
+  // campaña y con inventario al momento de enviar.
+  const lines = await fetchCatalog(context.storefront);
+  const match = findVariant(lines, result.values.variantId);
   if (!match) {
     return data(
       {ok: false, errors: {variantId: 'Esa mochila ya no está disponible. Elige otra.'}},
@@ -1305,17 +1383,17 @@ export async function action({request, context}) {
     );
   }
 
-  const {subject, html} = buildTakayamaEmail({email: user.email, values: result.values, ...match});
+  const {subject, html} = buildMochilaEmail({email: user.email, values: result.values, ...match});
   try {
     await sendEmail(context.env, {
-      to: takayamaRecipient(context.env),
+      to: mochilasRecipient(context.env),
       cc: user.email,
       replyTo: user.email,
       subject,
       html,
     });
   } catch (err) {
-    console.error('[takayama] send failed:', err);
+    console.error('[campana-mochilas] send failed:', err);
     return data(
       {ok: false, formError: 'No pudimos enviar tu elección, intenta de nuevo.'},
       {status: 502},
@@ -1324,34 +1402,39 @@ export async function action({request, context}) {
 
   return data({
     ok: true,
-    summary: {model: match.product.name, color: match.variant.color, foraneo: result.values.foraneo},
+    summary: {
+      line: match.line.name,
+      model: match.product.name,
+      color: match.variant.color,
+      foraneo: result.values.foraneo,
+    },
   });
 }
 
-export default function MochilasTakayama() {
+export default function CampanaMochilas() {
   const loaderData = useLoaderData();
   if (loaderData.denied) return <p>Esta página es sólo para colaboradores de Generando Ideas.</p>;
-  return <pre>{JSON.stringify(loaderData.products.map((p) => p.name))}</pre>;
+  return <pre>{JSON.stringify(loaderData.lines.map((l) => l.name))}</pre>;
 }
 ```
 
 En `.env.example`, debajo de `SALES_EMAIL=...`:
 
 ```
-# Buzón que recibe las elecciones de mochila Takayama (default igarcia@generandoideas.com)
-TAKAYAMA_EMAIL="igarcia@generandoideas.com"
+# Buzón que recibe las elecciones de la campaña de mochilas (default igarcia@generandoideas.com)
+MOCHILAS_EMAIL="igarcia@generandoideas.com"
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npx vitest run app/routes/mochilas-takayama.test.js`
+Run: `npx vitest run app/routes/campana-mochilas.test.js`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add app/routes/mochilas-takayama.jsx app/routes/mochilas-takayama.test.js .env.example
-git commit -m "feat(takayama): ruta interna que valida y manda la elección por correo
+git add app/routes/campana-mochilas.jsx app/routes/campana-mochilas.test.js .env.example
+git commit -m "feat(mochilas): ruta interna que valida y manda la elección por correo
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
@@ -1361,72 +1444,78 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ### Task 8: UI de la landing
 
 **Files:**
-- Create: `app/components/takayama/TakayamaForm.jsx`
-- Create: `app/components/takayama/TakayamaLanding.jsx`
-- Create: `app/styles/gi-takayama.css`
-- Modify: `app/routes/mochilas-takayama.jsx` (import, `links`, componente por defecto)
-- Test: `app/components/takayama/TakayamaForm.test.jsx`
+- Create: `app/components/mochilas/MochilaForm.jsx`
+- Create: `app/components/mochilas/MochilasLanding.jsx`
+- Create: `app/styles/gi-mochilas.css`
+- Modify: `app/routes/campana-mochilas.jsx` (imports, `links`, componente por defecto)
+- Test: `app/components/mochilas/MochilaForm.test.jsx`
 
 **Interfaces:**
-- Consumes: datos del loader/action de Task 7.
+- Consumes: datos del loader/action de Task 7 (`lines: CatalogLine[]`, `collaborator`, `summary`).
 - Produces:
-  - `TakayamaForm({products, collaborator, selectedVariantId, onSelectVariant})`
-  - `TakayamaLanding({products, collaborator})` (default export)
+  - `MochilaForm({lines, collaborator, selectedVariantId, onSelectVariant})` (named export)
+  - `MochilasLanding({lines, collaborator})` (default export)
 
 - [ ] **Step 1: Write the failing test**
 
 ```jsx
-// app/components/takayama/TakayamaForm.test.jsx
+// app/components/mochilas/MochilaForm.test.jsx
 // @vitest-environment jsdom
 import {describe, it, expect, afterEach, vi} from 'vitest';
 import {render, screen, cleanup, fireEvent} from '@testing-library/react';
 import {createRoutesStub} from 'react-router';
-import {TakayamaForm} from './TakayamaForm.jsx';
+import {MochilaForm} from './MochilaForm.jsx';
 
-const PRODUCTS = [
+const LINES = [
   {
-    id: 'p1',
-    handle: 'zen',
-    name: 'Zen',
-    description: '',
-    variants: [{id: 'v1', color: 'Negro', image: null, imageAlt: null}],
+    id: 'takayama',
+    name: 'Takayama',
+    products: [
+      {id: 'p1', handle: 'zen', name: 'Zen', description: '', variants: [{id: 'v1', color: 'Negro', image: null, imageAlt: null}]},
+      {
+        id: 'p2',
+        handle: 'sack',
+        name: 'Sack',
+        description: '',
+        variants: [
+          {id: 'v2', color: 'Azul / Negro', image: null, imageAlt: null},
+          {id: 'v3', color: 'Negro', image: null, imageAlt: null},
+        ],
+      },
+    ],
   },
   {
-    id: 'p2',
-    handle: 'sack',
-    name: 'Sack',
-    description: '',
-    variants: [
-      {id: 'v2', color: 'Azul / Negro', image: null, imageAlt: null},
-      {id: 'v3', color: 'Negro', image: null, imageAlt: null},
+    id: 'wagner',
+    name: 'Wagner',
+    products: [
+      {id: 'p3', handle: 'arx', name: 'Armor Max', description: '', variants: [{id: 'w1', color: 'Negro / Gris', image: null, imageAlt: null}]},
     ],
   },
 ];
 
-function montar(props = {}) {
+function montar() {
   const onSelectVariant = vi.fn();
   const Stub = createRoutesStub([
     {
-      path: '/mochilas-takayama',
+      path: '/campana-mochilas',
       Component: () => (
-        <TakayamaForm
-          products={PRODUCTS}
+        <MochilaForm
+          lines={LINES}
           collaborator={{email: 'ana@generandoideas.com', fullName: 'Ana López'}}
           selectedVariantId=""
           onSelectVariant={onSelectVariant}
-          {...props}
         />
       ),
       action: () => ({ok: true}),
     },
   ]);
-  render(<Stub initialEntries={['/mochilas-takayama']} />);
+  render(<Stub initialEntries={['/campana-mochilas']} />);
   return {onSelectVariant};
 }
 
 afterEach(cleanup);
 
-describe('TakayamaForm', () => {
+describe('MochilaForm', () => {
   it('prellena el nombre y muestra el correo sin dejarlo editar', () => {
     montar();
     expect(screen.getByLabelText('Nombre completo').value).toBe('Ana López');
@@ -1434,12 +1523,14 @@ describe('TakayamaForm', () => {
     expect(screen.queryByLabelText('Correo')).toBeNull();
   });
 
-  it('ofrece cada color como opción y avisa al elegir', () => {
+  it('agrupa las opciones por línea, una por color, y avisa al elegir', () => {
     const {onSelectVariant} = montar();
     const select = screen.getByLabelText('Mochila');
-    expect(select.querySelectorAll('option[value]:not([value=""])')).toHaveLength(3);
-    fireEvent.change(select, {target: {value: 'v2'}});
-    expect(onSelectVariant).toHaveBeenCalledWith('v2');
+    const groups = [...select.querySelectorAll('optgroup')].map((g) => g.label);
+    expect(groups).toEqual(['Takayama', 'Wagner']);
+    expect(select.querySelectorAll('option:not([value=""])')).toHaveLength(4);
+    fireEvent.change(select, {target: {value: 'w1'}});
+    expect(onSelectVariant).toHaveBeenCalledWith('w1');
   });
 
   it('pide la dirección sólo si es foráneo', () => {
@@ -1455,32 +1546,32 @@ describe('TakayamaForm', () => {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npx vitest run app/components/takayama/TakayamaForm.test.jsx`
-Expected: FAIL — no se resuelve `./TakayamaForm.jsx`.
+Run: `npx vitest run app/components/mochilas/MochilaForm.test.jsx`
+Expected: FAIL — no se resuelve `./MochilaForm.jsx`.
 
 - [ ] **Step 3: Implement the form**
 
 ```jsx
-// app/components/takayama/TakayamaForm.jsx
+// app/components/mochilas/MochilaForm.jsx
 import {useState} from 'react';
 import {useFetcher} from 'react-router';
 
 function Field({label, name, error, children, ...input}) {
-  const id = `tk-${name}`;
+  const id = `mc-${name}`;
   return (
-    <div className={`tk-field${error ? ' has-error' : ''}`}>
+    <div className={`mc-field${error ? ' has-error' : ''}`}>
       <label htmlFor={id}>{label}</label>
       {children ?? <input id={id} name={name} aria-invalid={error ? 'true' : undefined} {...input} />}
-      {error ? <p className="tk-error">{error}</p> : null}
+      {error ? <p className="mc-error">{error}</p> : null}
     </div>
   );
 }
 
 /**
- * @param {{products: any[], collaborator: {email: string, fullName: string},
+ * @param {{lines: any[], collaborator: {email: string, fullName: string},
  *   selectedVariantId: string, onSelectVariant: (id: string) => void}} props
  */
-export function TakayamaForm({products, collaborator, selectedVariantId, onSelectVariant}) {
+export function MochilaForm({lines, collaborator, selectedVariantId, onSelectVariant}) {
   const fetcher = useFetcher();
   const [foraneo, setForaneo] = useState('');
   const busy = fetcher.state !== 'idle';
@@ -1488,52 +1579,54 @@ export function TakayamaForm({products, collaborator, selectedVariantId, onSelec
   const errors = result?.errors ?? {};
 
   if (result?.ok) {
-    const {model, color, foraneo: esForaneo} = result.summary;
+    const {line, model, color, foraneo: esForaneo} = result.summary;
     return (
-      <div className="tk-done" role="status">
+      <div className="mc-done" role="status">
         <span className="eyebrow">Listo</span>
         <h3>¡Tu elección fue enviada!</h3>
         <p>
-          Elegiste la <strong>{model}</strong> en <strong>{color}</strong>.{' '}
+          Elegiste la <strong>{line} {model}</strong> en <strong>{color}</strong>.{' '}
           {esForaneo
             ? 'Te la enviaremos a la dirección que registraste.'
             : 'Te avisaremos cuando puedas recogerla en la oficina.'}
         </p>
-        <p className="tk-muted">Te mandamos una copia a {collaborator.email}.</p>
+        <p className="mc-muted">Te mandamos una copia a {collaborator.email}.</p>
       </div>
     );
   }
 
   return (
-    <fetcher.Form method="post" className="tk-form">
+    <fetcher.Form method="post" className="mc-form">
       {result?.formError ? (
-        <p className="tk-form-error" role="alert">
+        <p className="mc-form-error" role="alert">
           {result.formError}
         </p>
       ) : null}
 
       <Field label="Mochila" name="variantId" error={errors.variantId}>
         <select
-          id="tk-variantId"
+          id="mc-variantId"
           name="variantId"
           required
           value={selectedVariantId}
           onChange={(e) => onSelectVariant(e.target.value)}
         >
           <option value="">Elige tu mochila…</option>
-          {products.map((p) => (
-            <optgroup key={p.id} label={p.name}>
-              {p.variants.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {p.name} · {v.color}
-                </option>
-              ))}
+          {lines.map((line) => (
+            <optgroup key={line.id} label={line.name}>
+              {line.products.flatMap((p) =>
+                p.variants.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {p.name} · {v.color}
+                  </option>
+                )),
+              )}
             </optgroup>
           ))}
         </select>
       </Field>
 
-      <div className="tk-grid-2">
+      <div className="mc-grid-2">
         <Field
           label="Nombre completo"
           name="fullName"
@@ -1542,9 +1635,9 @@ export function TakayamaForm({products, collaborator, selectedVariantId, onSelec
           defaultValue={collaborator.fullName}
           error={errors.fullName}
         />
-        <div className="tk-field">
-          <span className="tk-label">Correo</span>
-          <p className="tk-static">{collaborator.email}</p>
+        <div className="mc-field">
+          <span className="mc-label">Correo</span>
+          <p className="mc-static">{collaborator.email}</p>
         </div>
         <Field label="Área o puesto" name="position" required error={errors.position} />
         <Field
@@ -1559,7 +1652,7 @@ export function TakayamaForm({products, collaborator, selectedVariantId, onSelec
         />
       </div>
 
-      <fieldset className="tk-field tk-choice">
+      <fieldset className="mc-field mc-choice">
         <legend>¿Eres foráneo?</legend>
         <label>
           <input
@@ -1582,13 +1675,13 @@ export function TakayamaForm({products, collaborator, selectedVariantId, onSelec
           />
           Sí, necesito envío
         </label>
-        {errors.foraneo ? <p className="tk-error">{errors.foraneo}</p> : null}
+        {errors.foraneo ? <p className="mc-error">{errors.foraneo}</p> : null}
       </fieldset>
 
       {foraneo === 'si' ? (
-        <div className="tk-shipping">
+        <div className="mc-shipping">
           <h4>Datos de envío</h4>
-          <div className="tk-grid-2">
+          <div className="mc-grid-2">
             <Field label="Calle y número" name="street" required autoComplete="address-line1" error={errors.street} />
             <Field label="Colonia" name="neighborhood" required error={errors.neighborhood} />
             <Field
@@ -1605,13 +1698,13 @@ export function TakayamaForm({products, collaborator, selectedVariantId, onSelec
             <Field label="Estado" name="state" required autoComplete="address-level1" error={errors.state} />
             <Field label="Quién recibe (opcional)" name="recipient" placeholder="Si no eres tú" />
           </div>
-          <Field label="Referencias (opcional)" name="references" error={errors.references}>
-            <textarea id="tk-references" name="references" rows={2} placeholder="Entre calles, color de fachada…" />
+          <Field label="Referencias (opcional)" name="references">
+            <textarea id="mc-references" name="references" rows={2} placeholder="Entre calles, color de fachada…" />
           </Field>
         </div>
       ) : null}
 
-      <button type="submit" className="tk-submit" disabled={busy}>
+      <button type="submit" className="mc-submit" disabled={busy}>
         {busy ? 'Enviando…' : 'Enviar mi elección'}
       </button>
     </fetcher.Form>
@@ -1621,29 +1714,63 @@ export function TakayamaForm({products, collaborator, selectedVariantId, onSelec
 
 - [ ] **Step 4: Run the form test**
 
-Run: `npx vitest run app/components/takayama/TakayamaForm.test.jsx`
+Run: `npx vitest run app/components/mochilas/MochilaForm.test.jsx`
 Expected: PASS (3 tests).
 
 - [ ] **Step 5: Implement the landing**
 
 ```jsx
-// app/components/takayama/TakayamaLanding.jsx
+// app/components/mochilas/MochilasLanding.jsx
 import {useEffect, useRef, useState} from 'react';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
-import {TakayamaForm} from './TakayamaForm.jsx';
+import {MochilaForm} from './MochilaForm.jsx';
 
-const ATRIBUTOS = [
-  {t: 'Repelentes al agua', d: 'Materiales de alta resistencia que protegen lo que llevas.'},
-  {t: 'Telas balísticas', d: 'Tejidos pensados para el uso diario, sin perder forma.'},
-  {t: 'Diseños anti-robo', d: 'Modelos con apertura trasera y compartimentos ocultos.'},
-  {t: 'Listas para tu laptop', d: 'Compartimentos acolchados para equipo y accesorios.'},
-];
+// Copy por línea; una línea nueva en LINES sin copy aquí se muestra sólo con
+// su nombre y sus modelos.
+const LINE_COPY = {
+  takayama: {
+    tagline: 'Diseño urbano con materiales técnicos, pensada para moverte todos los días.',
+    attrs: [
+      {t: 'Repelentes al agua', d: 'Materiales de alta resistencia que protegen lo que llevas.'},
+      {t: 'Telas balísticas', d: 'Tejidos pensados para el uso diario, sin perder forma.'},
+      {t: 'Diseños anti-robo', d: 'Modelos con apertura trasera y compartimentos ocultos.'},
+      {t: 'Listas para tu laptop', d: 'Compartimentos acolchados para equipo y accesorios.'},
+    ],
+  },
+  wagner: {
+    tagline: 'Estructura sólida y acabados en curpiel para quien carga de todo.',
+    attrs: [
+      {t: 'Estructura resistente', d: 'Mantiene su forma aunque la llenes.'},
+      {t: 'Curpiel texturizado', d: 'Detalles que se ven bien y aguantan el uso.'},
+      {t: 'Repelentes al agua', d: 'Poliéster de alta resistencia contra la lluvia.'},
+      {t: 'Bolsas laterales con malla', d: 'Tu botella y lo esencial siempre a la mano.'},
+    ],
+  },
+};
+
+function Chips({product, variant, onColor}) {
+  return (
+    <div className="mc-chips" role="group" aria-label={`Colores de ${product.name}`}>
+      {product.variants.map((v) => (
+        <button
+          key={v.id}
+          type="button"
+          className={`mc-chip${v.id === variant.id ? ' is-on' : ''}`}
+          aria-pressed={v.id === variant.id}
+          onClick={() => onColor(product.id, v.id)}
+        >
+          {v.color}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function ModelCard({product, activeVariantId, onColor, onOpen, isChosen}) {
   const variant = product.variants.find((v) => v.id === activeVariantId) ?? product.variants[0];
   return (
-    <article className={`tk-card${isChosen ? ' is-chosen' : ''}`} data-tk-card>
-      <button type="button" className="tk-card-media" onClick={() => onOpen(product.id)}>
+    <article className={`mc-card${isChosen ? ' is-chosen' : ''}`} data-mc-card>
+      <button type="button" className="mc-card-media" onClick={() => onOpen(product.id)}>
         {variant.image ? (
           <img
             src={variant.image}
@@ -1653,24 +1780,12 @@ function ModelCard({product, activeVariantId, onColor, onOpen, isChosen}) {
             height="480"
           />
         ) : null}
-        {isChosen ? <span className="tk-badge">Tu elección</span> : null}
+        {isChosen ? <span className="mc-badge">Tu elección</span> : null}
       </button>
-      <div className="tk-card-body">
+      <div className="mc-card-body">
         <h3>{product.name}</h3>
-        <div className="tk-chips" role="group" aria-label={`Colores de ${product.name}`}>
-          {product.variants.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              className={`tk-chip${v.id === variant.id ? ' is-on' : ''}`}
-              aria-pressed={v.id === variant.id}
-              onClick={() => onColor(product.id, v.id)}
-            >
-              {v.color}
-            </button>
-          ))}
-        </div>
-        <button type="button" className="tk-link" onClick={() => onOpen(product.id)}>
+        <Chips product={product} variant={variant} onColor={onColor} />
+        <button type="button" className="mc-link" onClick={() => onOpen(product.id)}>
           Ver detalle
         </button>
       </div>
@@ -1678,7 +1793,7 @@ function ModelCard({product, activeVariantId, onColor, onOpen, isChosen}) {
   );
 }
 
-function Detail({product, activeVariantId, onColor, onChoose, onClose}) {
+function Detail({lineName, product, activeVariantId, onColor, onChoose, onClose}) {
   const variant = product.variants.find((v) => v.id === activeVariantId) ?? product.variants[0];
   const closeRef = useRef(null);
   useEffect(() => {
@@ -1689,38 +1804,26 @@ function Detail({product, activeVariantId, onColor, onChoose, onClose}) {
   }, [onClose]);
 
   return (
-    <div className="tk-overlay" onClick={onClose}>
+    <div className="mc-overlay" onClick={onClose}>
       <div
-        className="tk-detail"
+        className="mc-detail"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="tk-detail-title"
+        aria-labelledby="mc-detail-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <button ref={closeRef} type="button" className="tk-close" onClick={onClose} aria-label="Cerrar">
+        <button ref={closeRef} type="button" className="mc-close" onClick={onClose} aria-label="Cerrar">
           ×
         </button>
-        <div className="tk-detail-media">
+        <div className="mc-detail-media">
           {variant.image ? <img src={variant.image} alt={`${product.name} ${variant.color}`} /> : null}
         </div>
-        <div className="tk-detail-body">
-          <span className="eyebrow">Takayama</span>
-          <h3 id="tk-detail-title">{product.name}</h3>
+        <div className="mc-detail-body">
+          <span className="eyebrow">{lineName}</span>
+          <h3 id="mc-detail-title">{product.name}</h3>
           <p>{product.description}</p>
-          <div className="tk-chips" role="group" aria-label="Color">
-            {product.variants.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                className={`tk-chip${v.id === variant.id ? ' is-on' : ''}`}
-                aria-pressed={v.id === variant.id}
-                onClick={() => onColor(product.id, v.id)}
-              >
-                {v.color}
-              </button>
-            ))}
-          </div>
-          <button type="button" className="tk-submit" onClick={() => onChoose(variant.id)}>
+          <Chips product={product} variant={variant} onColor={onColor} />
+          <button type="button" className="mc-submit" onClick={() => onChoose(variant.id)}>
             Elegir esta
           </button>
         </div>
@@ -1729,23 +1832,37 @@ function Detail({product, activeVariantId, onColor, onChoose, onClose}) {
   );
 }
 
-export default function TakayamaLanding({products, collaborator}) {
+export default function MochilasLanding({lines, collaborator}) {
   const [activeByProduct, setActiveByProduct] = useState({});
   const [selectedVariantId, setSelectedVariantId] = useState('');
   const [openId, setOpenId] = useState(null);
   const formRef = useRef(null);
   const rootRef = useRef(null);
 
-  const chosenProductId =
-    products.find((p) => p.variants.some((v) => v.id === selectedVariantId))?.id ?? null;
+  const findProduct = (pred) => {
+    for (const line of lines) {
+      const product = line.products.find(pred);
+      if (product) return {line, product};
+    }
+    return null;
+  };
+
+  const chosen = findProduct((p) => p.variants.some((v) => v.id === selectedVariantId));
+  const open = openId ? findProduct((p) => p.id === openId) : null;
+  const total = lines.reduce((n, l) => n + l.products.length, 0);
 
   const setColor = (productId, variantId) =>
     setActiveByProduct((m) => ({...m, [productId]: variantId}));
 
-  const choose = (variantId) => {
+  // Desde el select sólo se marca; desde una tarjeta o el detalle, además se
+  // baja al formulario.
+  const select = (variantId) => {
     setSelectedVariantId(variantId);
-    const product = products.find((p) => p.variants.some((v) => v.id === variantId));
-    if (product) setColor(product.id, variantId);
+    const hit = findProduct((p) => p.variants.some((v) => v.id === variantId));
+    if (hit) setColor(hit.product.id, variantId);
+  };
+  const choose = (variantId) => {
+    select(variantId);
     setOpenId(null);
     formRef.current?.scrollIntoView({behavior: 'smooth', block: 'start'});
   };
@@ -1755,8 +1872,8 @@ export default function TakayamaLanding({products, collaborator}) {
     import('~/lib/motion').then(({gsap, ScrollTrigger, prefersReducedMotion}) => {
       if (prefersReducedMotion() || !rootRef.current) return;
       ctx = gsap.context(() => {
-        gsap.from('.tk-hero-line', {yPercent: 110, opacity: 0, duration: 1, stagger: 0.12, ease: 'expo.out'});
-        ScrollTrigger.batch('[data-tk-card]', {
+        gsap.from('.mc-hero-line', {yPercent: 110, opacity: 0, duration: 1, stagger: 0.12, ease: 'expo.out'});
+        ScrollTrigger.batch('[data-mc-card]', {
           start: 'top 88%',
           once: true,
           onEnter: (els) =>
@@ -1767,75 +1884,92 @@ export default function TakayamaLanding({products, collaborator}) {
     return () => ctx?.revert();
   }, []);
 
-  const open = products.find((p) => p.id === openId);
   const firstName = collaborator.fullName.split(' ')[0];
 
   return (
-    <MarketingLayout className="tk-page">
+    <MarketingLayout className="mc-page">
       <div ref={rootRef}>
-        <section className="section tk-hero">
+        <section className="section mc-hero">
           <div className="wrap">
             <span className="eyebrow">Para el equipo Generando Ideas</span>
-            <h1 className="display tk-hero-title">
-              <span className="tk-hero-mask"><span className="tk-hero-line">Línea</span></span>{' '}
-              <span className="tk-hero-mask">
-                <span className="tk-hero-line text-grad-word">Takayama</span>
+            <h1 className="display mc-hero-title">
+              <span className="mc-hero-mask"><span className="mc-hero-line">Elige tu</span></span>{' '}
+              <span className="mc-hero-mask">
+                <span className="mc-hero-line text-grad-word">mochila</span>
               </span>
             </h1>
-            <p className="tk-lede">
+            <p className="mc-lede">
               {firstName ? `${firstName}, ` : ''}gracias a nuestro proveedor, cada colaborador puede elegir
-              una mochila de la línea Takayama. Explora los modelos, elige la tuya y déjanos tus datos para
-              entregártela.
+              una mochila de las líneas {lines.map((l) => l.name).join(' y ')}. Explora los modelos, elige la
+              tuya y déjanos tus datos para entregártela.
             </p>
-            <a href="#modelos" className="tk-submit tk-cta">
-              Elige tu mochila
-            </a>
+            <nav className="mc-jump" aria-label="Líneas">
+              {lines.map((l) => (
+                <a key={l.id} href={`#${l.id}`} className="mc-jump-link">
+                  <span>{l.name}</span>
+                  <small>{l.products.length} modelos</small>
+                </a>
+              ))}
+            </nav>
           </div>
         </section>
 
-        <section className="section section-alt tk-line">
-          <div className="wrap tk-attrs">
-            {ATRIBUTOS.map((a) => (
-              <div key={a.t} className="tk-attr reveal">
-                <h3>{a.t}</h3>
-                <p>{a.d}</p>
+        {total === 0 ? (
+          <section className="section">
+            <div className="wrap">
+              <p className="mc-muted">Por ahora no hay modelos disponibles. Vuelve a intentarlo más tarde.</p>
+            </div>
+          </section>
+        ) : null}
+
+        {lines.map((line, i) => {
+          const copy = LINE_COPY[line.id];
+          return (
+            <section
+              key={line.id}
+              id={line.id}
+              className={`section mc-line${i % 2 === 1 ? ' section-alt' : ''}`}
+            >
+              <div className="wrap">
+                <span className="eyebrow reveal">Línea</span>
+                <h2 className="display mc-line-title reveal">{line.name}</h2>
+                {copy ? <p className="mc-lede reveal">{copy.tagline}</p> : null}
+                {copy ? (
+                  <div className="mc-attrs">
+                    {copy.attrs.map((a) => (
+                      <div key={a.t} className="mc-attr reveal">
+                        <h3>{a.t}</h3>
+                        <p>{a.d}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="mc-cards">
+                  {line.products.map((p) => (
+                    <ModelCard
+                      key={p.id}
+                      product={p}
+                      activeVariantId={activeByProduct[p.id]}
+                      onColor={setColor}
+                      onOpen={setOpenId}
+                      isChosen={p.id === chosen?.product.id}
+                    />
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
+            </section>
+          );
+        })}
 
-        <section className="section" id="modelos">
-          <div className="wrap">
-            <span className="eyebrow reveal">{products.length} modelos disponibles</span>
-            <h2 className="reveal">Encuentra la que va contigo.</h2>
-            {products.length === 0 ? (
-              <p className="tk-muted">Por ahora no hay modelos disponibles. Vuelve a intentarlo más tarde.</p>
-            ) : (
-              <div className="tk-cards">
-                {products.map((p) => (
-                  <ModelCard
-                    key={p.id}
-                    product={p}
-                    activeVariantId={activeByProduct[p.id]}
-                    onColor={setColor}
-                    onOpen={setOpenId}
-                    isChosen={p.id === chosenProductId}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section className="section section-alt" id="formulario" ref={formRef}>
-          <div className="wrap tk-form-wrap">
+        <section className="section section-soft" id="formulario" ref={formRef}>
+          <div className="wrap mc-form-wrap">
             <span className="eyebrow">Último paso</span>
             <h2>Tus datos de entrega</h2>
-            <TakayamaForm
-              products={products}
+            <MochilaForm
+              lines={lines}
               collaborator={collaborator}
               selectedVariantId={selectedVariantId}
-              onSelectVariant={choose}
+              onSelectVariant={select}
             />
           </div>
         </section>
@@ -1843,8 +1977,9 @@ export default function TakayamaLanding({products, collaborator}) {
 
       {open ? (
         <Detail
-          product={open}
-          activeVariantId={activeByProduct[open.id]}
+          lineName={open.line.name}
+          product={open.product}
+          activeVariantId={activeByProduct[open.product.id]}
           onColor={setColor}
           onChoose={choose}
           onClose={() => setOpenId(null)}
@@ -1855,169 +1990,165 @@ export default function TakayamaLanding({products, collaborator}) {
 }
 ```
 
-Nota: `choose` desde el `<select>` también hace scroll al formulario; como el select ya está en el formulario, el scroll es mínimo. Si molesta en revisión manual, separar `onSelectVariant` del scroll.
-
 - [ ] **Step 6: Styles**
 
 ```css
-/* app/styles/gi-takayama.css — landing interna Mochilas Takayama */
-.tk-page .tk-hero { padding-top: var(--s-9); padding-bottom: var(--s-8); }
-.tk-hero-title { margin: var(--s-4) 0 var(--s-5); }
-.tk-hero-mask { display: inline-block; overflow: hidden; vertical-align: bottom; }
-.tk-hero-line { display: inline-block; }
-.tk-lede { max-width: 640px; font-size: 18px; line-height: 1.6; color: var(--ink-3); margin: 0 0 var(--s-6); }
+/* app/styles/gi-mochilas.css — landing interna de la campaña de mochilas */
+.mc-page .mc-hero { padding-top: var(--s-9); padding-bottom: var(--s-8); }
+.mc-hero-title { margin: var(--s-4) 0 var(--s-5); }
+.mc-hero-mask { display: inline-block; overflow: hidden; vertical-align: bottom; }
+.mc-hero-line { display: inline-block; }
+.mc-lede { max-width: 640px; font-size: 18px; line-height: 1.6; color: var(--ink-3); margin: 0 0 var(--s-6); }
 
-.tk-attrs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); }
-.tk-attr h3 { font: 700 18px/1.3 var(--font-display); margin: 0 0 var(--s-2); color: var(--ink-title); }
-.tk-attr p { margin: 0; color: var(--ink-3); line-height: 1.55; }
-
-.tk-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--s-5);
-  margin-top: var(--s-6);
+.mc-jump { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.mc-jump-link {
+  display: grid; gap: 2px; min-width: 180px; padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-lg); background: var(--bg-elev); box-shadow: var(--shadow-2);
+  text-decoration: none; color: var(--ink-title); transition: transform 0.3s, box-shadow 0.3s;
 }
-.tk-card {
-  background: var(--bg-elev);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-1);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+.mc-jump-link span { font: 700 22px var(--font-display); }
+.mc-jump-link small { color: var(--ink-3); font-size: 13px; }
+.mc-jump-link:hover { transform: translateY(-3px); box-shadow: var(--shadow-3); }
+
+.mc-line-title { margin: var(--s-2) 0 var(--s-4); }
+.section-soft { background: var(--bg-soft); }
+
+.mc-attrs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); margin-bottom: var(--s-7); }
+.mc-attr h3 { font: 700 17px/1.3 var(--font-display); margin: 0 0 var(--s-2); color: var(--ink-title); }
+.mc-attr p { margin: 0; color: var(--ink-3); line-height: 1.55; }
+
+.mc-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--s-5); }
+.mc-card {
+  background: var(--bg-elev); border-radius: var(--r-lg); box-shadow: var(--shadow-1);
+  overflow: hidden; display: flex; flex-direction: column;
   transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s;
 }
-.tk-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-3); }
-.tk-card.is-chosen { box-shadow: 0 0 0 2px var(--accent), var(--shadow-accent); }
-.tk-card-media {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-  padding: var(--s-4);
-  background: var(--bg-soft);
-  border: 0;
-  cursor: pointer;
+.mc-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-3); }
+.mc-card.is-chosen { box-shadow: 0 0 0 2px var(--accent), var(--shadow-accent); }
+.mc-card-media {
+  position: relative; display: block; width: 100%; aspect-ratio: 1; padding: var(--s-4);
+  background: var(--bg-soft); border: 0; cursor: pointer;
 }
-.tk-card-media img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.5s; }
-.tk-card:hover .tk-card-media img { transform: scale(1.05); }
-.tk-badge {
-  position: absolute; top: var(--s-3); left: var(--s-3);
-  background: var(--accent); color: #fff; font: 600 12px var(--font-body);
-  padding: 4px 10px; border-radius: var(--r-pill);
+.mc-card-media img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.5s; }
+.mc-card:hover .mc-card-media img { transform: scale(1.05); }
+.mc-badge {
+  position: absolute; top: var(--s-3); left: var(--s-3); background: var(--accent); color: #fff;
+  font: 600 12px var(--font-body); padding: 4px 10px; border-radius: var(--r-pill);
 }
-.tk-card-body { padding: var(--s-4); display: grid; gap: var(--s-3); }
-.tk-card-body h3 { margin: 0; font: 700 20px var(--font-display); color: var(--ink-title); }
+.mc-card-body { padding: var(--s-4); display: grid; gap: var(--s-3); }
+.mc-card-body h3 { margin: 0; font: 700 20px var(--font-display); color: var(--ink-title); }
 
-.tk-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.tk-chip {
+.mc-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.mc-chip {
   border: 1px solid var(--line-strong); background: transparent; color: var(--ink-2);
   font: 500 13px var(--font-body); padding: 5px 12px; border-radius: var(--r-pill); cursor: pointer;
 }
-.tk-chip.is-on { border-color: var(--ink); background: var(--ink); color: #fff; }
-.tk-link {
+.mc-chip.is-on { border-color: var(--ink); background: var(--ink); color: #fff; }
+.mc-link {
   justify-self: start; border: 0; background: none; padding: 0; cursor: pointer;
   color: var(--accent-deep); font: 600 14px var(--font-body);
 }
 
-.tk-overlay {
+.mc-overlay {
   position: fixed; inset: 0; z-index: 100; background: rgba(20, 17, 10, 0.55);
   display: grid; place-items: center; padding: var(--s-4);
 }
-.tk-detail {
+.mc-detail {
   position: relative; background: var(--bg-elev); border-radius: var(--r-xl);
   max-width: 920px; width: 100%; max-height: calc(100vh - 32px); overflow: auto;
   display: grid; grid-template-columns: 1fr 1fr;
 }
-.tk-detail-media { background: var(--bg-soft); padding: var(--s-6); display: grid; place-items: center; }
-.tk-detail-media img { width: 100%; max-height: 460px; object-fit: contain; }
-.tk-detail-body { padding: var(--s-6); display: grid; gap: var(--s-4); align-content: start; }
-.tk-detail-body h3 { margin: 0; font: 700 32px var(--font-display); color: var(--ink-title); }
-.tk-detail-body p { margin: 0; color: var(--ink-3); line-height: 1.6; }
-.tk-close {
+.mc-detail-media { background: var(--bg-soft); padding: var(--s-6); display: grid; place-items: center; }
+.mc-detail-media img { width: 100%; max-height: 460px; object-fit: contain; }
+.mc-detail-body { padding: var(--s-6); display: grid; gap: var(--s-4); align-content: start; }
+.mc-detail-body h3 { margin: 0; font: 700 32px var(--font-display); color: var(--ink-title); }
+.mc-detail-body p { margin: 0; color: var(--ink-3); line-height: 1.6; }
+.mc-close {
   position: absolute; top: var(--s-3); right: var(--s-3); width: 40px; height: 40px;
   border-radius: 50%; border: 0; background: var(--bg-elev); box-shadow: var(--shadow-2);
   font-size: 24px; cursor: pointer;
 }
 
-.tk-submit {
+.mc-submit {
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--accent); color: #fff; border: 0; border-radius: var(--r-pill);
   font: 600 16px var(--font-body); padding: 14px 28px; cursor: pointer; text-decoration: none;
   transition: background 0.2s, transform 0.2s;
 }
-.tk-submit:hover { background: var(--accent-deep); transform: translateY(-1px); }
-.tk-submit:disabled { opacity: 0.6; cursor: progress; transform: none; }
+.mc-submit:hover { background: var(--accent-deep); transform: translateY(-1px); }
+.mc-submit:disabled { opacity: 0.6; cursor: progress; transform: none; }
 
-.tk-form-wrap { max-width: 760px; }
-.tk-form { display: grid; gap: var(--s-5); margin-top: var(--s-5); }
-.tk-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
-.tk-field { display: grid; gap: 6px; border: 0; padding: 0; margin: 0; }
-.tk-field label, .tk-label, .tk-field legend { font: 600 14px var(--font-body); color: var(--ink-2); }
-.tk-field input, .tk-field select, .tk-field textarea {
+.mc-form-wrap { max-width: 760px; }
+.mc-form { display: grid; gap: var(--s-5); margin-top: var(--s-5); }
+.mc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
+.mc-field { display: grid; gap: 6px; border: 0; padding: 0; margin: 0; }
+.mc-field label, .mc-label, .mc-field legend { font: 600 14px var(--font-body); color: var(--ink-2); }
+.mc-field input, .mc-field select, .mc-field textarea {
   font: 400 16px var(--font-body); padding: 12px 14px; border-radius: var(--r-md);
   border: 1px solid var(--line-strong); background: var(--bg-elev); color: var(--ink); width: 100%;
 }
-.tk-field.has-error input, .tk-field.has-error select { border-color: var(--err); }
-.tk-static { margin: 0; padding: 12px 0; color: var(--ink-3); }
-.tk-choice label { display: flex; gap: var(--s-2); align-items: center; font-weight: 400; }
-.tk-shipping { display: grid; gap: var(--s-4); padding: var(--s-5); border-radius: var(--r-lg); background: var(--bg-elev); }
-.tk-shipping h4 { margin: 0; font: 700 18px var(--font-display); }
-.tk-error { margin: 0; color: var(--err); font-size: 13px; }
-.tk-form-error { margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--err-soft); color: var(--err); }
-.tk-done { margin-top: var(--s-5); padding: var(--s-6); border-radius: var(--r-lg); background: var(--ok-soft); }
-.tk-done h3 { margin: var(--s-2) 0; font: 700 26px var(--font-display); }
-.tk-muted { color: var(--ink-3); }
-.tk-denied { max-width: 560px; margin: var(--s-9) auto; padding: 0 var(--s-4); text-align: center; }
+.mc-field.has-error input, .mc-field.has-error select { border-color: var(--err); }
+.mc-static { margin: 0; padding: 12px 0; color: var(--ink-3); }
+.mc-choice label { display: flex; gap: var(--s-2); align-items: center; font-weight: 400; }
+.mc-shipping { display: grid; gap: var(--s-4); padding: var(--s-5); border-radius: var(--r-lg); background: var(--bg-elev); }
+.mc-shipping h4 { margin: 0; font: 700 18px var(--font-display); }
+.mc-error { margin: 0; color: var(--err); font-size: 13px; }
+.mc-form-error { margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--err-soft); color: var(--err); }
+.mc-done { margin-top: var(--s-5); padding: var(--s-6); border-radius: var(--r-lg); background: var(--ok-soft); }
+.mc-done h3 { margin: var(--s-2) 0; font: 700 26px var(--font-display); }
+.mc-muted { color: var(--ink-3); }
+.mc-denied { max-width: 560px; margin: var(--s-9) auto; padding: 0 var(--s-4); text-align: center; }
 
 @media (max-width: 900px) {
-  .tk-attrs { grid-template-columns: 1fr 1fr; }
-  .tk-detail { grid-template-columns: 1fr; }
+  .mc-attrs { grid-template-columns: 1fr 1fr; }
+  .mc-detail { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
-  .tk-attrs, .tk-grid-2 { grid-template-columns: 1fr; }
-  .tk-cards { grid-template-columns: 1fr 1fr; gap: var(--s-3); }
-  .tk-detail-body, .tk-detail-media { padding: var(--s-4); }
+  .mc-attrs, .mc-grid-2 { grid-template-columns: 1fr; }
+  .mc-cards { grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+  .mc-jump-link { min-width: 0; flex: 1; }
+  .mc-detail-body, .mc-detail-media { padding: var(--s-4); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tk-card, .tk-card-media img, .tk-submit { transition: none; }
+  .mc-card, .mc-card-media img, .mc-submit, .mc-jump-link { transition: none; }
 }
 ```
 
 - [ ] **Step 7: Wire into the route**
 
-En `app/routes/mochilas-takayama.jsx`, agregar imports:
+En `app/routes/campana-mochilas.jsx`, agregar imports:
 
 ```jsx
-import TakayamaLanding from '~/components/takayama/TakayamaLanding';
-import takayamaStyles from '~/styles/gi-takayama.css?url';
+import MochilasLanding from '~/components/mochilas/MochilasLanding';
+import mochilasStyles from '~/styles/gi-mochilas.css?url';
 ```
 
 agregar después de `meta`:
 
 ```jsx
-export const links = () => [{rel: 'stylesheet', href: takayamaStyles}];
+export const links = () => [{rel: 'stylesheet', href: mochilasStyles}];
 ```
 
 y reemplazar el componente por defecto:
 
 ```jsx
-export default function MochilasTakayama() {
+export default function CampanaMochilas() {
   const loaderData = useLoaderData();
   if (loaderData.denied) {
     return (
-      <main className="tk-denied">
+      <main className="mc-denied">
         <span className="eyebrow">Acceso restringido</span>
         <h1 className="display">Esta página es sólo para colaboradores.</h1>
-        <p className="tk-muted">
-          Entra con tu correo @generandoideas.com para elegir tu mochila Takayama.
+        <p className="mc-muted">
+          Entra con tu correo @generandoideas.com para elegir tu mochila.
         </p>
         <form method="post" action="/auth/logout">
-          <button type="submit" className="tk-submit">Cerrar sesión</button>
+          <button type="submit" className="mc-submit">Cerrar sesión</button>
         </form>
       </main>
     );
   }
-  return <TakayamaLanding products={loaderData.products} collaborator={loaderData.collaborator} />;
+  return <MochilasLanding lines={loaderData.lines} collaborator={loaderData.collaborator} />;
 }
 ```
 
@@ -2025,14 +2156,14 @@ export default function MochilasTakayama() {
 
 - [ ] **Step 8: Run all tests and lint**
 
-Run: `npm test && npx eslint app/routes/mochilas-takayama.jsx app/components/takayama app/lib/takayama app/lib/auth/collaborator*.js`
-Expected: todo en verde. Si `mochilas-takayama.test.js` falla al importar `?url` (no debería: Vitest usa el pipeline de assets de Vite), agregar al test `vi.mock('~/styles/gi-takayama.css?url', () => ({default: ''}))`.
+Run: `npm test && npx eslint app/routes/campana-mochilas.jsx app/components/mochilas app/lib/mochilas app/lib/auth/collaborator.js app/lib/auth/collaborator-guard.js`
+Expected: todo en verde. Si `campana-mochilas.test.js` falla al importar `?url` (no debería: Vitest usa el pipeline de assets de Vite), agregar al test `vi.mock('~/styles/gi-mochilas.css?url', () => ({default: ''}))`.
 
 - [ ] **Step 9: Commit**
 
 ```bash
-git add app/components/takayama app/styles/gi-takayama.css app/routes/mochilas-takayama.jsx
-git commit -m "feat(takayama): landing con modelos, detalle y formulario de entrega
+git add app/components/mochilas app/styles/gi-mochilas.css app/routes/campana-mochilas.jsx
+git commit -m "feat(mochilas): landing con ambas líneas, detalle y formulario de entrega
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
@@ -2045,15 +2176,15 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 
 - [ ] **Step 1: Levantar la app**
 
-Run: `npm run dev` (en segundo plano) y abrir `http://localhost:3000/mochilas-takayama`.
+Run: `npm run dev` (en segundo plano) y abrir `http://localhost:3000/campana-mochilas`.
 
 - [ ] **Step 2: Sin sesión**
 
-Expected: redirect a `/login?redirectTo=%2Fmochilas-takayama`. Al entrar con una cuenta `@generandoideas.com`, cae de vuelta en la landing.
+Expected: redirect a `/login?redirectTo=%2Fcampana-mochilas`. Al entrar con una cuenta `@generandoideas.com`, cae de vuelta en la landing.
 
 - [ ] **Step 3: Catálogo**
 
-Expected: aparecen los modelos del tag menos los agotados (hoy 14 de 15: Maiko está en 0). Comparar contra el admin (`tag:mochila-takayama`). Si faltan productos que sí tienen el tag (la búsqueda de Storefront no los devolvió), crear en Shopify la colección automática "Mochilas Takayama" (condición: tag = `mochila-takayama`), cambiar la query a `collection(handle: "mochilas-takayama") { products(first: 50) { nodes {...} } }` y ajustar `fetchTakayamaProducts` y su prueba.
+Expected: sección Takayama con 14 modelos (Maiko agotada) y sección Wagner con 4 (Space, Task, Urban, Armor Max). Comparar contra el admin (`tag:mochila-takayama`, `tag:mochila-wagner`). Si faltan productos que sí tienen el tag (la búsqueda de Storefront no los devolvió), crear en Shopify una colección automática por línea (condición: tag = el de la línea), leerlas con `collection(handle:)` en `fetchCatalog` y ajustar su prueba.
 
 - [ ] **Step 4: Otro dominio**
 
@@ -2061,21 +2192,21 @@ Con una cuenta de cliente (no `@generandoideas.com`): se ve "Esta página es só
 
 - [ ] **Step 5: Envío**
 
-Elegir un modelo desde la tarjeta, desde el detalle y desde el select; probar "No" y "Sí" en foráneo; enviar. Sin `RESEND_API_KEY` en local, la consola muestra `[email][STUB] sendEmail invoked ... to=igarcia@generandoideas.com cc=<correo>`. Con la llave, confirmar que llega el correo y la copia.
+Elegir un modelo desde la tarjeta, desde el detalle y desde el select, de ambas líneas; probar "No" y "Sí" en foráneo; enviar. Sin `RESEND_API_KEY` en local, la consola muestra `[email][STUB] sendEmail invoked ... to=igarcia@generandoideas.com cc=<correo>`. Con la llave, confirmar que llega el correo y la copia.
 
 - [ ] **Step 6: Móvil**
 
-A 375 px de ancho: sin scroll horizontal, grid de 2 columnas, detalle en una columna, formulario en una columna.
+A 375 px de ancho: sin scroll horizontal, grid de 2 columnas, accesos a líneas lado a lado, detalle en una columna, formulario en una columna.
 
 - [ ] **Step 7: Registro de colaborador**
 
-Registrar `prueba+tk@generandoideas.com` (o el que tengas): verificar que no aparece customer nuevo en Shopify con `lead-pendiente` y que no llega aviso a marketing.
+Registrar una cuenta `@generandoideas.com` de prueba: verificar que no aparece customer nuevo en Shopify con `lead-pendiente` y que no llega aviso a marketing.
 
 - [ ] **Step 8: Commit de ajustes (si hubo)**
 
 ```bash
 git add -A
-git commit -m "fix(takayama): ajustes de la verificación manual
+git commit -m "fix(mochilas): ajustes de la verificación manual
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
