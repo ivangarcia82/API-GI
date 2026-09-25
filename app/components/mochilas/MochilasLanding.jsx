@@ -73,12 +73,16 @@ function ModelCard({product, activeVariantId, onColor, onOpen, isChosen}) {
 function Detail({lineName, product, activeVariantId, onColor, onChoose, onClose}) {
   const variant = product.variants.find((v) => v.id === activeVariantId) ?? product.variants[0];
   const closeRef = useRef(null);
+  // onClose cambia en cada render del padre: se lee por ref para que el foco
+  // inicial y el listener de Escape no se reinstalen al cambiar de color.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (e) => e.key === 'Escape' && onClose();
+    const onKey = (e) => e.key === 'Escape' && onCloseRef.current();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
   return (
     <div className="mc-overlay">
@@ -90,7 +94,13 @@ function Detail({lineName, product, activeVariantId, onColor, onChoose, onClose}
         tabIndex={-1}
         onClick={onClose}
       />
-      <div className="mc-detail" role="dialog" aria-modal="true" aria-labelledby="mc-detail-title">
+      <div
+        className="mc-detail"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mc-detail-title"
+        data-lenis-prevent
+      >
         <button
           ref={closeRef}
           type="button"

@@ -127,7 +127,13 @@ export default function Login() {
           <Icon name="bolt" size={16} className="muted" />
           <span>
             <strong style={{color: 'var(--ink)'}}>¿No tienes cuenta?</strong>{' '}
-            <a href="/registro" style={{color: 'var(--ink)', fontWeight: 600, textDecoration: 'underline'}}>
+            <a
+              href={
+                redirectTo && redirectTo !== '/account'
+                  ? `/registro?redirectTo=${encodeURIComponent(redirectTo)}`
+                  : '/registro'
+              }
+              style={{color: 'var(--ink)', fontWeight: 600, textDecoration: 'underline'}}>
               Regístrate aquí
             </a>{' '}
             · Aprobación en menos de 24 horas hábiles.
