@@ -101,6 +101,21 @@ const STATEMENTS = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_email_tokens_hash ON email_tokens(token_hash)`,
   `CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id, type)`,
+
+  // Campaña interna de mochilas: una solicitud por colaborador. La llave
+  // primaria en user_id es la que impide pedir dos veces, aun con doble clic.
+  `CREATE TABLE IF NOT EXISTS mochila_requests (
+    user_id     TEXT PRIMARY KEY REFERENCES users(id),
+    email       TEXT NOT NULL,
+    line        TEXT NOT NULL,
+    model       TEXT NOT NULL,
+    color       TEXT NOT NULL,
+    variant_id  TEXT NOT NULL,
+    image       TEXT,
+    foraneo     INTEGER NOT NULL,
+    details     TEXT NOT NULL,
+    created_at  TEXT NOT NULL
+  )`,
 ];
 
 export async function migrate(db) {
