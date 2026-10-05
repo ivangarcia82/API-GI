@@ -1839,6 +1839,9 @@
   line-height: 1.65;
   margin: 0;
 }
+.gi-mkt .about-copy-col p + p {
+  margin-top: 1em;
+}
 
 /* ===== Misión / Visión — refined cards, collapses on mobile ===== */
 .gi-mkt .mv-grid {
@@ -2023,20 +2026,7 @@
   letter-spacing: -0.02em;
   font-weight: 600;
 }
-/* ===== Dark closing CTA — magnetic button ===== */
-.gi-mkt .about-cta-inner {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.gi-mkt .about-cta-h {
-  font-size: clamp(40px, 6vw, 88px);
-  letter-spacing: -0.03em;
-  margin: 0 auto 32px;
-  max-width: 18ch;
-  text-wrap: balance;
-}
+/* ===== Magnetic button (cierre de la página) ===== */
 /* Inline-block so the magnetic transform pulls the button without disturbing
    the centered flex layout. will-change only when motion is allowed. */
 .gi-mkt .magnetic {
@@ -2070,10 +2060,6 @@
   }
   .gi-mkt .certs-grid {
     grid-template-columns: 1fr;
-  }
-  .gi-mkt .about-cta .btn-lg {
-    width: 100%;
-    justify-content: center;
   }
   .gi-mkt .magnetic {
     width: 100%;

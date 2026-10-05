@@ -2,10 +2,8 @@
 // `.reveal` fade-ins are handled globally by MarketingLayout's
 // useMarketingReveal(); the magnetic CTA hover is handled by <MagneticButton>
 // (same GSAP quickTo wiring as the source's inline <script>).
-import {Link} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
-import {MagneticButton} from '~/components/marketing/MagneticButton';
-import {ROUTES} from '~/lib/site-content';
+import {ClosingCTA} from '~/components/marketing/ClosingCTA';
 
 // Certificaciones y distintivos. Cuando se cuente con los logotipos oficiales,
 // agregar `logo: '/brand/certs/...'` a cada item y mostrarlos junto al nombre.
@@ -59,7 +57,7 @@ export default function Conocenos() {
       <div className="page conocenos">
         <section className="section about-hero">
           <div className="wrap">
-            <span className="eyebrow">Conócenos · Desde 2013</span>
+            <span className="eyebrow">Desde 2013</span>
             <h1 className="display about-h1">
               Somos una empresa <span className="text-grad-word">100% mexicana</span> que
               vive, respira y crea promocionales.
@@ -69,12 +67,7 @@ export default function Conocenos() {
 
         <section className="section about-intro">
           <div className="wrap reveal">
-            <div className="about-head">
-              <span className="eyebrow">¿Quiénes somos?</span>
-              <h2 className="display about-copy-h">
-                <span className="text-accent">Líderes</span> en la industria promocional
-              </h2>
-            </div>
+            {/* La foto primero y el título debajo. */}
             <figure className="about-figure">
               <img
                 src="/publicitas.jpg"
@@ -82,12 +75,25 @@ export default function Conocenos() {
                 loading="lazy"
               />
             </figure>
+            <div className="about-head">
+              <span className="eyebrow">¿Quiénes somos?</span>
+              <h2 className="display about-copy-h">
+                <span className="text-accent">Líderes</span> en la industria promocional
+              </h2>
+            </div>
             <div className="about-copy">
-              <p>
-                Iniciamos operaciones en 2013 con una idea clara: las marcas necesitan más que
-                un producto con logo. Necesitan un socio que entienda su voz, su audiencia y
-                sus objetivos — y que convierta cada artículo en una extensión de su identidad.
-              </p>
+              {/* Los dos primeros párrafos comparten columna: la separación es
+                  de lectura, no de maquetación. */}
+              <div className="about-copy-col">
+                <p>
+                  Iniciamos operaciones en 2013 con una idea clara: las marcas necesitan más
+                  que un producto con logo.
+                </p>
+                <p>
+                  Necesitan un socio que entienda su voz, su audiencia y sus objetivos — y que
+                  convierta cada artículo en una extensión de su identidad.
+                </p>
+              </div>
               <p>
                 Hoy operamos tres sucursales en México (CDMX, Yucatán y Sonora), ofreciendo
                 alternativas únicas: promocionales, Promotional Workshop, Print Shop, Digital
@@ -189,29 +195,8 @@ export default function Conocenos() {
           </div>
         </section>
 
-        <section className="section section-dark about-cta">
-          <div className="wrap about-cta-inner">
-            <h2 className="display about-cta-h">¿Listo para amplificar tu marca?</h2>
-            <MagneticButton>
-              <Link to={ROUTES.contact} className="btn btn-accent btn-lg">
-                Empecemos a trabajar
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </Link>
-            </MagneticButton>
-          </div>
-        </section>
+        {/* El mismo cierre que el home. */}
+        <ClosingCTA />
       </div>
     </MarketingLayout>
   );

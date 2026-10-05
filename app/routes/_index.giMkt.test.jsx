@@ -83,3 +83,27 @@ describe('home: secciones de marketing', () => {
     expect(cta.closest('.gi-mkt')).not.toBeNull();
   });
 });
+
+describe('home: hero', () => {
+  it('el collage muestra imágenes de categorías, no de productos', async () => {
+    const Stub = createRoutesStub([
+      {
+        path: '/',
+        Component: Homepage,
+        loader: () => ({
+          ...datosLoader,
+          categoryCards: [
+            {handle: 'bebidas', name: 'Bebidas', icon: 'drink', image: 'https://cdn/cat-bebidas.jpg'},
+            {handle: 'hogar', name: 'Hogar', icon: 'home', image: 'https://cdn/cat-hogar.jpg'},
+          ],
+          products: [{id: 'p1', handle: 'taza', title: 'Taza', image: 'https://cdn/producto.jpg', colors: []}],
+        }),
+      },
+    ]);
+    const {container} = render(<Stub initialEntries={['/']} />);
+    await screen.findByRole('heading', {level: 1});
+    const srcs = [...container.querySelectorAll('.hero-collage img')].map((i) => i.getAttribute('src'));
+    expect(srcs).toContain('https://cdn/cat-bebidas.jpg');
+    expect(srcs).not.toContain('https://cdn/producto.jpg');
+  });
+});

@@ -12,15 +12,8 @@ import {ProcessSection} from '~/components/marketing/ProcessSection';
 import {ClosingCTA} from '~/components/marketing/ClosingCTA';
 import {useMarketingReveal} from '~/components/marketing/MarketingLayout';
 import {useApp} from '~/lib/AppContext';
-import {GI_PRODUCTS_QUERY, fetchCollectionCards} from '~/lib/giFragments';
-import {
-  normalizeProduct,
-  HOME_CATEGORIES,
-  HOME_FEATURED_COLLECTIONS,
-} from '~/lib/gi';
-import {getBrandColors} from '~/lib/brand-colors.server';
-import {applyCustomerPrices} from '~/lib/pricing.server';
-import {keepBrandProducts} from '~/lib/brand-colors';
+import {fetchCollectionCards} from '~/lib/giFragments';
+import {HOME_CATEGORIES, HOME_FEATURED_COLLECTIONS} from '~/lib/gi';
 
 export const meta = () => [
   {title: 'Generando Ideas — Promocionales que generan memoria'},
@@ -39,24 +32,12 @@ export async function loader(args) {
 async function loadCriticalData({context}) {
   const {storefront} = context;
 
-  const [categories, featuredCollections, productsRes, marca] = await Promise.all([
+  // El hero muestra categorías, no productos: el home ya no pide productos
+  // sueltos (ni su paleta de marca ni su precio por cliente).
+  const [categories, featuredCollections] = await Promise.all([
     fetchCollectionCards(storefront, HOME_CATEGORIES.map((c) => c.handle)),
     fetchCollectionCards(storefront, HOME_FEATURED_COLLECTIONS),
-    /* La tira es de "más vendidos", y ese orden sólo existe en
-       `products(sortKey: BEST_SELLING)`: SearchSortKeys se queda en PRICE y
-       RELEVANCE, así que migrar a `search` para ganar las facetas destruiría
-       el criterio de la sección. Se filtra en memoria y se sobre-pide para
-       que a un cliente con paleta no le queden cuatro productos. */
-    storefront
-      .query(GI_PRODUCTS_QUERY, {variables: {first: 60, sortKey: 'BEST_SELLING'}})
-      .then((r) => applyCustomerPrices(context, r)),
-    getBrandColors(context),
   ]);
-
-  const products = keepBrandProducts(
-    (productsRes?.products?.nodes || []).map(normalizeProduct).filter(Boolean),
-    marca?.families || [],
-  ).slice(0, 16);
 
   // Merge category display config (icon + label) with fetched images
   const catMap = Object.fromEntries(categories.map((c) => [c.handle, c]));
@@ -69,7 +50,6 @@ async function loadCriticalData({context}) {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     categoryCards,
     featuredCollections,
-    products,
   };
 }
 
@@ -77,10 +57,13 @@ export default function Homepage() {
   const data = useLoaderData();
   const navigate = useNavigate();
   const {isLoggedIn, openQuoteDrawer} = useApp();
-  const {categoryCards, featuredCollections, products} = data;
+  const {categoryCards, featuredCollections} = data;
   useMarketingReveal();
 
-  const heroImages = products.map((p) => p.image).filter(Boolean).slice(0, 8);
+  // El collage del hero muestra las categorías, no productos sueltos. Cuando
+  // diseño entregue las imágenes de categoría, basta con ponerlas en Shopify
+  // como imagen de cada colección.
+  const heroImages = categoryCards.map((c) => c.image).filter(Boolean).slice(0, 8);
 
   return (
     <div data-screen-label="01 Home">
@@ -96,8 +79,8 @@ export default function Homepage() {
           <div className="home-hero-grid">
             <div>
               <h1 className="fade-up" style={{animationDelay: '80ms'}}>
-                Promocionales que <em>generan</em><br />
-                memoria.
+                Promocionales que<br />
+                <em>generan</em> memoria.
               </h1>
 
               <p className="home-hero-sub fade-up" style={{animationDelay: '160ms'}}>

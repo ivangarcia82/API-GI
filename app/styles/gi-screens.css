@@ -28,12 +28,12 @@
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.04em;
-  line-height: 0.9;
-  /* El techo bajó de 124px: la primera línea pasó de "Promocionales" (13
-     caracteres) a "Promocionales que generan" (25). Medido en el navegador,
-     esa línea ocupa 11.77em, así que en los 757px de la columna ensanchada
-     (ver .home-hero-grid) el máximo sin partirse son 64px. */
-  font-size: clamp(38px, 4.9vw, 64px);
+  line-height: 0.95;
+  /* El cliente pidió crecer el título: va en dos líneas ("Promocionales
+     que" / "generan memoria.") y la más larga ocupa ~8em, así que en los
+     757px de la columna ensanchada (ver .home-hero-grid) cabe hasta ~92px sin
+     partirse. */
+  font-size: clamp(44px, 6.4vw, 92px);
   /* Same client-requested dark-grey as .section-head h2 (see below); the
      hero h1 otherwise inherits --ink (near-black) from html,body. */
   color: var(--ink-title);

@@ -640,6 +640,16 @@ img, svg {
   padding: 80px 0 32px;
   margin-top: 120px;
 }
+/* Cuando la página cierra con el bloque oscuro de "¿Listo para impulsar tu
+   marca?" (home, Conócenos), el footer va pegado a él: sin la franja clara
+   que dejaban el margen del footer y el del <main>. */
+main:has(section.closing:last-child) {
+  margin-bottom: 0;
+}
+main:has(section.closing:last-child) ~ * .footer {
+  margin-top: 0;
+  border-top: 0;
+}
 .footer-grid {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr;
