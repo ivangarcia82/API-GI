@@ -21,6 +21,8 @@ import {
   setDraftOrderAdvisor,
   getCustomerBrandColors,
   getDiscountByCode,
+  getCustomerMarginRaw,
+  getVariantCosts,
 } from './operations.js';
 
 beforeEach(() => {
@@ -1057,6 +1059,67 @@ describe('getDiscountByCode', () => {
     expect(bueno).toMatchObject({ok: true, code: 'BIENVENIDOANDANAC', percentage: 20});
     const malo = await getDiscountByCode({}, 'OTRO');
     expect(malo).toEqual({ok: false, reason: 'no-existe'});
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('getCustomerMarginRaw', () => {
+  it('devuelve el valor crudo de custom.margen', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({customer: {metafield: {value: '30.0'}}});
+    const out = await getCustomerMarginRaw({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://shopify/Customer/1');
+    expect(out).toBe('30.0');
+    const [, query, vars] = adminFetch.mock.calls[0];
+    expect(query).toMatch(/key: "margen"/);
+    expect(vars.gid).toBe('gid://shopify/Customer/1');
+  });
+
+  it('devuelve null sin metafield', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({customer: {metafield: null}});
+    expect(await getCustomerMarginRaw({PRIVATE_ADMIN_API_TOKEN: 't'}, 'gid://x')).toBeNull();
+  });
+
+  it('no consulta en stub ni sin gid', async () => {
+    expect(await getCustomerMarginRaw({}, 'gid://x')).toBeNull();
+    isStubMode.mockReturnValue(false);
+    expect(await getCustomerMarginRaw({PRIVATE_ADMIN_API_TOKEN: 't'}, null)).toBeNull();
+    expect(adminFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('getVariantCosts', () => {
+  const env = {PRIVATE_ADMIN_API_TOKEN: 't'};
+  const V = (n) => `gid://shopify/ProductVariant/${n}`;
+
+  it('mapea cada variante a su costo, null si no tiene', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValueOnce({
+      nodes: [
+        {id: V(1), inventoryItem: {unitCost: {amount: '40.01'}}},
+        {id: V(2), inventoryItem: {unitCost: null}},
+        {id: V(3), inventoryItem: {unitCost: {amount: '0.0'}}},
+        null,
+      ],
+    });
+    const out = await getVariantCosts(env, [V(1), V(2), V(3), V(4)]);
+    expect(out).toEqual({[V(1)]: 40.01, [V(2)]: null, [V(3)]: null});
+  });
+
+  it('parte en lotes de 250 y no repite ids', async () => {
+    isStubMode.mockReturnValue(false);
+    adminFetch.mockResolvedValue({nodes: []});
+    const ids = Array.from({length: 300}, (_, i) => V(i));
+    await getVariantCosts(env, [...ids, V(0)]);
+    expect(adminFetch).toHaveBeenCalledTimes(2);
+    expect(adminFetch.mock.calls[0][2].ids).toHaveLength(250);
+    expect(adminFetch.mock.calls[1][2].ids).toHaveLength(50);
+  });
+
+  it('no consulta en stub ni con la lista vacía', async () => {
+    expect(await getVariantCosts({}, [V(1)])).toEqual({});
+    isStubMode.mockReturnValue(false);
+    expect(await getVariantCosts(env, [])).toEqual({});
     expect(adminFetch).not.toHaveBeenCalled();
   });
 });

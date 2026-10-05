@@ -651,3 +651,67 @@ export async function getDiscountByCode(env, code) {
     percentage: round2(fraccion * 100),
   };
 }
+
+const CUSTOMER_MARGIN = `
+  query customerMargin($gid: ID!) {
+    customer(id: $gid) {
+      metafield(namespace: "custom", key: "margen") { value }
+    }
+  }
+`;
+
+/**
+ * Lee el margen negociado del cliente: el metafield de customer `custom.margen`
+ * (number_decimal, porcentaje). Devuelve la cadena cruda —la validación vive en
+ * pricing.js, que es puro—.
+ *
+ * Null-safe como getCustomerBrandColors: sin token, sin gid o sin metafield
+ * devuelve null, que aguas arriba significa "precio de lista".
+ * @param {Record<string, any>} env
+ * @param {string|null|undefined} customerGid
+ * @returns {Promise<string|null>}
+ */
+export async function getCustomerMarginRaw(env, customerGid) {
+  if (isStubMode(env) || !customerGid) return null;
+  const data = await adminFetch(env, CUSTOMER_MARGIN, {gid: customerGid});
+  return data?.customer?.metafield?.value ?? null;
+}
+
+const VARIANT_COSTS = `
+  query variantCosts($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on ProductVariant {
+        id
+        inventoryItem { unitCost { amount } }
+      }
+    }
+  }
+`;
+
+// Límite de `nodes(ids:)` en Admin API.
+const MAX_NODES = 250;
+
+/**
+ * Costo unitario de cada variante (`inventoryItem.unitCost`). Requiere el scope
+ * read_inventory, que el token ya tiene. Devuelve un objeto plano y no un Map
+ * porque el resultado pasa por la caché de Hydrogen, que serializa a JSON.
+ * Una variante sin costo (nulo o 0) queda como null; una que no existe no
+ * aparece.
+ * @param {Record<string, any>} env
+ * @param {string[]} variantIds
+ * @returns {Promise<Record<string, number|null>>}
+ */
+export async function getVariantCosts(env, variantIds) {
+  const out = {};
+  const ids = [...new Set((variantIds || []).filter(Boolean))];
+  if (isStubMode(env) || ids.length === 0) return out;
+  for (let i = 0; i < ids.length; i += MAX_NODES) {
+    const data = await adminFetch(env, VARIANT_COSTS, {ids: ids.slice(i, i + MAX_NODES)});
+    for (const node of data?.nodes || []) {
+      if (!node?.id) continue;
+      const amount = Number(node.inventoryItem?.unitCost?.amount);
+      out[node.id] = Number.isFinite(amount) && amount > 0 ? amount : null;
+    }
+  }
+  return out;
+}
