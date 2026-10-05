@@ -1,4 +1,4 @@
-// Folio legible de la cotización: GIV.CDMX.20260001.
+// Folio legible de la cotización: GIP.Web.Cotización_001.
 //
 // El id interno de una cotización es un UUID y así se queda — lo referencian
 // quote_items y las URLs. El folio es sólo para lo que ve el cliente (el PDF y
@@ -7,47 +7,53 @@
 // Se asigna al ENVIAR, no al crear el borrador, para que la serie quede sin
 // huecos: un carrito abandonado no gasta número.
 //
+// Historia: hasta el 2026-10 la serie era GIV.CDMX.<año><4 dígitos>, con
+// conteo anual. Las cotizaciones de entonces conservan su folio (vive en la
+// fila de cada una) y su contador sigue en folio_counters sin tocarse.
+//
 // Sin imports de servidor a propósito: `folioVisible` lo usan componentes de
 // cliente, y traerse aquí el cliente de libSQL lo metería en el bundle.
 
-/** Serie fija. El año va aparte porque el conteo reinicia cada 1 de enero. */
-export const SERIE = 'GIV.CDMX.';
+/** Serie de las cotizaciones del sitio. Un solo consecutivo, sin año. */
+export const SERIE = 'GIP.Web.Cotización_';
+
+/* folio_counters tiene llave (serie, year): la serie nueva no lleva año y usa
+   0, que ninguna serie anual puede usar. */
+const SIN_ANIO = 0;
 
 /**
- * @param {{year: number, n: number}} args
+ * @param {number} n consecutivo
  * @returns {string}
  */
-export function formatFolio({year, n}) {
-  // padStart no trunca: si algún año pasa de 9999 cotizaciones el folio crece a
-  // cinco dígitos, que es preferible a repetir un número.
-  return `${SERIE}${year}${String(n).padStart(4, '0')}`;
+export function formatFolio(n) {
+  // padStart no trunca: pasada la cotización 999 el folio crece a cuatro
+  // dígitos, que es preferible a repetir un número.
+  return `${SERIE}${String(n).padStart(3, '0')}`;
 }
 
 /**
- * Reserva el siguiente folio del año y lo devuelve ya formateado.
+ * Reserva el siguiente folio y lo devuelve ya formateado.
  *
  * El incremento va en un solo `UPDATE ... RETURNING`, que SQLite resuelve de
  * forma atómica. Un `SELECT MAX(...)+1` en dos pasos le daría el mismo número a
  * dos envíos simultáneos.
  *
  * @param {import('@libsql/client/web').Client} db
- * @param {{year?: number}} [opciones]
  * @returns {Promise<string>}
  */
-export async function nextFolio(db, {year = new Date().getFullYear()} = {}) {
+export async function nextFolio(db) {
   await db.execute({
     sql: `INSERT INTO folio_counters (serie, year, last) VALUES (?, ?, 0)
           ON CONFLICT(serie, year) DO NOTHING`,
-    args: [SERIE, year],
+    args: [SERIE, SIN_ANIO],
   });
   const res = await db.execute({
     sql: `UPDATE folio_counters SET last = last + 1
           WHERE serie = ? AND year = ?
           RETURNING last`,
-    args: [SERIE, year],
+    args: [SERIE, SIN_ANIO],
   });
-  const n = Number(res.rows[0].last);
-  return formatFolio({year, n});
+  return formatFolio(Number(res.rows[0].last));
 }
 
 

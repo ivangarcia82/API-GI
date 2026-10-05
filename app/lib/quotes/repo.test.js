@@ -119,7 +119,7 @@ describe('folio al enviar', () => {
     const q = await getOrCreateDraftQuote(db, USER);
     await markSubmitted(db, q.id, {gid: null, invoiceUrl: null});
     const {quote} = await getQuoteWithItems(db, q.id);
-    expect(quote.folio).toMatch(/^GIV\.CDMX\.\d{8}$/);
+    expect(quote.folio).toBe('GIP.Web.Cotización_001');
   });
 
   it('un borrador todavía no tiene folio', async () => {
@@ -139,7 +139,9 @@ describe('folio al enviar', () => {
     const {quote: qa} = await getQuoteWithItems(db, a.id);
     const {quote: qb} = await getQuoteWithItems(db, b.id);
     expect(qa.folio).not.toBe(qb.folio);
-    expect(Number(qb.folio.slice(-4))).toBe(Number(qa.folio.slice(-4)) + 1);
+    const numero = (f) => Number(f.split('_').at(-1));
+    expect(numero(qa.folio)).toBeGreaterThan(0);
+    expect(numero(qb.folio)).toBe(numero(qa.folio) + 1);
   });
 
   it('reenviar la misma cotización no le cambia el folio', async () => {
