@@ -17,6 +17,7 @@ import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
 import {buildProductSpecs} from '~/lib/specs';
 import {resumen, separarFrasesPegadas} from '~/lib/text';
 import {useVariantGallery} from '~/lib/gallery';
+import {GalleryReel} from '~/components/gi/GalleryReel';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {getBrandColors} from '~/lib/brand-colors.server';
 import {applyCustomerPrices} from '~/lib/pricing.server';
@@ -319,26 +320,20 @@ export default function Product() {
 
       <div className="pdp">
         {/* GALLERY */}
-        <div className="pdp-gallery">
-          <div className="pdp-main">
-            <PH key={mainImage} src={mainImage} alt={product.title} aspect="ph-square" />
-          </div>
-          {images.length > 1 && (
-            <div className="pdp-thumbs">
-              {images.map((img, i) => (
-                <button
-                  type="button"
-                  key={img.url ?? i}
-                  className={`pdp-thumb ${activeImg === i ? 'active' : ''}`}
-                  onClick={() => setActiveImg(i)}
-                  aria-label={`Ver imagen ${i + 1}`}
-                >
-                  <PH src={img.url} alt="" />
-                </button>
-              ))}
+        {images.length ? (
+          <GalleryReel
+            images={images}
+            active={activeImg}
+            onSelect={setActiveImg}
+            title={product.title}
+          />
+        ) : (
+          <div className="pdp-gallery">
+            <div className="pdp-main">
+              <PH key={mainImage} src={mainImage} alt={product.title} aspect="ph-square" />
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* INFO */}
         <div className="pdp-info">
