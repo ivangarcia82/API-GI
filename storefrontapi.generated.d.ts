@@ -864,6 +864,22 @@ export type CampanaMochilasQuery = {
   };
 };
 
+export type QuoteListPricesQueryVariables = StorefrontAPI.Exact<{
+  ids:
+    | Array<StorefrontAPI.Scalars['ID']['input']>
+    | StorefrontAPI.Scalars['ID']['input'];
+}>;
+
+export type QuoteListPricesQuery = {
+  nodes: Array<
+    StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.ProductVariant, 'id'> & {
+        price: Pick<StorefrontAPI.MoneyV2, 'amount'>;
+      }
+    >
+  >;
+};
+
 export type FavoritosNodesQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -937,7 +953,13 @@ export type FavoritosNodesQuery = {
                 >;
               }
             >;
-            variants: {nodes: Array<Pick<StorefrontAPI.ProductVariant, 'id'>>};
+            variants: {
+              nodes: Array<
+                Pick<StorefrontAPI.ProductVariant, 'id'> & {
+                  price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
+                }
+              >;
+            };
           })
     >
   >;
@@ -1731,7 +1753,11 @@ interface GeneratedQueryTypes {
     return: CampanaMochilasQuery;
     variables: CampanaMochilasQueryVariables;
   };
-  '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        options { name optionValues { name } }\n        variants(first: 1) { nodes { id } }\n      }\n    }\n  }\n': {
+  '#graphql\n  query QuoteListPrices($ids: [ID!]!) {\n    nodes(ids: $ids) {\n      ... on ProductVariant {\n        id\n        price { amount }\n      }\n    }\n  }\n': {
+    return: QuoteListPricesQuery;
+    variables: QuoteListPricesQueryVariables;
+  };
+  '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        options { name optionValues { name } }\n        variants(first: 1) { nodes { id price { amount currencyCode } } }\n      }\n    }\n  }\n': {
     return: FavoritosNodesQuery;
     variables: FavoritosNodesQueryVariables;
   };
