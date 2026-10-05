@@ -14,9 +14,10 @@ vi.mock('~/lib/db/client', () => ({getDb: () => ({})}));
 vi.mock('~/lib/wishlist/repo', () => ({listWishlist: async () => ['gid://shopify/Product/1']}));
 
 const applyCustomerPrices = vi.fn();
+const getCustomerMargin = vi.fn(async () => null);
 vi.mock('~/lib/pricing.server', () => ({
   applyCustomerPrices: (...a) => applyCustomerPrices(...a),
-  getCustomerMargin: async () => null,
+  getCustomerMargin: (...a) => getCustomerMargin(...a),
 }));
 
 const storefrontQuery = vi.fn();
@@ -73,5 +74,18 @@ describe('los loaders muestran el precio del cliente', () => {
     // Sin el precio de la variante en la consulta no habría qué repreciar.
     expect(storefrontQuery.mock.calls[0][0]).toMatch(/variants\(first: 1\) \{ nodes \{ id price/);
     expect(out.products[0].price).toBe(1);
+  });
+});
+
+describe('filtro de precio con margen', () => {
+  it('el catálogo pide a Shopify el rango traducido', async () => {
+    getCustomerMargin.mockResolvedValue(40);
+    storefrontQuery.mockResolvedValue({
+      search: {totalCount: 0, nodes: [], pageInfo: {}, productFilters: []},
+    });
+    const {loader} = await import('./catalogo.jsx');
+    await loader({context, request: new Request('https://gi.test/catalogo?precioMin=0&precioMax=100')});
+    const [, {variables}] = storefrontQuery.mock.calls.at(-1);
+    expect(variables.productFilters).toContainEqual({price: {min: 0, max: 200}});
   });
 });

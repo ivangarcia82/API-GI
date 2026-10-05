@@ -26,7 +26,7 @@ import {
   appliedFilters,
 } from '~/lib/filters';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
-import {applyCustomerPrices} from '~/lib/pricing.server';
+import {applyCustomerPrices, getCustomerMargin} from '~/lib/pricing.server';
 import {brandVariantId} from '~/lib/brand-colors';
 import {
   effectiveColorFamilies,
@@ -73,9 +73,12 @@ export async function loader({context, request}) {
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
   const sortDef = SORTS[filtros.sort];
 
-  /* La paleta primero, y sola: sin `gid` getBrandColors ni toca la red, así
+  /* Paleta y margen primero, en paralelo: sin `gid` ninguno toca la red, así
      que el visitante anónimo no paga nada por preguntar. */
-  const marca = await getBrandColors(context);
+  const [marca, margen] = await Promise.all([
+    getBrandColors(context),
+    getCustomerMargin(context),
+  ]);
   const marcaColores = marca?.families || [];
 
   /* Dos vistas del mismo filtro de color, y la diferencia importa:
@@ -130,7 +133,11 @@ export async function loader({context, request}) {
   const productFilters = buildProductFilters(
     filtrosEfectivos,
     groupColorValues(vocabulario),
-    {colorObligatorio: marcaColores.length > 0 && hayVocabulario(vocabulario)},
+    {
+      colorObligatorio: marcaColores.length > 0 && hayVocabulario(vocabulario),
+      // El rango de precio lo escribe el cliente en su precio, no en el de lista.
+      margin: margen,
+    },
   );
 
   /* La categoría se resuelve por colección porque `search(query:"tag:...")` no

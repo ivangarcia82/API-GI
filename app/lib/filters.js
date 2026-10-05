@@ -19,6 +19,8 @@
  *  - Filtros del mismo tipo se combinan con O; de tipos distintos, con Y.
  */
 
+import {toListRange} from './pricing.js';
+
 /* ------------------------------------------------------------------ *
  * Familias de color                                                   *
  * ------------------------------------------------------------------ */
@@ -293,8 +295,14 @@ export const SIN_COINCIDENCIA = {
  * @param {object} filters estado leído de la URL
  * @param {Array<{family: string, values: string[]}>} colorFamilies familias
  *   presentes en el resultado actual, de `groupColorValues`
+ * @param {{colorObligatorio?: boolean, margin?: number|null}} [opciones] `margin`
+ *   es el margen del cliente; traduce el rango de precio a precio de lista
  */
-export function buildProductFilters(filters, colorFamilies = [], {colorObligatorio = false} = {}) {
+export function buildProductFilters(
+  filters,
+  colorFamilies = [],
+  {colorObligatorio = false, margin = null} = {},
+) {
   const out = [];
 
   let tonosDeColor = 0;
@@ -323,9 +331,14 @@ export function buildProductFilters(filters, colorFamilies = [], {colorObligator
   }
 
   if (filters.precioMin != null || filters.precioMax != null) {
+    /* El cliente escribe el rango en SU precio; Shopify sólo sabe filtrar por
+       el de lista. Como la lista es costo / 0.30 en casi todo el catálogo, su
+       precio es proporcional al de lista y basta con convertir el rango. Sin
+       margen, toListRange lo deja igual. */
+    const rango = toListRange({min: filters.precioMin, max: filters.precioMax}, margin);
     const price = {};
-    if (filters.precioMin != null) price.min = filters.precioMin;
-    if (filters.precioMax != null) price.max = filters.precioMax;
+    if (rango.min != null) price.min = rango.min;
+    if (rango.max != null) price.max = rango.max;
     out.push({price});
   }
 

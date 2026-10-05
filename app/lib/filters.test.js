@@ -186,6 +186,22 @@ describe('buildProductFilters', () => {
     expect(buildProductFilters({color: []}, familias)).toBeNull();
   });
 
+  it('sin margen manda el rango tal cual', () => {
+    expect(buildProductFilters({precioMin: 0, precioMax: 100}, [])).toEqual([
+      {price: {min: 0, max: 100}},
+    ]);
+  });
+
+  it('con margen traduce el rango del cliente a precio de lista', () => {
+    // margen 40: lista = cliente × 2
+    expect(buildProductFilters({precioMin: 0, precioMax: 100}, [], {margin: 40})).toEqual([
+      {price: {min: 0, max: 200}},
+    ]);
+    expect(buildProductFilters({precioMax: 50}, [], {margin: 40})).toEqual([
+      {price: {max: 100}},
+    ]);
+  });
+
   it('expande una familia de color a un filtro por tono (semántica O)', () => {
     const f = buildProductFilters({color: ['verde']}, familias);
     expect(f).toEqual([
