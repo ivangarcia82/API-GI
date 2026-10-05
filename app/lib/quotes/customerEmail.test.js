@@ -126,3 +126,13 @@ describe('buildCustomerEmail · cupón', () => {
     expect(html).toMatch(/8,000\.00/);
   });
 });
+
+describe('buildCustomerEmail · marca', () => {
+  it('usa el diseño de la marca con el botón a su cotización', async () => {
+    const {LOGO_PATH} = await import('../email/layout.js');
+    const msg = buildCustomerEmail({quote: QUOTE, user: USER, items: ITEMS, quoteUrl: URL_COTIZACION});
+    expect(msg.html).toContain(LOGO_PATH);
+    expect(msg.html).toContain('YOUR ONE STOP SOLUTION');
+    expect(msg.html).toContain(`href="${URL_COTIZACION}"`);
+  });
+});

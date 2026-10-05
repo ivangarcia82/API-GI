@@ -1,19 +1,7 @@
-// Server-only. HTML email bodies for verify + reset flows. URLs are escaped
-// before interpolation so a crafted link cannot break the href attribute.
-import {escapeHtml} from './escape.js';
-
-function layout(heading, bodyHtml, ctaUrl, ctaLabel) {
-  const url = escapeHtml(ctaUrl);
-  return `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1a1a1a;line-height:1.5">
-  <h1 style="font-size:20px">${escapeHtml(heading)}</h1>
-  ${bodyHtml}
-  <p style="margin:24px 0">
-    <a href="${url}" style="background:#111;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">${escapeHtml(ctaLabel)}</a>
-  </p>
-  <p style="font-size:12px;color:#666">Si el botón no funciona, copia y pega este enlace:<br>${url}</p>
-  <p style="font-size:12px;color:#666">Generando Ideas</p>
-  </body></html>`;
-}
+// Server-only. HTML email bodies for verify + reset flows, con el diseño de
+// la marca (layout.js). El enlace se escapa dentro de brandedEmail para que un
+// enlace manipulado no rompa el atributo href.
+import {brandedEmail} from './layout.js';
 
 /**
  * @param {string} verifyUrl
@@ -22,12 +10,12 @@ function layout(heading, bodyHtml, ctaUrl, ctaLabel) {
 export function verifyEmailTemplate(verifyUrl) {
   return {
     subject: 'Verifica tu correo — Generando Ideas',
-    html: layout(
-      'Verifica tu correo',
-      '<p>Gracias por registrarte. Confirma tu correo para activar tu cuenta.</p>',
-      verifyUrl,
-      'Verificar correo',
-    ),
+    html: brandedEmail({
+      preheader: 'Confirma tu correo para activar tu cuenta.',
+      heading: 'Verifica tu correo',
+      bodyHtml: '<p style="margin:0">Gracias por registrarte. Confirma tu correo para activar tu cuenta.</p>',
+      cta: {url: verifyUrl, label: 'Verificar correo'},
+    }),
   };
 }
 
@@ -38,11 +26,12 @@ export function verifyEmailTemplate(verifyUrl) {
 export function resetPasswordTemplate(resetUrl) {
   return {
     subject: 'Restablece tu contraseña — Generando Ideas',
-    html: layout(
-      'Restablece tu contraseña',
-      '<p>Recibimos una solicitud para restablecer tu contraseña. El enlace expira en 1 hora. Si no fuiste tú, ignora este correo.</p>',
-      resetUrl,
-      'Restablecer contraseña',
-    ),
+    html: brandedEmail({
+      preheader: 'El enlace para restablecer tu contraseña expira en 1 hora.',
+      heading: 'Restablece tu contraseña',
+      bodyHtml:
+        '<p style="margin:0">Recibimos una solicitud para restablecer tu contraseña. El enlace expira en 1 hora. Si no fuiste tú, ignora este correo.</p>',
+      cta: {url: resetUrl, label: 'Restablecer contraseña'},
+    }),
   };
 }

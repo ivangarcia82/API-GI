@@ -3,6 +3,7 @@
 // not a payable invoice, until an advisor has reviewed the quote.
 import {escapeHtml, itemsTableHtml} from './emailParts.js';
 import {folioVisible} from './folio.js';
+import {brandedEmail} from '../email/layout.js';
 
 /**
  * @param {{
@@ -15,33 +16,31 @@ import {folioVisible} from './folio.js';
  */
 export function buildCustomerEmail({quote, user, items, quoteUrl}) {
   const greeting = String(user.firstName ?? '').trim() || user.email;
-  const url = escapeHtml(quoteUrl);
+  const folio = folioVisible(quote);
 
   const deadlineBlock = quote.deadline
     ? `<p><strong>Fecha objetivo:</strong> ${escapeHtml(quote.deadline)}</p>`
     : '';
 
-  const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1a1a1a;line-height:1.5">
-  <h1 style="font-size:20px">Recibimos tu cotización</h1>
+  const html = brandedEmail({
+    preheader: `Folio ${folio}: un asesor revisará tu solicitud.`,
+    heading: 'Recibimos tu cotización',
+    bodyHtml: `
   <p>Hola ${escapeHtml(greeting)},</p>
   <p>Recibimos tu solicitud. Un asesor la revisará y te contactará con la propuesta formal.</p>
-  <p><strong>Folio:</strong> ${escapeHtml(folioVisible(quote))}</p>
+  <p><strong>Folio:</strong> ${escapeHtml(folio)}</p>
   ${deadlineBlock}
   ${itemsTableHtml(items, {
     totalLabel: 'Total estimado',
     discount: {code: quote.discountCode, percentage: quote.discountPercentage},
-  })}
-  <p style="margin:24px 0">
-    <a href="${url}" style="background:#111;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Ver mi cotización</a>
-  </p>
-  <p style="font-size:12px;color:#666">Si el botón no funciona, copia y pega este enlace:<br>${url}</p>
-  <p style="font-size:12px;color:#666">Los precios mostrados son estimados y están sujetos a confirmación de tu asesor.</p>
-  <p style="font-size:12px;color:#666">Generando Ideas</p>
-  </body></html>`;
+  })}`,
+    cta: {url: quoteUrl, label: 'Ver mi cotización'},
+    footnote: 'Los precios mostrados son estimados y están sujetos a confirmación de tu asesor.',
+  });
 
   return {
     to: user.email,
-    subject: `Recibimos tu cotización ${folioVisible(quote)} — Generando Ideas`,
+    subject: `Recibimos tu cotización ${folio} — Generando Ideas`,
     html,
   };
 }

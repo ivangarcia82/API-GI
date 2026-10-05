@@ -88,7 +88,10 @@ describe('buildAdvisorEmail', () => {
       items: ITEMS,
       invoiceUrl: null,
     });
-    expect(msg.html).not.toContain('href');
+    // El pie de la marca siempre enlaza a generandoideas.com; lo que no debe
+    // haber es un enlace a una factura o a la cotización.
+    expect(msg.html).not.toMatch(/href="[^"]*(invoice|cotizaciones|myshopify)/);
+    expect(msg.html).not.toContain('Si el botón no funciona');
   });
 });
 
@@ -146,7 +149,8 @@ describe('buildAdvisorEmail · botón al portal', () => {
 
   it('sin portal no pinta ningún botón', () => {
     const msg = buildAdvisorEmail({...base, portalUrl: null});
-    expect(msg.html).not.toContain('<a href');
+    expect(msg.html).not.toContain('Ver cotización en el portal');
+    expect(msg.html).not.toContain('Si el botón no funciona');
   });
 });
 
@@ -161,5 +165,21 @@ describe('buildAdvisorEmail · cupón', () => {
     });
     expect(html).toMatch(/Descuento \(BIENVENIDOANDANAC\)/);
     expect(html).toMatch(/-\$2,000\.00/);
+  });
+});
+
+describe('buildAdvisorEmail · marca', () => {
+  it('usa el diseño de la marca con el botón al portal', async () => {
+    const {LOGO_PATH} = await import('../email/layout.js');
+    const msg = buildAdvisorEmail({
+      advisorEmail: 'asesor@gi.com',
+      quote: QUOTE,
+      user: USER,
+      items: ITEMS,
+      portalUrl: 'https://generandoideas.com/asesor/cotizaciones/q-123',
+    });
+    expect(msg.html).toContain(LOGO_PATH);
+    expect(msg.html).toContain('href="https://generandoideas.com/asesor/cotizaciones/q-123"');
+    expect(msg.html).toContain('Ver cotización en el portal');
   });
 });

@@ -20,3 +20,17 @@ describe('email/templates', () => {
     expect(t.html).toContain('a&quot;b&lt;c');
   });
 });
+
+describe('email/templates · marca', () => {
+  it('verificación y restablecer contraseña usan el diseño de la marca', async () => {
+    const {LOGO_PATH} = await import('./layout.js');
+    for (const t of [
+      verifyEmailTemplate('https://generandoideas.com/auth/verify?token=abc'),
+      resetPasswordTemplate('https://generandoideas.com/auth/reset?token=xyz'),
+    ]) {
+      expect(t.html).toContain(LOGO_PATH);
+      expect(t.html).toContain('YOUR ONE STOP SOLUTION');
+      expect(t.html).toMatch(/background-color:#ff8300/);
+    }
+  });
+});

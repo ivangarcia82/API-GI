@@ -56,12 +56,12 @@ export function itemsTableHtml(items, {totalLabel = 'Total', discount = null} = 
   return `
       <table style="border-collapse:collapse;width:100%;margin-top:12px">
         <thead>
-          <tr style="text-align:left">
-            <th style="padding:6px 10px;border-bottom:2px solid #ddd">Producto</th>
-            <th style="padding:6px 10px;border-bottom:2px solid #ddd">Decorado</th>
-            <th style="padding:6px 10px;border-bottom:2px solid #ddd;text-align:right">Cant.</th>
-            <th style="padding:6px 10px;border-bottom:2px solid #ddd;text-align:right">Unitario</th>
-            <th style="padding:6px 10px;border-bottom:2px solid #ddd;text-align:right">Subtotal</th>
+          <tr style="text-align:left;background-color:#ff8300;color:#ffffff">
+            <th style="padding:6px 10px;font-size:12px">Producto</th>
+            <th style="padding:6px 10px;font-size:12px">Decorado</th>
+            <th style="padding:6px 10px;font-size:12px;text-align:right">Cant.</th>
+            <th style="padding:6px 10px;font-size:12px;text-align:right">Unitario</th>
+            <th style="padding:6px 10px;font-size:12px;text-align:right">Subtotal</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
