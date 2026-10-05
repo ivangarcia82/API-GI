@@ -3,10 +3,11 @@ import {requireUser} from '~/lib/auth/guard';
 import {getDb} from '~/lib/db/client';
 import {getOrCreateDraftQuote, getQuoteWithItems, upsertQuoteItem} from '~/lib/quotes/repo';
 import {recomputeItemPricing} from '~/lib/quotes/recompute';
+import {repriceItems} from '~/lib/quotes/reprice.server';
 
 // Copy a past quote's items into the user's active draft ("Volver a cotizar").
-// Pricing is recomputed server-side from the persisted decoration inputs; the
-// advisor still confirms current catalog pricing before issuing the real quote.
+// Base price is today's: current list price plus the customer's current margin
+// (repriceItems); decoration is recomputed from the persisted inputs.
 export async function action({request, context}) {
   assertSameOrigin(request);
   const sessionUser = await requireUser(context);
@@ -26,7 +27,10 @@ export async function action({request, context}) {
   }
 
   const draft = await getOrCreateDraftQuote(db, sessionUser.userId);
-  for (const item of source.items) {
+  /* Al precio de HOY: la cotización de origen puede tener meses. Una variante
+     retirada conserva su precio guardado (repriceItems no la toca). */
+  const actuales = await repriceItems(context, source.items);
+  for (const item of actuales) {
     const priced = recomputeItemPricing({
       baseUnitPrice: item.baseUnitPrice,
       technique: item.technique,

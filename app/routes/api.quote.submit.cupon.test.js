@@ -38,7 +38,10 @@ vi.mock('~/lib/quotes/repo', () => ({
   getQuoteWithItems: (...a) => getQuoteWithItems(...a),
   markSubmitted: async () => ({folio: 'GI-0001'}),
   setQuoteDiscount: (...a) => setQuoteDiscount(...a),
+  upsertQuoteItem: async () => {},
 }));
+
+vi.mock('~/lib/quotes/reprice.server', () => ({repriceItems: async (_ctx, items) => items}));
 
 import {action} from './api.quote.submit.jsx';
 

@@ -16,7 +16,9 @@ import {
   getQuoteWithItems,
   markSubmitted,
   setQuoteDiscount,
+  upsertQuoteItem,
 } from '~/lib/quotes/repo';
+import {repriceItems} from '~/lib/quotes/reprice.server';
 import {buildDraftOrderInput} from '~/lib/quotes/draftInput';
 
 export async function action({request, context}) {
@@ -41,9 +43,18 @@ export async function action({request, context}) {
     args: [notes || null, deadline || null, new Date().toISOString(), draft.id],
   });
 
-  const {quote, items} = await getQuoteWithItems(db, draft.id);
-  if (!quote || items.length === 0) {
+  const {quote, items: guardados} = await getQuoteWithItems(db, draft.id);
+  if (!quote || guardados.length === 0) {
     return Response.json({error: 'La cotización está vacía.'}, {status: 400});
+  }
+
+  /* Se reprecia con el precio de lista y el margen de HOY: el borrador pudo
+     armarse hace días y el margen o el costo cambiar entretanto. Se persiste
+     antes de la draft order para que lo guardado, la draft order, el PDF y los
+     correos digan lo mismo. Si no se pudo repreciar, se sigue con lo guardado. */
+  const items = await repriceItems(context, guardados);
+  for (const [i, item] of items.entries()) {
+    if (item !== guardados[i]) await upsertQuoteItem(db, quote.id, item);
   }
 
   const user = await findById(db, sessionUser.userId);
