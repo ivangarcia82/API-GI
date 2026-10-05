@@ -108,6 +108,84 @@ export function groupColorValues(facetValues) {
 }
 
 /* ------------------------------------------------------------------ *
+ * Técnicas y tallas genéricas                                         *
+ * ------------------------------------------------------------------ */
+
+const sinAcentos = (s) =>
+  String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+
+/* El metafield `tecnicas_de_impresion` guarda la combinación completa
+   ("GRABADO LÁSER-SERIGRAFÍA"), así que la faceta ofrecía 57 opciones que en
+   realidad son 6 técnicas. Se ofrecen las 6 y cada una se expande a todas las
+   combinaciones que la incluyen. Medido el 2026-10-05: no hay otras. */
+export const TECNICAS_GENERICAS = [
+  {id: 'serigrafia', label: 'Serigrafía', re: /SERIGRAF/},
+  {id: 'grabado-laser', label: 'Grabado láser', re: /GRABADO/},
+  {id: 'full-color', label: 'Full color', re: /FULL COLOR/},
+  {id: 'bordado', label: 'Bordado', re: /BORDADO/},
+  {id: 'sublimacion', label: 'Sublimación', re: /SUBLIMA/},
+  {id: 'gota-de-resina', label: 'Gota de resina', re: /RESINA/},
+];
+
+/* La opción "talla" trae el mismo tamaño escrito de muchas formas (CH, SMALL,
+   CHICA; XG, XL, EXTRA GRANDE; hasta "AZUL 3XL"). `orden` es el de la talla;
+   la lista va en el orden en que se prueban las reglas: primero las más
+   específicas, para que "EXTRA GRANDE" no caiga en G ni "EXTRA CHICA" en CH. */
+export const TALLAS_GENERICAS = [
+  {id: '4xg', label: '4XG', orden: 8, re: /\b4XL?\b|XXXXL/},
+  {id: '3xg', label: '3XG', orden: 7, re: /\b3XL?\b|XXXL/},
+  {id: '2xg', label: '2XG', orden: 6, re: /\b2XL?\b|\bXXL\b|EXTRA EXTRA GRANDE/},
+  {id: 'xg', label: 'XG', orden: 5, re: /\bXG\b|\bXL\b|EXTRA GRANDE|EXTRA LARGE/},
+  {id: 'xch', label: 'XCH', orden: 1, re: /\bXS\b|\bXC\b|\bXCH\b|EXTRA CHICA|EXTRA SMALL/},
+  {id: 'ch', label: 'CH', orden: 2, re: /\bCH\b|CHICA|SMALL|\bS\b/},
+  {id: 'm', label: 'M', orden: 3, re: /\bMD\b|MEDIUM|MEDIANA|\bM\b/},
+  {id: 'g', label: 'G', orden: 4, re: /\bGD\b|GRANDE|LARGE|\bL\b/},
+  {id: 'unitalla', label: 'Unitalla', orden: 9, re: /UNITALLA|\bUNICA\b/},
+];
+
+/**
+ * Valores crudos de una faceta agrupados en opciones genéricas. Un valor puede
+ * caer en varias (una combinación de técnicas) o en una sola (`exclusivo`, las
+ * tallas). Lo que no reconoce ninguna regla no se ofrece.
+ * @returns {Array<{id: string, label: string, count: number, values: string[]}>}
+ */
+function agrupar(facetValues, genericos, exclusivo) {
+  if (!facetValues?.length) return [];
+  const acc = new Map();
+  for (const v of facetValues) {
+    const texto = sinAcentos(v.label);
+    const tocados = exclusivo
+      ? [genericos.find((g) => g.re.test(texto))].filter(Boolean)
+      : genericos.filter((g) => g.re.test(texto));
+    for (const g of tocados) {
+      const a = acc.get(g.id) || {count: 0, values: []};
+      a.count += v.count || 0;
+      a.values.push(v.label);
+      acc.set(g.id, a);
+    }
+  }
+  return genericos
+    .filter((g) => acc.has(g.id))
+    .map((g) => ({id: g.id, label: g.label, orden: g.orden, ...acc.get(g.id)}));
+}
+
+const sinOrden = ({id, label, count, values}) => ({id, label, count, values});
+
+/** Técnicas de la faceta, de la más usada a la menos. */
+export function groupTechniqueValues(facetValues) {
+  return agrupar(facetValues, TECNICAS_GENERICAS, false)
+    .sort((a, b) => b.count - a.count)
+    .map(sinOrden);
+}
+
+/** Tallas de la faceta, de la más chica a la más grande. */
+export function groupSizeValues(facetValues) {
+  return agrupar(facetValues, TALLAS_GENERICAS, true)
+    .sort((a, b) => a.orden - b.orden)
+    .map(sinOrden);
+}
+
+/* ------------------------------------------------------------------ *
  * Ordenación                                                          *
  * ------------------------------------------------------------------ */
 
@@ -301,7 +379,7 @@ export const SIN_COINCIDENCIA = {
 export function buildProductFilters(
   filters,
   colorFamilies = [],
-  {colorObligatorio = false, margin = null} = {},
+  {colorObligatorio = false, margin = null, tecnicas = [], tallas = []} = {},
 ) {
   const out = [];
 
@@ -318,16 +396,22 @@ export function buildProductFilters(
   }
   if (colorObligatorio && tonosDeColor === 0) out.push(SIN_COINCIDENCIA);
 
-  for (const value of filters.talla || []) {
-    out.push({variantOption: {name: 'talla', value}});
+  // Cada talla y técnica genérica se expande a sus valores crudos (semántica O
+  // entre ellos). Sin vocabulario no se puede expandir y no se inventa nada.
+  for (const id of filters.talla || []) {
+    for (const value of tallas.find((t) => t.id === id)?.values || []) {
+      out.push({variantOption: {name: 'talla', value}});
+    }
   }
 
   for (const value of filters.material || []) {
     out.push({productMetafield: {namespace: 'custom', key: 'material', value}});
   }
 
-  for (const value of filters.tecnica || []) {
-    out.push({productMetafield: {namespace: 'custom', key: 'tecnicas_de_impresion', value}});
+  for (const id of filters.tecnica || []) {
+    for (const value of tecnicas.find((t) => t.id === id)?.values || []) {
+      out.push({productMetafield: {namespace: 'custom', key: 'tecnicas_de_impresion', value}});
+    }
   }
 
   if (filters.precioMin != null || filters.precioMax != null) {
@@ -385,8 +469,12 @@ export function activeChips(filters, ctx = {}) {
     ['tecnica', filters.tecnica],
     ['talla', filters.talla],
   ]) {
+    // Técnica y talla viajan como id genérico ("grabado-laser"); el chip
+    // enseña su nombre. Material sigue siendo el valor tal cual.
+    const genericos = group === 'tecnica' ? TECNICAS_GENERICAS : group === 'talla' ? TALLAS_GENERICAS : [];
     for (const value of values || []) {
-      chips.push({key: `${group}:${value}`, group, value, label: value});
+      const label = genericos.find((g) => g.id === value)?.label ?? value;
+      chips.push({key: `${group}:${value}`, group, value, label});
     }
   }
 

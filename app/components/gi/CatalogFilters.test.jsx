@@ -124,3 +124,18 @@ describe('hoja de orden', () => {
     expect(onSelect).toHaveBeenCalledWith('price-desc');
   });
 });
+
+describe('filtro de color', () => {
+  const colores = [
+    {family: 'rojo', label: 'Rojo', hex: '#c2352c', count: 66},
+    {family: 'negro', label: 'Negro', hex: '#111', count: 61},
+  ];
+
+  it('muestra sólo los círculos de color, con el nombre para lectores y tooltip', () => {
+    const {container} = montarPanel({facets: {...FACETAS, colores}});
+    expect(container.querySelector('.cf-swatch-label')).toBeNull();
+    const rojo = screen.getByRole('button', {name: 'Rojo (66)'});
+    expect(rojo.getAttribute('title')).toBe('Rojo');
+    expect(rojo.querySelector('.cf-swatch-dot')).not.toBeNull();
+  });
+});

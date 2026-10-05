@@ -21,12 +21,14 @@ import {
   buildSearchQuery,
   buildProductFilters,
   groupColorValues,
+  groupTechniqueValues,
+  groupSizeValues,
   activeChips,
   hasActiveFilters,
   resolveCatalogSource,
   appliedFilters,
 } from '~/lib/filters';
-import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {getBrandColors, getColorVocabulary, getFacetValues} from '~/lib/brand-colors.server';
 import {applyCustomerPrices, getCustomerMargin} from '~/lib/pricing.server';
 import {brandVariantId} from '~/lib/brand-colors';
 import {
@@ -61,6 +63,14 @@ const FACET = {
   material: 'filter.p.m.custom.material',
   tecnica: 'filter.p.m.custom.tecnicas_de_impresion',
 };
+
+/* Opciones genéricas (técnica, talla) con la forma que espera el panel. */
+const genericos = (agrupar, facetas, id) =>
+  agrupar((facetas.find((f) => f.id === id)?.values || []).filter((v) => v.count > 0)).map((g) => ({
+    value: g.id,
+    label: g.label,
+    count: g.count,
+  }));
 
 const listaDe = (facetas, id) =>
   (facetas.find((f) => f.id === id)?.values || [])
@@ -106,6 +116,14 @@ export async function loader({context, request}) {
     ? await getColorVocabulary(context)
     : null;
 
+  /* Técnica y talla viajan como genéricos ("bordado", "xg") y hay que
+     expandirlos a los valores reales de la tienda. Sólo se leen cuando hay
+     alguno elegido; salen de la misma consulta cacheada que el color. */
+  const [vocabTecnicas, vocabTallas] = await Promise.all([
+    filtros.tecnica.length ? getFacetValues(context, FACET.tecnica) : null,
+    filtros.talla.length ? getFacetValues(context, FACET.talla) : null,
+  ]);
+
   const fuente = resolveCatalogSource(filtrosEfectivos);
   const consultaBase = {
     query: buildSearchQuery(filtrosEfectivos),
@@ -138,6 +156,8 @@ export async function loader({context, request}) {
       colorObligatorio: marcaColores.length > 0 && hayVocabulario(vocabulario),
       // El rango de precio lo escribe el cliente en su precio, no en el de lista.
       margin: margen,
+      tecnicas: groupTechniqueValues(vocabTecnicas),
+      tallas: groupSizeValues(vocabTallas),
     },
   );
 
@@ -190,8 +210,9 @@ export async function loader({context, request}) {
     facetas: {
       colores,
       materiales: listaDe(facetasCrudas, FACET.material),
-      tecnicas: listaDe(facetasCrudas, FACET.tecnica),
-      tallas: listaDe(facetasCrudas, FACET.talla),
+      // Agrupadas: 6 técnicas en vez de 57 combinaciones, y una talla por tamaño.
+      tecnicas: genericos(groupTechniqueValues, facetasCrudas, FACET.tecnica),
+      tallas: genericos(groupSizeValues, facetasCrudas, FACET.talla),
     },
   };
 }

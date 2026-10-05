@@ -112,21 +112,44 @@ export function getBrandColors(context) {
  * @param {any} context
  * @returns {Promise<Array<{label: string, count: number}>|null>}
  */
-export function getColorVocabulary(context) {
-  return memo(context, 'vocabulario', async () => {
-    let valores;
+/* Las facetas del catálogo completo, una sola vez por request y con CacheLong:
+   de aquí salen el vocabulario de color y el de técnica y talla. null si la
+   consulta falló. */
+function leerFacetas(context) {
+  return memo(context, 'facetas', async () => {
     try {
       const res = await context.storefront.query(GI_COLOR_VOCABULARY_QUERY, {
         cache: CacheLong(),
       });
-      const facetas = res?.search?.productFilters || [];
-      valores = (facetas.find((f) => f.id === FACET_COLOR)?.values || []).filter(
-        (v) => v.count > 0,
-      );
+      return res?.search?.productFilters || [];
     } catch (error) {
-      console.error('[brand-colors] no se pudo leer el vocabulario de color:', error);
+      console.error('[brand-colors] no se pudo leer el vocabulario del catálogo:', error);
       return null;
     }
+  });
+}
+
+/**
+ * Valores crudos de una faceta en todo el catálogo ("GRABADO LÁSER-SERIGRAFÍA",
+ * "EXTRA GRANDE"…), para expandir las técnicas y tallas genéricas. null si no
+ * se pudo leer o vino vacía: quien lo consume no debe inventar filtros.
+ * @param {any} context
+ * @param {string} facetId p. ej. 'filter.v.option.talla'
+ * @returns {Promise<Array<{label: string, count: number}>|null>}
+ */
+export async function getFacetValues(context, facetId) {
+  const facetas = await leerFacetas(context);
+  const valores = (facetas?.find((f) => f.id === facetId)?.values || []).filter((v) => v.count > 0);
+  return valores.length ? valores : null;
+}
+
+export function getColorVocabulary(context) {
+  return memo(context, 'vocabulario', async () => {
+    const facetas = await leerFacetas(context);
+    if (!facetas) return null;
+    const valores = (facetas.find((f) => f.id === FACET_COLOR)?.values || []).filter(
+      (v) => v.count > 0,
+    );
     if (!valores.length) {
       // Esta tienda tiene ~100 tonos: cero es siempre el índice de búsqueda
       // degradado, no un catálogo sin colores. Medido el 2026-09-04 contra el

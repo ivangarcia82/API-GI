@@ -167,20 +167,19 @@ export function CatalogFilters({
             {facets.colores.map((c) => {
               const active = filters.color.includes(c.family);
               return (
+                // Sólo el círculo: el nombre va en el tooltip y en el nombre
+                // accesible, con el conteo para quien no ve el color.
                 <button
                   key={c.family}
                   type="button"
                   className={`cf-swatch ${active ? 'active' : ''} ${c.hex ? '' : 'cf-swatch-multi'}`}
                   style={c.hex ? {'--sw': c.hex} : undefined}
                   aria-pressed={active}
-                  title={`${c.label} (${c.count})`}
+                  aria-label={`${c.label} (${c.count.toLocaleString('es-MX')})`}
+                  title={c.label}
                   onClick={() => set({color: toggleMulti(filters.color, c.family)})}
                 >
                   <span className="cf-swatch-dot" />
-                  <span className="cf-swatch-label">
-                    {c.label}
-                    <em>{c.count.toLocaleString('es-MX')}</em>
-                  </span>
                 </button>
               );
             })}

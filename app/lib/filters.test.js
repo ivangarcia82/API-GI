@@ -6,6 +6,8 @@ import {
   parseFilterParams,
   buildSearchQuery,
   buildProductFilters,
+  groupTechniqueValues,
+  groupSizeValues,
   resolveCatalogSource,
   appliedFilters,
   toggleMulti,
@@ -240,20 +242,40 @@ describe('buildProductFilters', () => {
     ]);
   });
 
-  it('añade material y técnica como metafields de producto', () => {
-    const f = buildProductFilters({color: [], material: ['TEXTIL'], tecnica: ['BORDADO']}, familias);
+  it('añade material como metafield de producto', () => {
+    const f = buildProductFilters({color: [], material: ['TEXTIL']}, familias);
     expect(f).toContainEqual({
       productMetafield: {namespace: 'custom', key: 'material', value: 'TEXTIL'},
     });
-    expect(f).toContainEqual({
-      productMetafield: {namespace: 'custom', key: 'tecnicas_de_impresion', value: 'BORDADO'},
-    });
   });
 
-  it('añade talla como opción de variante', () => {
-    expect(buildProductFilters({color: [], talla: ['M']}, familias)).toEqual([
-      {variantOption: {name: 'talla', value: 'M'}},
+  it('expande una técnica genérica a todas las combinaciones que la incluyen', () => {
+    const tecnicas = groupTechniqueValues([
+      {label: 'BORDADO', count: 39},
+      {label: 'BORDADO-SERIGRAFÍA', count: 167},
+      {label: 'SERIGRAFÍA', count: 3550},
     ]);
+    const f = buildProductFilters({color: [], tecnica: ['bordado']}, familias, {tecnicas});
+    expect(f).toEqual([
+      {productMetafield: {namespace: 'custom', key: 'tecnicas_de_impresion', value: 'BORDADO'}},
+      {productMetafield: {namespace: 'custom', key: 'tecnicas_de_impresion', value: 'BORDADO-SERIGRAFÍA'}},
+    ]);
+  });
+
+  it('expande una talla genérica a sus variantes de nombre', () => {
+    const tallas = groupSizeValues([
+      {label: 'MD', count: 39},
+      {label: 'MEDIUM', count: 25},
+      {label: 'GD', count: 39},
+    ]);
+    expect(buildProductFilters({color: [], talla: ['m']}, familias, {tallas})).toEqual([
+      {variantOption: {name: 'talla', value: 'MD'}},
+      {variantOption: {name: 'talla', value: 'MEDIUM'}},
+    ]);
+  });
+
+  it('sin vocabulario no inventa filtros de técnica ni talla', () => {
+    expect(buildProductFilters({color: [], tecnica: ['bordado'], talla: ['m']}, familias)).toBeNull();
   });
 
   it('combina color y precio — tipos distintos se cruzan con Y', () => {
@@ -465,5 +487,73 @@ describe('una sola colección a la vez', () => {
   it('conserva Ofertas cuando es lo único pedido', () => {
     const out = appliedFilters({cat: '', nuevos: false, ofertas: true, q: ''});
     expect(out.ofertas).toBe(true);
+  });
+});
+
+describe('técnicas genéricas', () => {
+  const crudas = [
+    {label: 'SERIGRAFÍA', count: 3550},
+    {label: 'GRABADO LÁSER-SERIGRAFÍA', count: 1138},
+    {label: 'SERIGRAFÍA-GRABADO LÁSER', count: 305},
+    {label: 'FULL COLOR-SUBLIMACION-BORDADO', count: 44},
+    {label: 'GOTA DE RESINA-SERIGRAFÍA', count: 12},
+  ];
+
+  it('agrupa las combinaciones en las técnicas que las forman', () => {
+    const g = groupTechniqueValues(crudas);
+    const serigrafia = g.find((t) => t.id === 'serigrafia');
+    expect(serigrafia.label).toBe('Serigrafía');
+    expect(serigrafia.count).toBe(3550 + 1138 + 305 + 12);
+    expect(serigrafia.values).toHaveLength(4);
+    expect(g.find((t) => t.id === 'grabado-laser').values).toEqual([
+      'GRABADO LÁSER-SERIGRAFÍA', 'SERIGRAFÍA-GRABADO LÁSER',
+    ]);
+    expect(g.map((t) => t.id)).toEqual(
+      expect.arrayContaining(['full-color', 'sublimacion', 'bordado', 'gota-de-resina']),
+    );
+  });
+
+  it('ordena de la más usada a la menos', () => {
+    const counts = groupTechniqueValues(crudas).map((t) => t.count);
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+  });
+
+  it('una combinación desconocida no rompe nada', () => {
+    expect(groupTechniqueValues([{label: 'TÉCNICA NUEVA', count: 3}])).toEqual([]);
+    expect(groupTechniqueValues(null)).toEqual([]);
+  });
+});
+
+describe('tallas genéricas', () => {
+  const crudas = [
+    {label: 'CH', count: 39}, {label: 'SMALL', count: 26}, {label: 'CHICA', count: 12},
+    {label: 'MD', count: 39}, {label: 'XG', count: 39}, {label: 'XL', count: 19},
+    {label: 'EXTRA GRANDE', count: 12}, {label: '2X', count: 36}, {label: 'XXL', count: 7},
+    {label: 'AZUL 3XL', count: 2}, {label: '3X', count: 29}, {label: 'XS', count: 9},
+    {label: 'EXTRA CHICA', count: 2}, {label: 'UNITALLA', count: 1},
+  ];
+
+  it('agrupa nombres distintos de la misma talla, de menor a mayor', () => {
+    const g = groupSizeValues(crudas);
+    expect(g.map((t) => t.label)).toEqual(['XCH', 'CH', 'M', 'XG', '2XG', '3XG', 'Unitalla']);
+    expect(g.find((t) => t.id === 'ch').values).toEqual(['CH', 'SMALL', 'CHICA']);
+    expect(g.find((t) => t.id === 'xg').count).toBe(39 + 19 + 12);
+    expect(g.find((t) => t.id === '3xg').values).toEqual(['AZUL 3XL', '3X']);
+  });
+
+  it('"EXTRA GRANDE" no cae en G ni "EXTRA CHICA" en CH', () => {
+    const g = groupSizeValues(crudas);
+    expect(g.find((t) => t.id === 'xg').values).toContain('EXTRA GRANDE');
+    expect(g.find((t) => t.id === 'xch').values).toContain('EXTRA CHICA');
+    expect(g.find((t) => t.id === 'ch').values).not.toContain('EXTRA CHICA');
+  });
+});
+
+describe('chips de técnica y talla genéricas', () => {
+  it('muestran el nombre legible, no el id de la URL', async () => {
+    const {activeChips} = await import('./filters.js');
+    const chips = activeChips({color: [], material: [], tecnica: ['grabado-laser'], talla: ['xg']});
+    expect(chips.find((c) => c.group === 'tecnica')).toMatchObject({value: 'grabado-laser', label: 'Grabado láser'});
+    expect(chips.find((c) => c.group === 'talla')).toMatchObject({value: 'xg', label: 'XG'});
   });
 });
