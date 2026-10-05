@@ -5,6 +5,7 @@ import {Icon} from '~/components/gi/Icon';
 import {RouteError} from '~/components/gi/RouteError';
 import {Button} from '~/components/gi/ui';
 import {ProductCard} from '~/components/gi/ProductCard';
+import {AutoLoadMore} from '~/components/gi/AutoLoadMore';
 import {
   CatalogFilters,
   ActiveFilterChips,
@@ -593,7 +594,16 @@ export default function Catalogo() {
           </div>
 
           <Pagination connection={products}>
-            {({nodes, isLoading, PreviousLink, NextLink, hasNextPage, hasPreviousPage}) => {
+            {({
+              nodes,
+              isLoading,
+              PreviousLink,
+              NextLink,
+              hasNextPage,
+              hasPreviousPage,
+              nextPageUrl,
+              state,
+            }) => {
               const visible = nodes.map(normalizeProduct).filter(Boolean);
               return (
                 <>
@@ -640,7 +650,10 @@ export default function Catalogo() {
                   )}
 
                   {hasNextPage && (
-                    <div style={{display: 'flex', justifyContent: 'center', marginTop: 40}}>
+                    <div className="cat-load-more">
+                      {/* Carga sola al acercarse al final; el botón queda de
+                          respaldo para teclado y navegadores sin observer. */}
+                      <AutoLoadMore nextPageUrl={nextPageUrl} state={state} isLoading={isLoading} />
                       <NextLink style={paginationLinkStyle}>
                         {isLoading ? 'Cargando…' : 'Cargar más productos ↓'}
                       </NextLink>

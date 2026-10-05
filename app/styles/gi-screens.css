@@ -1795,6 +1795,19 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
 .pdp-main .ph { aspect-ratio: 1; }
 /* Carrete (GalleryReel.jsx): una sola tira que se desliza, no una rejilla que
    crece. Cada miniatura encaja al soltar el scroll. */
+/* Scroll infinito del catálogo (AutoLoadMore.jsx). Ni este bloque ni el footer
+   sirven de ancla de scroll: si el navegador se anclara a ellos, al llegar la
+   página siguiente dejaría al usuario pegado al final con los productos nuevos
+   arriba. Así se ancla a las tarjetas y lo nuevo aparece debajo. */
+.cat-load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  overflow-anchor: none;
+}
+.footer { overflow-anchor: none; }
+.auto-load-sentinel { width: 1px; height: 1px; }
+
 .pdp-reel {
   list-style: none;
   margin: 0;
