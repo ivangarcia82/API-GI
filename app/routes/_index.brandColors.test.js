@@ -1,5 +1,10 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 
+vi.mock('~/lib/pricing.server', () => ({
+  applyCustomerPrices: async (_ctx, data) => data,
+  getCustomerMargin: async () => null,
+}));
+
 /* Sin mock de @shopify/hydrogen: _index.jsx no lo importa directamente, y
    mockearlo a medias rompería a los componentes que sí lo hacen de paso. */
 const storefrontQuery = vi.fn();

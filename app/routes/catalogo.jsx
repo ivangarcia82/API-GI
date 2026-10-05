@@ -26,6 +26,7 @@ import {
   appliedFilters,
 } from '~/lib/filters';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {applyCustomerPrices} from '~/lib/pricing.server';
 import {brandVariantId} from '~/lib/brand-colors';
 import {
   effectiveColorFamilies,
@@ -137,7 +138,7 @@ export async function loader({context, request}) {
      se cuelan productos de otras categorías. La colección no acepta texto libre,
      así que en cuanto hay `q` se vuelve a `search` y la categoría deja de
      aplicarse — `appliedFilters` la quita de los chips para no mentir. */
-  const res =
+  const resCrudo =
     fuente.modo === 'coleccion'
       ? await buscar(
           {
@@ -151,6 +152,9 @@ export async function loader({context, request}) {
           GI_CATALOG_COLLECTION_QUERY,
         )
       : await buscar({...consultaBase, productFilters, ...paginationVariables}, 'resultados');
+
+  // Precios del cliente (margen sobre costo) antes de que nada los lea.
+  const res = await applyCustomerPrices(context, resCrudo);
 
   const coleccion = res?.collection;
   const resultado = fuente.modo === 'coleccion' ? coleccion?.products : res?.search;

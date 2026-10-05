@@ -1,5 +1,10 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 
+vi.mock('~/lib/pricing.server', () => ({
+  applyCustomerPrices: async (_ctx, data) => data,
+  getCustomerMargin: async () => null,
+}));
+
 /* Sin mock de @shopify/hydrogen: el módulo real importa bien bajo Vitest, y un
    mock parcial se rompe en cuanto un componente importado de paso necesita algo
    que no está en él. Esta prueba no mira la paginación, sólo los filtros. */

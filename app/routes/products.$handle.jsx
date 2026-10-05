@@ -19,6 +19,7 @@ import {resumen, separarFrasesPegadas} from '~/lib/text';
 import {useVariantGallery} from '~/lib/gallery';
 import {GI_PRODUCT_RECOMMENDATIONS_QUERY} from '~/lib/giFragments';
 import {getBrandColors} from '~/lib/brand-colors.server';
+import {applyCustomerPrices} from '~/lib/pricing.server';
 import {
   keepBrandProducts,
   productMatchesBrand,
@@ -77,9 +78,14 @@ async function loadCriticalData({context, params, request}) {
   if (!handle) throw new Error('Expected product handle to be defined');
 
   const [{product}, marca] = await Promise.all([
-    storefront.query(PRODUCT_QUERY, {
-      variables: {handle, selectedOptions: getSelectedProductOptions(request)},
-    }),
+    /* Todas las variantes que llegan al navegador —la seleccionada y las
+       adyacentes con las que cambia de opción— salen ya con el precio del
+       cliente. */
+    storefront
+      .query(PRODUCT_QUERY, {
+        variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+      })
+      .then((r) => applyCustomerPrices(context, r)),
     getBrandColors(context),
   ]);
 
@@ -108,6 +114,7 @@ async function loadCriticalData({context, params, request}) {
     getVariantInventory(context.env, product.selectedOrFirstAvailableVariant?.id),
     storefront
       .query(GI_PRODUCT_RECOMMENDATIONS_QUERY, {variables: {productId: product.id}})
+      .then((r) => applyCustomerPrices(context, r))
       .then((r) =>
         (r?.productRecommendations || [])
           .map(normalizeProduct)

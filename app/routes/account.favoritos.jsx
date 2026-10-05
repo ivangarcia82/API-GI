@@ -7,6 +7,7 @@ import {requireUser} from '~/lib/auth/guard';
 import {listWishlist} from '~/lib/wishlist/repo';
 import {normalizeProduct} from '~/lib/gi';
 import {getBrandColors} from '~/lib/brand-colors.server';
+import {applyCustomerPrices} from '~/lib/pricing.server';
 import {keepBrandProducts} from '~/lib/brand-colors';
 
 const FAVORITOS_QUERY = `#graphql
@@ -21,7 +22,7 @@ const FAVORITOS_QUERY = `#graphql
         featuredImage { url altText width height }
         priceRange { minVariantPrice { amount currencyCode } }
         options { name optionValues { name } }
-        variants(first: 1) { nodes { id } }
+        variants(first: 1) { nodes { id price { amount currencyCode } } }
       }
     }
   }
@@ -46,7 +47,10 @@ export async function loader({context}) {
   const ids = await listWishlist(db, userId);
   if (ids.length === 0) return {products: []};
   const [{nodes}, marca] = await Promise.all([
-    context.storefront.query(FAVORITOS_QUERY, {variables: {ids}}),
+    // El precio de la variante va en la consulta para poder darle el del cliente.
+    context.storefront
+      .query(FAVORITOS_QUERY, {variables: {ids}})
+      .then((r) => applyCustomerPrices(context, r)),
     getBrandColors(context),
   ]);
   // Un favorito guardado antes de que le asignaran la paleta puede quedar

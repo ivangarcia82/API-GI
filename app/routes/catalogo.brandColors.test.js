@@ -1,5 +1,10 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 
+vi.mock('~/lib/pricing.server', () => ({
+  applyCustomerPrices: async (_ctx, data) => data,
+  getCustomerMargin: async () => null,
+}));
+
 const storefrontQuery = vi.fn();
 vi.mock('@shopify/hydrogen', () => ({
   getPaginationVariables: () => ({first: 24, endCursor: null}),

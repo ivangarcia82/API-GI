@@ -4,6 +4,7 @@ import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
 import {getEmptyPredictiveSearchResult} from '~/lib/search';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {applyCustomerPrices} from '~/lib/pricing.server';
 import {brandProductFilters, keepBrandProducts} from '~/lib/brand-colors';
 
 /**
@@ -408,14 +409,16 @@ async function predictiveSearch({request, context}) {
   // que corra a la par (es un fetcher contra /search) y con caché fría es un
   // round trip íntegro al Admin API que no se puede permitir en serie.
   const [{predictiveSearch: items, errors}, marca] = await Promise.all([
-    storefront.query(PREDICTIVE_SEARCH_QUERY, {
-      variables: {
-        // customize search options as needed
-        limit,
-        limitScope: 'EACH',
-        term,
-      },
-    }),
+    storefront
+      .query(PREDICTIVE_SEARCH_QUERY, {
+        variables: {
+          // customize search options as needed
+          limit,
+          limitScope: 'EACH',
+          term,
+        },
+      })
+      .then((r) => applyCustomerPrices(context, r)),
     getBrandColors(context),
   ]);
 

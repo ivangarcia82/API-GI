@@ -6,6 +6,7 @@ import {ProductCard} from '~/components/gi/ProductCard';
 import {GI_PRODUCT_CARD_FRAGMENT} from '~/lib/giFragments';
 import {normalizeProduct} from '~/lib/gi';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
+import {applyCustomerPrices} from '~/lib/pricing.server';
 import {brandProductFilters} from '~/lib/brand-colors';
 
 const paginationLinkStyle = {
@@ -69,9 +70,12 @@ export async function loader(args) {
     ? brandProductFilters(familias, await getColorVocabulary(context))
     : null;
 
-  const {collection} = await context.storefront.query(COLLECTION_QUERY, {
-    variables: {handle, filters, ...paginationVariables},
-  });
+  const {collection} = await applyCustomerPrices(
+    context,
+    await context.storefront.query(COLLECTION_QUERY, {
+      variables: {handle, filters, ...paginationVariables},
+    }),
+  );
 
   if (!collection) {
     throw new Response(`Collection ${handle} not found`, {status: 404});

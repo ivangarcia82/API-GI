@@ -19,6 +19,7 @@ import {
   HOME_FEATURED_COLLECTIONS,
 } from '~/lib/gi';
 import {getBrandColors} from '~/lib/brand-colors.server';
+import {applyCustomerPrices} from '~/lib/pricing.server';
 import {keepBrandProducts} from '~/lib/brand-colors';
 
 export const meta = () => [
@@ -46,9 +47,9 @@ async function loadCriticalData({context}) {
        RELEVANCE, así que migrar a `search` para ganar las facetas destruiría
        el criterio de la sección. Se filtra en memoria y se sobre-pide para
        que a un cliente con paleta no le queden cuatro productos. */
-    storefront.query(GI_PRODUCTS_QUERY, {
-      variables: {first: 60, sortKey: 'BEST_SELLING'},
-    }),
+    storefront
+      .query(GI_PRODUCTS_QUERY, {variables: {first: 60, sortKey: 'BEST_SELLING'}})
+      .then((r) => applyCustomerPrices(context, r)),
     getBrandColors(context),
   ]);
 

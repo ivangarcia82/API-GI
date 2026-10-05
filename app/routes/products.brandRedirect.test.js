@@ -3,6 +3,11 @@
    cazan, y no lo caza el test de la función pura. */
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 
+vi.mock('~/lib/pricing.server', () => ({
+  applyCustomerPrices: async (_ctx, data) => data,
+  getCustomerMargin: async () => null,
+}));
+
 const storefrontQuery = vi.fn();
 const getBrandColors = vi.fn();
 vi.mock('~/lib/brand-colors.server', () => ({
