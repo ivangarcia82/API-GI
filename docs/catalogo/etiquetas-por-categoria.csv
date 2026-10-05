@@ -1,0 +1,107 @@
+﻿nivel,categoria,subcategoria,tipo,coleccion (handle),etiqueta(s),como se asigna,productos hoy
+1,Bebidas,,,bebidas,bebidas,asignada hoy por la sincronización,1184
+2,Bebidas,Termos,,termos,termos,asignada hoy por la sincronización,513
+3,Bebidas,Termos,Mugs de viaje,mugs-de-viaje,mugs de viaje,titulo: \bMUG\b,16
+3,Bebidas,Termos,Botellas térmicas,botellas-termicas,botellas termicas,titulo: BOTELLA,24
+3,Bebidas,Termos,Termos de acero,termos-de-acero,termos de acero,titulo: ACERO|INOX|TERMO|TMPS,449
+2,Bebidas,Tazas y tarros,,tazas,tazas,asignada hoy por la sincronización,215
+3,Bebidas,Tazas y tarros,Tarros,tarros,tarros,titulo: TARRO|CERVECERO,34
+3,Bebidas,Tazas y tarros,Tazas para sublimar,tazas-para-sublimar,tazas para sublimar,titulo: SUBLIM|SULIM|\bSUB\b|MAGICA,22
+3,Bebidas,Tazas y tarros,Tazas de cerámica,tazas-de-ceramica,tazas de ceramica,titulo: TAZA|\bTAZ\b,149
+2,Bebidas,Vasos,,vasos,vasos,asignada hoy por la sincronización,178
+3,Bebidas,Vasos,Vasos térmicos,vasos-termicos,vasos termicos,titulo: TMPS|DOBLE PARED|TERMIC|ACERO|ALUMINIO,31
+3,Bebidas,Vasos,Vasos de plástico,vasos-de-plastico,vasos de plastico,titulo: VASO|TARRO,136
+2,Bebidas,Cilindros y botellas,,cilindros-y-botellas,cilindros de plastico | cilindros de metal y vidrio,agrupa etiquetas que ya existen,278
+3,Bebidas,Cilindros y botellas,Cilindros de plástico,cilindros-de-plastico,cilindros de plastico,desde etiqueta: cilindros de plastico,198
+3,Bebidas,Cilindros y botellas,Cilindros de metal y vidrio,cilindros-de-metal-y-vidrio,cilindros de metal y vidrio,desde etiqueta: cilindros de metal y vidrio,80
+1,Oficina,,,oficina,oficina,asignada hoy por la sincronización,1606
+2,Oficina,Bolígrafos,,boligrafos,boligrafos de plastico | boligrafos de metal | boligrafos ecologicos | boligrafos multifuncionales,agrupa etiquetas que ya existen,765
+3,Oficina,Bolígrafos,Bolígrafos multifuncionales,boligrafos-multifuncionales,boligrafos multifuncionales,desde etiqueta: boligrafos multifuncionales,80
+3,Oficina,Bolígrafos,Bolígrafos ecológicos,boligrafos-ecologicos,boligrafos ecologicos,desde etiqueta: boligrafos ecologicos,97
+3,Oficina,Bolígrafos,Bolígrafos metálicos,boligrafos-de-metal,boligrafos de metal,desde etiqueta: boligrafos de metal,286
+3,Oficina,Bolígrafos,Bolígrafos de plástico,boligrafos-de-plastico,boligrafos de plastico,desde etiqueta: boligrafos de plastico,302
+2,Oficina,Libretas y agendas,,libretas-y-carpetas,libretas y carpetas,asignada hoy por la sincronización,433
+3,Oficina,Libretas y agendas,Libretas ecológicas,libretas-ecologicas,libretas ecologicas,desde etiqueta: libretas ecologicas,147
+3,Oficina,Libretas y agendas,Agendas,agendas,agendas,titulo: AGENDA,39
+3,Oficina,Libretas y agendas,Carpetas,carpetas,carpetas,titulo: CARPETA|PADFOLIO,30
+3,Oficina,Libretas y agendas,Libretas,libretas,libretas,titulo: LIBRETA|\bLIB\b|BLOCK|NOTAS,199
+2,Oficina,Accesorios de oficina,,accesorios-de-oficina,accesorios de oficina,asignada hoy por la sincronización,411
+3,Oficina,Accesorios de oficina,Relojes,relojes,relojes,titulo: RELOJ,43
+3,Oficina,Accesorios de oficina,Calculadoras,calculadoras,calculadoras,titulo: CALCULADORA,15
+3,Oficina,Accesorios de oficina,Tarjeteros y portagafetes,tarjeteros-y-portagafetes,tarjeteros y portagafetes,titulo: TARJETERO|PORTAGAFETE|GAFETE|CARTERA,32
+3,Oficina,Accesorios de oficina,Notas y blocks,notas-y-blocks,notas y blocks,titulo: NOTAS|BLOCK|POST,42
+3,Oficina,Accesorios de oficina,Escritorio y organizadores,escritorio-y-organizadores,escritorio y organizadores,titulo: ESCRITORIO|ORGANIZADOR|PORTA|LAMPARA|MOUSE|CAJA|ESTUCHE,93
+2,Oficina,Escolares y niños,,ninos,ninos,asignada hoy por la sincronización,116
+3,Oficina,Escolares y niños,Colores y marcadores,colores-y-marcadores,colores y marcadores,titulo: MARCADOR|MARCATEXTO|LAPICERA|CRAYON|COLORES|PINTA,29
+3,Oficina,Escolares y niños,Alcancías y peluches,alcancias-y-peluches,alcancias y peluches,titulo: ALCANCIA|PELUCHE|MUNECO|\bOSO\b,17
+1,Textil,,,textil,textil,asignada hoy por la sincronización,1499
+2,Textil,Mochilas y maletas,,mochilas-y-maletas,mochilas y maletas,asignada hoy por la sincronización,480
+3,Textil,Mochilas y maletas,Maletas y trolleys,maletas-y-trolleys,maletas y trolleys,titulo: MALETA|\bMAL\b|TROLLEY|CARRY,145
+3,Textil,Mochilas y maletas,Mochilas para laptop,mochilas-para-laptop,mochilas para laptop,titulo: LAPTOP|EJECUTIV|BUSINESS,16
+3,Textil,Mochilas y maletas,Mochilas,mochilas,mochilas,titulo: MOCHILA|\bMOC\b|BACKPACK,310
+2,Textil,Bolsas y morrales,,bolsas-y-morrales,bolsas y morrales,asignada hoy por la sincronización,358
+3,Textil,Bolsas y morrales,Bolsas de algodón y yute,bolsas-de-algodon-y-yute,bolsas de algodon y yute,titulo: ALGODON|YUTE|MANTA,24
+3,Textil,Bolsas y morrales,Bolsas non woven y plegables,bolsas-non-woven-y-plegables,bolsas non woven y plegables,titulo: \bNON\b|NONW|PLEGABLE,14
+3,Textil,Bolsas y morrales,Morrales y bolsos,morrales-y-bolsos,morrales y bolsos,titulo: MORRAL|BOLSO|MOCHILA|JARETA,70
+3,Textil,Bolsas y morrales,Bolsas promocionales,bolsas-promocionales,bolsas promocionales,titulo: BOLSA,233
+2,Textil,Hieleras y loncheras,,hieleras-y-loncheras,hieleras y loncheras,asignada hoy por la sincronización,237
+3,Textil,Hieleras y loncheras,Hieleras,hieleras,hieleras,titulo: HIELERA|COOLER,106
+3,Textil,Hieleras y loncheras,Loncheras,loncheras,loncheras,titulo: LONCHERA|\bLON\b|LUNCH,120
+2,Textil,Gorras y cangureras,,gorras-y-cangureras,gorras y cangureras,asignada hoy por la sincronización,193
+3,Textil,Gorras y cangureras,Gorras y sombreros,gorras-y-sombreros,gorras y sombreros,titulo: GORRA|\bCAP\b|SOMBRERO|\bHAT\b|VISERA,88
+3,Textil,Gorras y cangureras,Cangureras,cangureras,cangureras,titulo: CANGURERA|BANDOLERA,35
+2,Textil,Ropa,,ropa,chamarras y chalecos | playeras y camisas,agrupa etiquetas que ya existen,90
+3,Textil,Ropa,Chamarras y chalecos,chamarras-y-chalecos,chamarras y chalecos,desde etiqueta: chamarras y chalecos,69
+3,Textil,Ropa,Playeras y camisas,playeras-y-camisas,playeras y camisas,desde etiqueta: playeras y camisas,21
+2,Textil,Paraguas e impermeables,,paraguas-e-impermeables,paraguas e impermeables,asignada hoy por la sincronización,92
+3,Textil,Paraguas e impermeables,Impermeables,impermeables,impermeables,titulo: IMPERMEABLE,11
+3,Textil,Paraguas e impermeables,Paraguas,paraguas,paraguas,titulo: PARAGUAS|\bPAR\b,80
+2,Textil,Portafolios y portalaptop,,portafolios-y-portalaptop,portafolios y portalaptop,asignada hoy por la sincronización,49
+1,Hogar,,,hogar,hogar,asignada hoy por la sincronización,1221
+2,Hogar,Cocina,,cocina,cocina,asignada hoy por la sincronización,522
+3,Hogar,Cocina,Bar y vino,bar-y-vino,bar y vino,titulo: \bBAR\b|DESTAPADOR|LICORERA|VINO|SACACORCHO|COCTEL|SHAKER|CERVEZA,106
+3,Hogar,Cocina,BBQ y asadores,bbq-y-asadores,bbq y asadores,titulo: BBQ|ASADOR|PARRILL,26
+3,Hogar,Cocina,Contenedores y lunch,contenedores-y-lunch,contenedores y lunch,titulo: CONTENEDOR|LONCHERA|LUNCH|TOPPER,73
+3,Hogar,Cocina,Tablas y utensilios,tablas-y-utensilios,tablas y utensilios,titulo: TABLA|QUESO|CUBIERTO|UTENSILIO|CUCHILLO|PRENSA|CAFE|\bTE\b,96
+2,Hogar,Accesorios del hogar,,accesorios-del-hogar,accesorios del hogar,asignada hoy por la sincronización,125
+3,Hogar,Accesorios del hogar,Decoración,decoracion,decoracion,titulo: VELA|PORTARRETRATO|\bPRT\b|DECORATIV|LAMPARA|CESTO,39
+3,Hogar,Accesorios del hogar,Mascotas,mascotas,mascotas,titulo: MASCOTA|\bPET\b|PERRO|GATO,10
+3,Hogar,Accesorios del hogar,Confort,confort,confort,titulo: FRAZADA|HUMIDIFICADOR|COBIJA|ALMOHADA,11
+1,Salud y belleza,,,salud-y-belleza,belleza | salud y bienestar,asignada hoy por la sincronización,458
+2,Salud y belleza,Belleza,,belleza,belleza,asignada hoy por la sincronización,316
+3,Salud y belleza,Belleza,Cosmetiqueras y neceseres,cosmetiqueras-y-neceseres,cosmetiqueras y neceseres,titulo: COSMETIQUERA|NECESER|NECESSAIRE|\bDAM\b|ORGANIZADOR,166
+3,Salud y belleza,Belleza,Espejos,espejos,espejos,titulo: ESPEJO,36
+3,Salud y belleza,Belleza,Sets de manicure y maquillaje,sets-de-manicure-y-maquillaje,sets de manicure y maquillaje,titulo: MANICURE|MAQUILLAJE|BROCHA|CEPILLO|ESPONJA|APLICADOR,12
+2,Salud y belleza,Salud y bienestar,,salud-y-bienestar,salud y bienestar,asignada hoy por la sincronización,142
+3,Salud y belleza,Salud y bienestar,Pastilleros,pastilleros,pastilleros,titulo: PASTILLERO,45
+3,Salud y belleza,Salud y bienestar,Cuidado personal,cuidado-personal,cuidado personal,titulo: \bGEL\b|SANITIZANTE|JABON|TOALLA|CEPILLO|DIENTE|CORPORAL|\bKIT\b,30
+1,Tecnología,,,tecnologia,tecnologia,asignada hoy por la sincronización,603
+2,Tecnología,Accesorios de tecnología,,accesorios-de-tecnologia,accesorios de tecnologia,asignada hoy por la sincronización,284
+3,Tecnología,Accesorios de tecnología,Cargadores y cables,cargadores-y-cables,cargadores y cables,titulo: CARGADOR|CABLE|CARGA|\bUSB\b|\bCRG\b,126
+3,Tecnología,Accesorios de tecnología,Soportes,soportes,soportes,titulo: SOPORTE,32
+3,Tecnología,Accesorios de tecnología,Mouse y hubs,mouse-y-hubs,mouse y hubs,titulo: MOUSE|\bPAD\b|\bHUB\b|CONCENTRADOR|PUERTO,27
+2,Tecnología,Audio,,audifonos-y-bocinas,audifonos y bocinas,asignada hoy por la sincronización,222
+3,Tecnología,Audio,Bocinas,bocinas,bocinas,titulo: BOCINA,115
+3,Tecnología,Audio,Audífonos,audifonos,audifonos,titulo: AUDIFONO|\bAUD\b|AURICULAR|MANOS LIBRES,99
+2,Tecnología,Power banks,,power-banks,power banks,asignada hoy por la sincronización,97
+1,Tiempo libre,,,tiempo-libre,tiempo libre,asignada hoy por la sincronización,881
+2,Tiempo libre,Llaveros,,llaveros,llaveros,asignada hoy por la sincronización,218
+3,Tiempo libre,Llaveros,Llaveros multifuncionales,llaveros-multifuncionales,llaveros multifuncionales,titulo: DESTAPADOR|FLEXOMETRO|LAMPARA|\bLUZ\b|MULTI|HERRAMIENTA,28
+3,Tiempo libre,Llaveros,Llaveros clásicos,llaveros-clasicos,llaveros clasicos,titulo: .,190
+2,Tiempo libre,Viaje,,viaje,viaje,asignada hoy por la sincronización,184
+3,Tiempo libre,Viaje,Organizadores de viaje,organizadores-de-viaje,organizadores de viaje,titulo: ORGANIZADOR|NECESER|PASAPORTE|IDENTIFICADOR|CARTERA|\bKIT\b|PORTA,62
+3,Tiempo libre,Viaje,Accesorios de viaje,accesorios-de-viaje,accesorios de viaje,titulo: ALMOHADA|FRAZADA|SILLA|LENTES|BOLSA|BOLSO,59
+2,Tiempo libre,Herramientas,,herramientas-de-trabajo,herramientas de trabajo,asignada hoy por la sincronización,143
+3,Tiempo libre,Herramientas,Lámparas y linternas,lamparas-y-linternas,lamparas y linternas,titulo: LAMPARA|LINTERNA|\bLED\b,31
+3,Tiempo libre,Herramientas,Navajas y multiherramientas,navajas-y-multiherramientas,navajas y multiherramientas,titulo: NAVAJA|MULTI,29
+3,Tiempo libre,Herramientas,Sets de herramientas,sets-de-herramientas,sets de herramientas,titulo: HERRAMIENTA|\bHER\b|DESARMADOR|FLEX|PINZA|\bKIT\b|JUEGO,49
+2,Tiempo libre,Antiestrés,,antiestres,antiestres,asignada hoy por la sincronización,141
+2,Tiempo libre,Deportes y entretenimiento,,entretenimiento,entretenimiento,asignada hoy por la sincronización,131
+3,Tiempo libre,Deportes y entretenimiento,Juegos de mesa,juegos-de-mesa,juegos de mesa,titulo: JUEGO|DOMINO|POKER|TORRE|CARTAS,37
+3,Tiempo libre,Deportes y entretenimiento,Deporte,deporte,deporte,titulo: BALON|PELOTA|\bSOC\b|\bFUT|DEPORT|\bSPO\b|TOALLA|BRAZALETE,44
+2,Tiempo libre,Accesorios para auto,,accesorios-para-auto,accesorios para auto,asignada hoy por la sincronización,64
+1,Ecológicos,,,ecologicos,ecologicos,asignada hoy por la sincronización,670
+2,Ecológicos,Oficina ecológica,,oficina-ecologica,oficina ecologica,asignada hoy por la sincronización,89
+2,Ecológicos,Bolsas ecológicas,,bolsas-ecologicas,bolsas ecologicas,asignada hoy por la sincronización,165
+2,Ecológicos,Hogar ecológico,,hogar-ecologico,hogar ecologico,asignada hoy por la sincronización,85
+2,Ecológicos,Bebidas ecológicas,,bebidas-ecologicas,bebidas ecologicas,asignada hoy por la sincronización,83
