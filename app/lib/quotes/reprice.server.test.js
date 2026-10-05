@@ -51,3 +51,15 @@ describe('repriceItems', () => {
     expect(storefrontQuery).not.toHaveBeenCalled();
   });
 });
+
+describe('repriceItems ante un fallo del margen o los costos', () => {
+  it('conserva lo guardado en vez de bajar a lista', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    storefrontQuery.mockResolvedValue({nodes: [{id: V(1), price: {amount: '120.0'}}]});
+    resolveBasePrices.mockRejectedValue(new Error('Admin caído'));
+    const items = [item()];
+    expect(await repriceItems(ctx(), items)).toBe(items);
+    expect(resolveBasePrices.mock.calls[0][2]).toEqual({strict: true});
+    error.mockRestore();
+  });
+});

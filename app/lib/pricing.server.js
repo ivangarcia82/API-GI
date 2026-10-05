@@ -27,9 +27,12 @@ function memo(context, clave, fn) {
   return cajon[clave];
 }
 
+/* Devuelve el margen y si la lectura FALLÓ. Las páginas tratan las dos cosas
+   igual (precio de lista), pero repreciar una cotización no: ahí un fallo no
+   puede confundirse con "este cliente no tiene margen". */
 async function leerMargen(context) {
   const usuario = getSessionUser(context.session);
-  if (!usuario?.gid) return null;
+  if (!usuario?.gid) return {margin: null, fallo: false};
 
   let raw;
   try {
@@ -46,15 +49,19 @@ async function leerMargen(context) {
   } catch (error) {
     // Ninguna página se cae por el margen: sin él, precio de lista.
     console.error('[pricing] no se pudo leer custom.margen:', error);
-    return null;
+    return {margin: null, fallo: true};
   }
 
-  if (raw == null) return null;
+  if (raw == null) return {margin: null, fallo: false};
   const margin = parseMargin(raw);
   if (margin == null) {
     console.warn(`[pricing] custom.margen inválido en ${usuario.gid}: ${raw}`);
   }
-  return margin;
+  return {margin, fallo: false};
+}
+
+function estadoMargen(context) {
+  return memo(context, 'margin', () => leerMargen(context));
 }
 
 /**
@@ -63,43 +70,54 @@ async function leerMargen(context) {
  * @param {any} context contexto de Hydrogen
  * @returns {Promise<number|null>}
  */
-export function getCustomerMargin(context) {
-  return memo(context, 'margin', () => leerMargen(context));
+export async function getCustomerMargin(context) {
+  return (await estadoMargen(context)).margin;
 }
 
 async function leerCostos(context, ids) {
   const unicos = [...new Set(ids.filter(Boolean))].sort();
-  if (!unicos.length) return {};
+  if (!unicos.length) return {costos: {}, fallo: false};
   try {
-    return await context.withCache.run(
+    const costos = await context.withCache.run(
       {
         // Sin gid en la clave: el costo es el mismo para todos los clientes.
         cacheKey: ['gi-variant-costs', ...unicos],
-        cacheStrategy: CacheShort(),
+        // El costo casi nunca cambia: minutos de vida y una hora sirviendo
+        // lo viejo mientras se refresca, para no pagar el Admin API en cada
+        // página.
+        cacheStrategy: CacheShort({maxAge: 300, staleWhileRevalidate: 3600}),
         shouldCacheResult: (v) => Boolean(v) && typeof v === 'object',
       },
       () => getVariantCosts(context.env, unicos),
     );
+    return {costos, fallo: false};
   } catch (error) {
     console.error('[pricing] no se pudieron leer los costos:', error);
-    return {};
+    return {costos: {}, fallo: true};
   }
 }
 
 /**
  * Precio base de cada variante para el cliente de esta request. Es lo que la
  * cotización guarda como baseUnitPrice.
+ *
+ * `strict` es para repreciar lo ya guardado: si el margen o los costos no se
+ * pudieron leer, lanza en vez de caer a precio de lista, para que quien llama
+ * conserve los precios con que se cotizó.
  * @param {any} context
  * @param {{variantId: string, listPrice: number}[]} entries
+ * @param {{strict?: boolean}} [opciones]
  * @returns {Promise<Map<string, number>>}
  */
-export async function resolveBasePrices(context, entries) {
+export async function resolveBasePrices(context, entries, {strict = false} = {}) {
   const lista = (e) => Number(e.listPrice) || 0;
   const out = new Map(entries.map((e) => [e.variantId, lista(e)]));
   if (!entries.length) return out;
-  const margin = await getCustomerMargin(context);
+  const {margin, fallo: falloMargen} = await estadoMargen(context);
+  if (strict && falloMargen) throw new Error('No se pudo leer el margen del cliente.');
   if (margin == null) return out;
-  const costos = await leerCostos(context, entries.map((e) => e.variantId));
+  const {costos, fallo: falloCostos} = await leerCostos(context, entries.map((e) => e.variantId));
+  if (strict && falloCostos) throw new Error('No se pudieron leer los costos.');
   for (const e of entries) {
     out.set(e.variantId, customerPrice({cost: costos[e.variantId], margin, listPrice: lista(e)}));
   }
@@ -145,7 +163,7 @@ export async function applyCustomerPrices(context, data) {
   });
   if (!variantes.length) return copia;
 
-  const costos = await leerCostos(context, variantes.map((v) => v.id));
+  const {costos} = await leerCostos(context, variantes.map((v) => v.id));
   for (const v of variantes) {
     const precio = customerPrice({
       cost: costos[v.id],

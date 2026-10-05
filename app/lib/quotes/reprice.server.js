@@ -35,10 +35,19 @@ export async function repriceItems(context, items) {
   }
 
   const vivas = (nodes || []).filter((n) => n?.id && n.price?.amount != null);
-  const bases = await resolveBasePrices(
-    context,
-    vivas.map((n) => ({variantId: n.id, listPrice: Number(n.price.amount)})),
-  );
+  let bases;
+  try {
+    // Estricto: si el margen o los costos no se pudieron leer, un cliente con
+    // margen no puede acabar cotizado a precio de lista por un hipo del Admin API.
+    bases = await resolveBasePrices(
+      context,
+      vivas.map((n) => ({variantId: n.id, listPrice: Number(n.price.amount)})),
+      {strict: true},
+    );
+  } catch (error) {
+    console.error('[quote.reprice] no se pudo resolver el precio del cliente:', error);
+    return items;
+  }
 
   return items.map((item) => {
     // La variante se retiró de la tienda: se queda con el precio con que se cotizó.

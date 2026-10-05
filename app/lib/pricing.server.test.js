@@ -179,3 +179,41 @@ describe('applyCustomerPrices', () => {
     expect(await applyCustomerPrices(hazContexto(), null)).toBeNull();
   });
 });
+
+describe('resolveBasePrices estricto (para repreciar cotizaciones)', () => {
+  it('si los costos fallan, lanza en vez de caer a lista', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    conMargen('30');
+    getVariantCosts.mockRejectedValue(new Error('caído'));
+    await expect(
+      resolveBasePrices(hazContexto(), [{variantId: V(1), listPrice: 50}], {strict: true}),
+    ).rejects.toThrow();
+    error.mockRestore();
+  });
+
+  it('si el margen no se pudo leer, lanza en vez de caer a lista', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    getSessionUser.mockReturnValue({userId: 'u1', gid: 'gid://x'});
+    getCustomerMarginRaw.mockRejectedValue(new Error('caído'));
+    await expect(
+      resolveBasePrices(hazContexto(), [{variantId: V(1), listPrice: 50}], {strict: true}),
+    ).rejects.toThrow();
+    error.mockRestore();
+  });
+
+  it('un cliente sin margen no es un fallo: lista', async () => {
+    getSessionUser.mockReturnValue(null);
+    const out = await resolveBasePrices(hazContexto(), [{variantId: V(1), listPrice: 50}], {strict: true});
+    expect(out.get(V(1))).toBe(50);
+  });
+});
+
+describe('caché de costos', () => {
+  it('dura minutos, no segundos: el costo casi no cambia', async () => {
+    conMargen('30');
+    getVariantCosts.mockResolvedValue({});
+    await applyCustomerPrices(hazContexto(), {nodes: [{id: V(1), price: {amount: '1'}}]});
+    const {cacheStrategy} = opcionesDeCache.find((o) => o.cacheKey[0] === 'gi-variant-costs');
+    expect(cacheStrategy.maxAge).toBeGreaterThanOrEqual(300);
+  });
+});
