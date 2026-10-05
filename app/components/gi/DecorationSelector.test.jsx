@@ -73,3 +73,16 @@ describe('DecorationSelector', () => {
     expect(onChange).toHaveBeenLastCalledWith({technique: 'SERIGRAFÍA', surface: 'PAPEL', size: '4 x 4', qty: 300});
   });
 });
+
+describe('Sin decorado por defecto', () => {
+  it('arranca con "Sin decorado" elegido y lo anuncia', () => {
+    const onChange = vi.fn();
+    render(<DecorationSelector product={product} qty={50} onChange={onChange} />);
+    const sin = screen.getByRole('button', {name: 'Sin decorado'});
+    expect(sin.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', {name: 'SERIGRAFÍA'}).getAttribute('aria-pressed')).toBe('false');
+    // La ficha recibe la elección desde el primer render: el precio y la
+    // línea que se cotiza ya son "sin decorado" sin que el usuario toque nada.
+    expect(onChange).toHaveBeenLastCalledWith({technique: 'Sin decorado', surface: 'TEXTIL', size: 'N/A', qty: 50});
+  });
+});

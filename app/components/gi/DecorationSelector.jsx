@@ -22,7 +22,9 @@ export default function DecorationSelector({product, qty, onChange}) {
     [techniques],
   );
   const surface = product?.surface || '';
-  const [technique, setTechnique] = useState('');
+  // Arranca en "Sin decorado": es lo que pide la mayoría al cotizar y deja la
+  // ficha con un precio completo sin obligar a elegir nada.
+  const [technique, setTechnique] = useState(SIN_DECORADO);
   const [size, setSize] = useState('');
 
   const measures = useMemo(
@@ -74,6 +76,7 @@ export default function DecorationSelector({product, qty, onChange}) {
           <button
             type="button"
             className={technique === SIN_DECORADO ? 'active' : ''}
+            aria-pressed={technique === SIN_DECORADO}
             onClick={() => pickTechnique(SIN_DECORADO)}
           >
             <span>{SIN_DECORADO}</span>
@@ -83,6 +86,7 @@ export default function DecorationSelector({product, qty, onChange}) {
               type="button"
               key={t}
               className={technique === t ? 'active' : ''}
+              aria-pressed={technique === t}
               onClick={() => pickTechnique(t)}
             >
               <span>{t}</span>
@@ -100,6 +104,7 @@ export default function DecorationSelector({product, qty, onChange}) {
                 type="button"
                 key={m}
                 className={size === m ? 'active' : ''}
+                aria-pressed={size === m}
                 onClick={() => setSize(m)}
               >
                 <span>{m}</span>
