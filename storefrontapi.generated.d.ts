@@ -382,7 +382,7 @@ export type FooterQuery = {
 
 export type GiProductCardFragment = Pick<
   StorefrontAPI.Product,
-  'id' | 'handle' | 'title' | 'description' | 'tags'
+  'id' | 'handle' | 'title' | 'availableForSale' | 'description' | 'tags'
 > & {
   featuredImage?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
@@ -442,7 +442,7 @@ export type GiProductsQuery = {
     nodes: Array<
       Pick<
         StorefrontAPI.Product,
-        'id' | 'handle' | 'title' | 'description' | 'tags'
+        'id' | 'handle' | 'title' | 'availableForSale' | 'description' | 'tags'
       > & {
         featuredImage?: StorefrontAPI.Maybe<
           Pick<
@@ -521,7 +521,12 @@ export type GiCollectionProductsQuery = {
         nodes: Array<
           Pick<
             StorefrontAPI.Product,
-            'id' | 'handle' | 'title' | 'description' | 'tags'
+            | 'id'
+            | 'handle'
+            | 'title'
+            | 'availableForSale'
+            | 'description'
+            | 'tags'
           > & {
             featuredImage?: StorefrontAPI.Maybe<
               Pick<
@@ -606,7 +611,7 @@ export type GiCatalogSearchQuery = {
     nodes: Array<
       Pick<
         StorefrontAPI.Product,
-        'id' | 'handle' | 'title' | 'description' | 'tags'
+        'id' | 'handle' | 'title' | 'availableForSale' | 'description' | 'tags'
       > & {
         featuredImage?: StorefrontAPI.Maybe<
           Pick<
@@ -669,7 +674,7 @@ export type GiProductRecommendationsQuery = {
     Array<
       Pick<
         StorefrontAPI.Product,
-        'id' | 'handle' | 'title' | 'description' | 'tags'
+        'id' | 'handle' | 'title' | 'availableForSale' | 'description' | 'tags'
       > & {
         featuredImage?: StorefrontAPI.Maybe<
           Pick<
@@ -777,7 +782,12 @@ export type GiCatalogCollectionQuery = {
         nodes: Array<
           Pick<
             StorefrontAPI.Product,
-            'id' | 'handle' | 'title' | 'description' | 'tags'
+            | 'id'
+            | 'handle'
+            | 'title'
+            | 'availableForSale'
+            | 'description'
+            | 'tags'
           > & {
             featuredImage?: StorefrontAPI.Maybe<
               Pick<
@@ -1041,7 +1051,12 @@ export type GiCollectionQuery = {
         nodes: Array<
           Pick<
             StorefrontAPI.Product,
-            'id' | 'handle' | 'title' | 'description' | 'tags'
+            | 'id'
+            | 'handle'
+            | 'title'
+            | 'availableForSale'
+            | 'description'
+            | 'tags'
           > & {
             featuredImage?: StorefrontAPI.Maybe<
               Pick<
@@ -1725,19 +1740,19 @@ interface GeneratedQueryTypes {
     return: FooterQuery;
     variables: FooterQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiProducts(\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $query: String\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    products(\n      first: $first\n      last: $last\n      before: $startCursor\n      after: $endCursor\n      query: $query\n      sortKey: $sortKey\n      reverse: $reverse\n    ) {\n      nodes { ...GiProductCard }\n      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    # Disponible si queda alguna variante: la de variants(first: 1) puede\n    # estar agotada aunque otro color no lo esté.\n    availableForSale\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiProducts(\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $query: String\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    products(\n      first: $first\n      last: $last\n      before: $startCursor\n      after: $endCursor\n      query: $query\n      sortKey: $sortKey\n      reverse: $reverse\n    ) {\n      nodes { ...GiProductCard }\n      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    }\n  }\n': {
     return: GiProductsQuery;
     variables: GiProductsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCollectionProducts(\n    $handle: String!\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText }\n      products(\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n        sortKey: $sortKey\n        reverse: $reverse\n      ) {\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    # Disponible si queda alguna variante: la de variants(first: 1) puede\n    # estar agotada aunque otro color no lo esté.\n    availableForSale\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCollectionProducts(\n    $handle: String!\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText }\n      products(\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n        sortKey: $sortKey\n        reverse: $reverse\n      ) {\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
     return: GiCollectionProductsQuery;
     variables: GiCollectionProductsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCatalogSearch(\n    $query: String!\n    $productFilters: [ProductFilter!]\n    $sortKey: SearchSortKeys\n    $reverse: Boolean\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    search(\n      query: $query\n      types: PRODUCT\n      productFilters: $productFilters\n      sortKey: $sortKey\n      reverse: $reverse\n      first: $first\n      last: $last\n      before: $startCursor\n      after: $endCursor\n      unavailableProducts: LAST\n    ) {\n      totalCount\n      productFilters {\n        id\n        label\n        type\n        values { id label count input }\n      }\n      nodes { ...GiProductCard }\n      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    # Disponible si queda alguna variante: la de variants(first: 1) puede\n    # estar agotada aunque otro color no lo esté.\n    availableForSale\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCatalogSearch(\n    $query: String!\n    $productFilters: [ProductFilter!]\n    $sortKey: SearchSortKeys\n    $reverse: Boolean\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    search(\n      query: $query\n      types: PRODUCT\n      productFilters: $productFilters\n      sortKey: $sortKey\n      reverse: $reverse\n      first: $first\n      last: $last\n      before: $startCursor\n      after: $endCursor\n      unavailableProducts: LAST\n    ) {\n      totalCount\n      productFilters {\n        id\n        label\n        type\n        values { id label count input }\n      }\n      nodes { ...GiProductCard }\n      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    }\n  }\n': {
     return: GiCatalogSearchQuery;
     variables: GiCatalogSearchQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiProductRecommendations(\n    $productId: ID!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    productRecommendations(productId: $productId, intent: RELATED) {\n      ...GiProductCard\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    # Disponible si queda alguna variante: la de variants(first: 1) puede\n    # estar agotada aunque otro color no lo esté.\n    availableForSale\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiProductRecommendations(\n    $productId: ID!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    productRecommendations(productId: $productId, intent: RELATED) {\n      ...GiProductCard\n    }\n  }\n': {
     return: GiProductRecommendationsQuery;
     variables: GiProductRecommendationsQueryVariables;
   };
@@ -1745,7 +1760,7 @@ interface GeneratedQueryTypes {
     return: GiCollectionCardQuery;
     variables: GiCollectionCardQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCatalogCollection(\n    $handle: String!\n    $productFilters: [ProductFilter!]\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      handle\n      title\n      products(\n        filters: $productFilters\n        sortKey: $sortKey\n        reverse: $reverse\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        filters {\n          id\n          label\n          type\n          values { id label count input }\n        }\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    # Disponible si queda alguna variante: la de variants(first: 1) puede\n    # estar agotada aunque otro color no lo esté.\n    availableForSale\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCatalogCollection(\n    $handle: String!\n    $productFilters: [ProductFilter!]\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      handle\n      title\n      products(\n        filters: $productFilters\n        sortKey: $sortKey\n        reverse: $reverse\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        filters {\n          id\n          label\n          type\n          values { id label count input }\n        }\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
     return: GiCatalogCollectionQuery;
     variables: GiCatalogCollectionQueryVariables;
   };
@@ -1769,7 +1784,7 @@ interface GeneratedQueryTypes {
     return: QuoteMergeVariantsQuery;
     variables: QuoteMergeVariantsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCollection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText width height }\n      products(\n        filters: $filters\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    # Disponible si queda alguna variante: la de variants(first: 1) puede\n    # estar agotada aunque otro color no lo esté.\n    availableForSale\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCollection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText width height }\n      products(\n        filters: $filters\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
     return: GiCollectionQuery;
     variables: GiCollectionQueryVariables;
   };
