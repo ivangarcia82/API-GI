@@ -4,6 +4,7 @@ import {getDb} from '~/lib/db/client';
 import {getOrCreateDraftQuote, upsertQuoteItem, getQuoteWithItems} from '~/lib/quotes/repo';
 import {recomputeItemPricing} from '~/lib/quotes/recompute';
 import {getTechniques} from '~/lib/decoration/engine';
+import {resolveBasePrices} from '~/lib/pricing.server';
 import {MAX_GUEST_LINES} from '~/lib/quote-guest';
 
 // Migra el carrito que el invitado armo en localStorage al borrador del
@@ -96,6 +97,12 @@ export async function action({request, context}) {
     (nodes || []).filter((n) => n && n.id).map((n) => [n.id, n]),
   );
 
+  // Una sola resolución para todo el lote, como la consulta de arriba.
+  const bases = await resolveBasePrices(
+    context,
+    [...porId.values()].map((n) => ({variantId: n.id, listPrice: Number(n.price?.amount) || 0})),
+  );
+
   let migradas = 0;
   let descartadas = descartadasDeEntrada;
 
@@ -122,7 +129,7 @@ export async function action({request, context}) {
     }
 
     const priced = recomputeItemPricing({
-      baseUnitPrice: Number(node.price?.amount) || 0,
+      baseUnitPrice: bases.get(node.id) ?? (Number(node.price?.amount) || 0),
       technique: linea.technique,
       surface,
       size: linea.size,

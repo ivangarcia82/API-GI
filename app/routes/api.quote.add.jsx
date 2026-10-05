@@ -4,6 +4,7 @@ import {getDb} from '~/lib/db/client';
 import {getOrCreateDraftQuote, upsertQuoteItem, getQuoteWithItems} from '~/lib/quotes/repo';
 import {recomputeItemPricing} from '~/lib/quotes/recompute';
 import {getTechniques} from '~/lib/decoration/engine';
+import {resolveBasePrices} from '~/lib/pricing.server';
 
 // Authoritative product data for pricing: base price/image PLUS the decoration
 // metafields (material = surface, tecnicas_de_impresion = offered techniques).
@@ -57,7 +58,11 @@ export async function action({request, context}) {
   // Authoritative base price from the Storefront.
   const {node} = await storefront.query(PRODUCT_PRICE_QUERY, {variables: {id: variantId}});
   if (!node) return Response.json({error: 'Variante no encontrada.'}, {status: 404});
-  const baseUnitPrice = Number(node.price?.amount) || 0;
+  // El precio base es el del cliente: costo / (1 − margen) si tiene
+  // custom.margen, el de lista si no. Siempre del servidor, nunca del cliente.
+  const listPrice = Number(node.price?.amount) || 0;
+  const bases = await resolveBasePrices(context, [{variantId, listPrice}]);
+  const baseUnitPrice = bases.get(variantId) ?? listPrice;
   // Prefer the selected variant's image; fall back to the product's featured
   // image so the quote/cart always shows something for variant products.
   const image = node.image?.url ?? node.product?.featuredImage?.url ?? null;

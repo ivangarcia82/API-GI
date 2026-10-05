@@ -15,6 +15,11 @@ vi.mock('~/lib/quotes/repo', () => ({
   getQuoteWithItems: (...a) => getQuoteWithItems(...a),
 }));
 
+const resolveBasePrices = vi.fn();
+vi.mock('~/lib/pricing.server', () => ({
+  resolveBasePrices: (...a) => resolveBasePrices(...a),
+}));
+
 import {action} from './api.quote.merge.jsx';
 
 /* Una variante viva en la tienda, con su material y sus técnicas reales. */
@@ -53,6 +58,10 @@ function migrados() {
 
 beforeEach(() => {
   upsertQuoteItem.mockReset();
+  resolveBasePrices.mockReset();
+  resolveBasePrices.mockImplementation(async (_ctx, entries) =>
+    new Map(entries.map((e) => [e.variantId, e.listPrice])),
+  );
   getQuoteWithItems.mockReset();
   storefrontQuery.mockReset();
   getQuoteWithItems.mockResolvedValue({quote: {id: 'q1'}, items: [{id: 'srv1'}]});
@@ -138,5 +147,16 @@ describe('POST /api/quote/merge', () => {
     storefrontQuery.mockResolvedValue({nodes: [nodo()]});
     await pedir(muchas);
     expect(migrados().length).toBeLessThanOrEqual(50);
+  });
+});
+
+describe('merge con margen', () => {
+  it('migra con el precio base del cliente, no con el de lista', async () => {
+    storefrontQuery.mockResolvedValue({nodes: [nodo()]});
+    getQuoteWithItems.mockResolvedValue({quote: {id: 'q1'}, items: []});
+    resolveBasePrices.mockResolvedValue(new Map([['gid://v1', 60]]));
+    await pedir([{variantId: 'gid://v1', qty: 5}]);
+    expect(resolveBasePrices.mock.calls[0][1]).toEqual([{variantId: 'gid://v1', listPrice: 100}]);
+    expect(migrados()[0].baseUnitPrice).toBe(60);
   });
 });
