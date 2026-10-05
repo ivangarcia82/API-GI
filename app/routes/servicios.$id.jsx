@@ -10,16 +10,8 @@ import {useEffect, useRef} from 'react';
 import {Link, redirect, useLoaderData} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
 import {MagneticButton} from '~/components/marketing/MagneticButton';
+import {ServiceBlocks} from '~/components/marketing/ServiceBlocks';
 import {SERVICE_DETAILS, ROUTES} from '~/lib/site-content';
-
-// Shared "how we work" process — keeps every service page feeling complete
-// without inventing per-service copy that the team would have to maintain.
-const PROCESS = [
-  {t: 'Briefing', d: 'Escuchamos tu objetivo, audiencia y presupuesto para entender qué necesita tu marca.'},
-  {t: 'Propuesta', d: 'Diseñamos una selección a medida con cotización clara y tiempos de entrega definidos.'},
-  {t: 'Producción', d: 'Personalizamos y producimos con control de calidad en cada etapa del proceso.'},
-  {t: 'Entrega', d: 'Coordinamos la logística y damos seguimiento hasta que el pedido llega a tus manos.'},
-];
 
 export async function loader({params}) {
   const s = SERVICE_DETAILS[params.id];
@@ -150,6 +142,7 @@ export default function ServiceDetail() {
             <p className="svc-tagline" style={{'--svc-color': s.color}}>
               {s.tagline}
             </p>
+            {s.lede ? <p className="svc-lede-copy">{s.lede}</p> : null}
           </div>
         </section>
 
@@ -170,64 +163,23 @@ export default function ServiceDetail() {
           </div>
         </section>
 
-        <section className="section svc-includes">
-          <div className="wrap svc-includes-grid reveal">
-            <div className="svc-includes-lead">
-              <span className="eyebrow">Por qué nosotros</span>
-              <h2 className="display svc-h2">
-                Lo que <span className="text-accent">incluye</span>
-              </h2>
-              <p className="svc-intro-copy">{s.intro}</p>
-              <div className="svc-examples">
-                {s.examples.map((e) => (
-                  <span className="svc-chip" key={e}>
-                    {e}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <ul className="svc-features" style={{'--svc-color': s.color}}>
-              {s.features.map((f, i) => (
-                <li className="svc-feature" key={f.t}>
-                  <span className="svc-feature-num">0{i + 1}</span>
-                  <h3 className="svc-feature-t">{f.t}</h3>
-                  <p className="svc-feature-d">{f.d}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        <section className="section svc-process">
-          <div className="wrap reveal">
-            <div className="svc-process-head">
-              <span className="eyebrow">Cómo trabajamos</span>
-              <h2 className="display svc-h2">
-                De la idea a tus manos, en <span className="text-accent">4 pasos</span>
-              </h2>
-            </div>
-            <ol className="svc-steps">
-              {PROCESS.map((p, i) => (
-                <li className="svc-step" key={p.t}>
-                  <span className="svc-step-num">0{i + 1}</span>
-                  <h3 className="svc-step-t">{p.t}</h3>
-                  <p className="svc-step-d">{p.d}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+        {/* Cada servicio declara sus bloques en site-content (SERVICE_DETAILS). */}
+        <ServiceBlocks blocks={s.blocks} color={s.color} />
 
         <section className="section section-dark svc-end-cta">
           <div className="wrap svc-cta-inner">
             <h2 className="display svc-cta-h">
-              ¿Te interesa <span className="text-accent">{s.title}</span>?
+              {s.cta?.title ?? (
+                <>
+                  ¿Te interesa <span className="text-accent">{s.title}</span>?
+                </>
+              )}
             </h2>
             <p className="svc-cta-sub">Hablemos. Respuesta en menos de 24 horas hábiles.</p>
             <div className="svc-cta-actions">
               <MagneticButton>
                 <Link to={ROUTES.contact} className="btn btn-accent btn-lg">
-                  Cotizar ahora
+                  {s.cta?.label ?? 'Cotizar ahora'}
                   <svg
                     width="16"
                     height="16"

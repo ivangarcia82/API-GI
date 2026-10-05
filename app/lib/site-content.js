@@ -120,7 +120,7 @@ export const SERVICES = [
   {id: 'promo', num: '01', title: 'Promocionales', desc: 'Amplio portafolio de productos promocionales diseñados para incrementar la visibilidad de tu marca.', tone: 'hero'},
   {id: 'print-shop', num: '02', title: 'Print Shop', desc: 'Soluciones de decorado de alta calidad para materiales promocionales y corporativos.', tone: 'a'},
   {id: 'promotional-workshop', num: '03', title: 'Promotional Workshop', desc: 'Showrooms interactivos y demostraciones en vivo para vivir la experiencia de tu marca.', tone: 'b'},
-  {id: 'digital-evolution', num: '04', title: 'Digital Evolution', desc: 'Desarrollo e integración de APIs para conectar sistemas y optimizar procesos.', tone: 'c'},
+  {id: 'digital-evolution', num: '04', title: 'Digital Evolution', desc: 'Tiendas corporativas, cotizadores y portales de obsequios conectados a tus sistemas.', tone: 'c'},
   {id: 'importaciones', num: '05', title: 'Importaciones', desc: 'Gestión integral de importaciones para proyectos personalizados y a gran escala.', tone: 'd'},
 ];
 
@@ -211,9 +211,32 @@ export const BLOG_CATEGORIES = ['Todos', 'Tendencias', 'Operaciones', 'Sustentab
 // Service detail content
 // ---------------------------------------------------------------------------
 /**
+ * Un título con una palabra (o frase) en naranja: `pre <accent> post`.
+ * @typedef {{pre?: string, accent: string, post?: string}} Heading
+ */
+
+/**
  * @typedef {object} ServiceFeature
  * @property {string} t
- * @property {string} d
+ * @property {string} [d]
+ */
+
+/**
+ * Bloques de una página de servicio, en el orden en que se pintan. Cada tipo
+ * lo dibuja un componente de ~/components/marketing/ServiceBlocks.
+ *
+ * - lead: título grande con texto y, a la derecha, tarjetas o una tabla.
+ * - experiences: tarjetas grandes con título y descripción.
+ * - process: pasos horizontales con icono.
+ * - iconCards: cuadros con icono y una línea.
+ * - timeline: pasos verticales con detalle y un cierre ("El resultado").
+ * - map: mapa del mundo con países de origen y líneas hacia México.
+ * - facts: "Sabías que…".
+ * @typedef {object} ServiceBlock
+ * @property {'lead'|'experiences'|'process'|'iconCards'|'timeline'|'map'|'facts'} type
+ * @property {string} [eyebrow]
+ * @property {Heading} [heading]
+ * @property {string} [intro]
  */
 
 /**
@@ -221,14 +244,19 @@ export const BLOG_CATEGORIES = ['Todos', 'Tendencias', 'Operaciones', 'Sustentab
  * @property {string} num
  * @property {string} title
  * @property {string} tagline
+ * @property {string} [lede] párrafo bajo el tagline
  * @property {string} hero
  * @property {string} intro
  * @property {string} color
- * @property {ServiceFeature[]} features
- * @property {string[]} examples
+ * @property {ServiceBlock[]} blocks
+ * @property {{title?: string, label?: string}} [cta] cierre de la página; por
+ *   omisión "¿Te interesa <servicio>?" con "Cotizar ahora"
  * @property {string} [seoTitle]
  * @property {string} [seoDescription]
  */
+
+// "Lo que nos diferencia": el título que comparten todos los servicios.
+const DIFERENCIA = {pre: 'Lo que nos', accent: 'diferencia'};
 
 /** @type {Record<string, ServiceDetail>} */
 export const SERVICE_DETAILS = {
@@ -239,13 +267,21 @@ export const SERVICE_DETAILS = {
     hero: '/promocionales.jpg',
     intro: 'Ofrecemos un amplio portafolio de artículos promocionales para fortalecer la conexión entre tu marca y tu audiencia. Seleccionamos soluciones innovadoras, funcionales y alineadas con los objetivos de cada campaña.',
     color: 'var(--orange-500)',
-    features: [
-      {t: 'Amplio catálogo', d: 'Miles de opciones para diferentes industrias y objetivos.'},
-      {t: 'Personalización', d: 'Técnicas de decorado adaptadas a cada producto.'},
-      {t: 'Asesoría especializada', d: 'Recomendaciones basadas en tu estrategia de marca.'},
-      {t: 'Soluciones integrales', d: 'Desde la selección hasta la entrega de los productos.'},
+    blocks: [
+      {
+        type: 'lead',
+        eyebrow: 'Por qué nosotros',
+        heading: DIFERENCIA,
+        intro: 'Ofrecemos un amplio portafolio de artículos promocionales para fortalecer la conexión entre tu marca y tu audiencia. Seleccionamos soluciones innovadoras, funcionales y alineadas con los objetivos de cada campaña.',
+        chips: ['Tecnología', 'Oficina', 'Bebidas', 'Bolsas y textiles', 'Regalos corporativos'],
+        features: [
+          {t: 'Amplio catálogo', d: 'Miles de opciones para diferentes industrias y objetivos.'},
+          {t: 'Personalización', d: 'Técnicas de decorado adaptadas a cada producto.'},
+          {t: 'Asesoría especializada', d: 'Recomendaciones basadas en tu estrategia de marca.'},
+          {t: 'Soluciones integrales', d: 'Desde la selección hasta la entrega de los productos.'},
+        ],
+      },
     ],
-    examples: ['Tecnología', 'Oficina', 'Bebidas', 'Bolsas y textiles', 'Regalos corporativos'],
     seoTitle: 'Productos Promocionales para Empresas | Generando Ideas',
     seoDescription: 'Artículos promocionales personalizados para campañas, eventos y estrategias de branding que generan impacto.',
   },
@@ -254,68 +290,270 @@ export const SERVICE_DETAILS = {
     title: 'Print Shop',
     tagline: 'Decorados que dan vida a tus ideas.',
     hero: '/printshop.jpg',
-    intro: 'Convertimos conceptos en materiales impresos de alta calidad. Desde piezas promocionales hasta comunicación corporativa, ofrecemos soluciones de impresión que reflejan la identidad de tu marca con acabados profesionales y atención al detalle.',
+    intro: 'Personalizamos artículos promocionales y corporativos con procesos de impresión de alta calidad que garantizan acabados duraderos, colores precisos y una excelente presentación de tu marca.',
     color: 'var(--orange-500)',
-    features: [
-      {t: 'Decorado comercial', d: 'Producción de materiales para campañas y comunicación corporativa.'},
-      {t: 'Acabados especiales', d: 'Opciones que agregan valor y diferenciación a cada proyecto.'},
-      {t: 'Personalización', d: 'Adaptamos cada pieza a las necesidades de tu marca.'},
-      {t: 'Producción integral', d: 'Acompañamiento desde la preparación hasta la entrega final.'},
+    blocks: [
+      {
+        type: 'lead',
+        eyebrow: 'Print Shop',
+        heading: {pre: 'Lo que nos', accent: 'distingue'},
+        intro: 'Personalizamos artículos promocionales y corporativos con procesos de impresión de alta calidad que garantizan acabados duraderos, colores precisos y una excelente presentación de tu marca.',
+        table: {
+          cols: ['Técnica', 'Ideal para'],
+          rows: [
+            ['Tampografía', 'Plumas, termos, llaveros, USB, superficies irregulares'],
+            ['Serigrafía', 'Playeras, bolsas, libretas y textiles'],
+            ['Grabado láser', 'Termos metálicos, madera, aluminio, regalos ejecutivos'],
+            ['Bordado', 'Gorras, camisas, chamarras, mochilas'],
+          ],
+        },
+      },
+      {
+        type: 'process',
+        eyebrow: 'Paso a paso',
+        heading: {pre: 'De tu idea al', accent: 'producto terminado'},
+        steps: [
+          {t: 'Selección del producto', icon: 'box'},
+          {t: 'Recepción y validación del arte', icon: 'fileCheck'},
+          {t: 'Recomendación de la técnica adecuada', icon: 'spark'},
+          {t: 'Producción', icon: 'factory'},
+          {t: 'Entrega', icon: 'truck'},
+        ],
+      },
+      {
+        type: 'iconCards',
+        eyebrow: 'Nuestro taller',
+        heading: {pre: 'Capacidad', accent: 'operativa'},
+        items: [
+          {t: 'Tecnología y maquinaria disponible', icon: 'cog'},
+          {t: 'Producción para proyectos de distintos volúmenes', icon: 'layers'},
+          {t: 'Personal especializado', icon: 'users'},
+          {t: 'Controles de calidad', icon: 'shield'},
+          {t: 'Cumplimiento de tiempos de entrega', icon: 'clock'},
+        ],
+      },
+      {
+        type: 'lead',
+        eyebrow: 'Por qué nosotros',
+        heading: DIFERENCIA,
+        features: [
+          {t: 'Múltiples técnicas de personalización en un solo lugar'},
+          {t: 'Calidad en acabados'},
+          {t: 'Producción nacional'},
+          {t: 'Soluciones para proyectos especiales'},
+        ],
+      },
     ],
-    examples: ['Folletos', 'Packaging', 'Material POP', 'Material corporativo'],
-    seoTitle: 'Soluciones de Impresión para Empresas | Generando Ideas',
-    seoDescription: 'Impresión comercial, materiales promocionales y acabados especiales para fortalecer la imagen de tu marca.',
+    seoTitle: 'Decorado e Impresión de Artículos Promocionales | Generando Ideas',
+    seoDescription: 'Tampografía, serigrafía, grabado láser y bordado para personalizar artículos promocionales y corporativos con acabados duraderos.',
   },
   'promotional-workshop': {
     num: '03',
     title: 'Promotional Workshop',
-    tagline: 'Experiencias que conectan marcas y personas.',
+    tagline: 'Tu marca no solo se ve, se siente y se experimenta.',
+    lede: 'Dejamos atrás los catálogos aburridos para convertir tus productos promocionales en una experiencia interactiva única donde tu equipo descubre, compara y elige las mejores opciones para fortalecer su marca.',
     hero: '/workshop.jpg',
-    intro: 'Transformamos la presentación de productos promocionales en una experiencia interactiva. A través de showrooms, demostraciones en vivo y recorridos especializados, acercamos a tus colaboradores y clientes al universo de posibilidades que tu marca puede crear.',
+    intro: 'Conoce el abanico de posibilidades del mundo promocional, nuevos productos, tendencias y técnicas de decorado.',
     color: 'var(--orange-500)',
-    features: [
-      {t: 'Showrooms personalizados', d: 'Experiencias diseñadas según las necesidades y objetivos de cada cliente.'},
-      {t: 'Activaciones en sitio', d: 'Llevamos la experiencia directamente a tus oficinas o eventos corporativos.'},
-      {t: 'Personalización en vivo', d: 'Demostraciones con maquinaria de decorado para conocer el proceso en tiempo real.'},
-      {t: 'Recorridos especializados', d: 'Visitas guiadas por nuestros talleres para conocer materiales y técnicas.'},
+    blocks: [
+      {
+        type: 'experiences',
+        eyebrow: 'Experiencias',
+        heading: {pre: 'Elige la experiencia', accent: 'a tu medida'},
+        items: [
+          {t: 'Showroom en donde lo necesites', d: 'No es solo una exhibición de productos: exploramos materiales y tendencias que hagan sentido con tu marca, en tu evento, en tu oficina o en nuestras instalaciones.', icon: 'store'},
+          {t: 'El arte de la personalización en vivo', d: 'Asesoría sobre técnicas de decorado y demostraciones en tiempo real, por ejemplo, cómo funciona una máquina de grabado láser.', icon: 'spark'},
+          {t: 'Recorridos especializados', d: 'Si quieres conocer más de las posibilidades del mundo promocional y las técnicas de decorado, te llevamos de visita guiada por nuestros talleres.', icon: 'route'},
+        ],
+      },
+      {
+        type: 'lead',
+        eyebrow: '¿Por qué un Promotional Workshop?',
+        heading: DIFERENCIA,
+        intro: 'Conoce el abanico de posibilidades del mundo promocional, nuevos productos, tendencias y técnicas de decorado. Un workshop es mucho más que una cotización:',
+        features: [
+          {t: 'Ahorra tiempo buscando opciones'},
+          {t: 'Descubre productos que normalmente no aparecen en un catálogo'},
+          {t: 'Toma decisiones con muestras físicas'},
+          {t: 'Conoce de primera mano las opciones de personalización'},
+        ],
+      },
+      {
+        type: 'timeline',
+        eyebrow: 'Nuestro proceso',
+        heading: {pre: 'De la idea a la ejecución, en', accent: '6 pasos'},
+        intro: 'Así creamos un Promotional Workshop personalizado, diseñado para presentar soluciones promocionales de acuerdo con tus necesidades y objetivos.',
+        steps: [
+          {
+            t: 'Definimos el workshop',
+            sub: 'Establecemos las bases del evento',
+            d: 'Definimos junto contigo:',
+            list: ['Objetivo del workshop', 'Modalidad y sede', 'Número de asistentes', 'Necesidades y requerimientos especiales', 'Fecha y horario'],
+            note: 'Sede: tus instalaciones o las nuestras.',
+          },
+          {
+            t: 'Seleccionamos los productos',
+            sub: 'Creamos una selección a tu medida',
+            d: 'Elegimos los productos que mejor se adapten a tus necesidades, considerando:',
+            list: ['Productos promocionales', 'Muestras decoradas y sin decorar', 'Tendencias y novedades', 'Fabricación y desarrollos especiales', 'Marcas premium'],
+          },
+          {
+            t: 'Preparamos la experiencia',
+            sub: 'Todo listo para recibirte',
+            d: 'Coordinamos:',
+            list: ['Muestras y materiales', 'Obsequios para asistentes', 'Invitaciones', 'Itinerario y agenda', 'Requerimientos logísticos', 'Catering según el número de asistentes'],
+          },
+          {
+            t: 'Vivimos el workshop',
+            sub: 'Presentamos, exploramos e intercambiamos ideas',
+            d: 'Nuestro equipo presenta la selección de productos y soluciones, mientras conocemos tus necesidades y exploramos nuevas posibilidades para tus proyectos.',
+            note: 'Si el workshop es en Álamos, puedes complementar la experiencia con un recorrido por nuestros talleres.',
+          },
+          {
+            t: 'Identificamos oportunidades',
+            sub: 'Convertimos ideas en proyectos',
+            d: 'Recopilamos tus comentarios y necesidades para identificar:',
+            list: ['Nuevos proyectos', 'Productos de interés', 'Desarrollos especiales de fabricación o importación', 'Oportunidades de colaboración'],
+          },
+          {
+            t: 'Damos seguimiento',
+            sub: 'Llevamos las ideas a la siguiente etapa',
+            d: 'Después del workshop damos seguimiento a los proyectos y oportunidades identificados para convertir las ideas en propuestas concretas.',
+          },
+        ],
+        result: {
+          t: 'El resultado',
+          d: 'Un workshop personalizado, diseñado para inspirar, descubrir nuevas soluciones y generar oportunidades reales para tu marca.',
+        },
+      },
     ],
-    examples: ['Showroom corporativo', 'Activaciones internas', 'Eventos para colaboradores', 'Demostraciones de personalización'],
-    seoTitle: 'Showrooms y Experiencias de Marca | Generando Ideas',
-    seoDescription: 'Creamos showrooms interactivos, activaciones y demostraciones en vivo para acercar tus productos promocionales a clientes y colaboradores.',
+    seoTitle: 'Promotional Workshop: Showrooms y Experiencias de Marca | Generando Ideas',
+    seoDescription: 'Showrooms, personalización en vivo y recorridos por nuestros talleres para descubrir, comparar y elegir tus productos promocionales con muestras físicas.',
   },
   'digital-evolution': {
     num: '04',
     title: 'Digital Evolution',
-    tagline: 'Conectamos sistemas, impulsamos resultados.',
+    tagline: 'Tus promocionales, en digital.',
     hero: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1400&q=80',
-    intro: 'Desarrollamos soluciones tecnológicas mediante API e integraciones que optimizan procesos, automatizan flujos de trabajo y mejoran la comunicación entre plataformas para impulsar la transformación digital de las empresas.',
+    intro: 'Llevamos la compra de promocionales al terreno digital: tiendas corporativas con los colores y precios de tu marca, portales de obsequios para tus colaboradores y conexiones con tus sistemas, para que pedir, aprobar y entregar sea más simple.',
     color: 'var(--orange-500)',
-    features: [
-      {t: 'Desarrollo de API', d: 'Soluciones personalizadas para conectar aplicaciones y plataformas.'},
-      {t: 'Integraciones', d: 'Unificamos sistemas para optimizar el flujo de información.'},
-      {t: 'Automatización', d: 'Reducimos tareas manuales y mejoramos la eficiencia operativa.'},
-      {t: 'Escalabilidad', d: 'Soluciones preparadas para crecer junto con tu negocio.'},
+    blocks: [
+      {
+        type: 'lead',
+        eyebrow: 'Por qué nosotros',
+        heading: DIFERENCIA,
+        intro: 'Llevamos la compra de promocionales al terreno digital: tiendas corporativas con los colores y precios de tu marca, portales de obsequios para tus colaboradores y conexiones con tus sistemas, para que pedir, aprobar y entregar sea más simple.',
+        features: [
+          {t: 'Tienda corporativa a tu medida', d: 'Catálogo filtrado por los colores de tu marca y con tus precios negociados.'},
+          {t: 'Cotizador en línea', d: 'Cotizaciones con decorado al instante, PDF descargable y seguimiento con tu ejecutiva.'},
+          {t: 'Portales de obsequios', d: 'Cada colaborador elige su regalo y captura sus datos de entrega.'},
+          {t: 'Integraciones y API', d: 'Conectamos catálogo, inventario y pedidos con tu ERP o plataforma.'},
+        ],
+      },
+      {
+        type: 'process',
+        eyebrow: 'Paso a paso',
+        heading: {pre: 'Del diagnóstico al', accent: 'lanzamiento'},
+        steps: [
+          {t: 'Diagnóstico', icon: 'search'},
+          {t: 'Diseño', icon: 'pen'},
+          {t: 'Desarrollo', icon: 'code'},
+          {t: 'Pruebas', icon: 'check'},
+          {t: 'Lanzamiento', icon: 'rocket'},
+          {t: 'Soporte', icon: 'chat'},
+        ],
+      },
+      {
+        type: 'facts',
+        eyebrow: 'Sabías que…',
+        items: [
+          'Un portal de obsequios evita capturar a mano las tallas y direcciones de cientos de colaboradores.',
+          'Con tus precios negociados en línea, tu equipo cotiza sin esperar una respuesta por correo.',
+        ],
+      },
     ],
-    examples: ['Tiendas personalizadas', 'Consulta de catálogo', 'E-commerce B2B'],
-    seoTitle: 'Desarrollo de API e Integraciones | Generando Ideas',
-    seoDescription: 'Desarrollamos API e integraciones para automatizar procesos, conectar sistemas y acelerar la transformación digital de tu empresa.',
+    cta: {label: 'Hablemos de tu proyecto digital'},
+    seoTitle: 'Tiendas Corporativas, Cotizadores e Integraciones | Generando Ideas',
+    seoDescription: 'Tiendas corporativas con tus colores y precios, cotizador en línea, portales de obsequios para colaboradores e integraciones con tus sistemas.',
   },
   importaciones: {
     num: '05',
     title: 'Importaciones',
-    tagline: 'Soluciones globales para proyectos únicos.',
+    tagline: 'Importamos mucho más que productos.',
     hero: 'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=1400&q=80',
     intro: 'Gestionamos importaciones de productos personalizados y desarrollos especiales para satisfacer necesidades específicas. Supervisamos cada etapa del proceso para garantizar calidad, cumplimiento y entregas oportunas.',
     color: 'var(--orange-500)',
-    features: [
-      {t: 'Búsqueda internacional', d: 'Localizamos productos de acuerdo con tus requerimientos.'},
-      {t: 'Desarrollo a medida', d: 'Creamos productos exclusivos para tu marca.'},
-      {t: 'Gestión logística', d: 'Coordinamos el proceso de importación de principio a fin.'},
-      {t: 'Control de calidad', d: 'Verificamos cada detalle antes de la entrega.'},
+    blocks: [
+      {
+        type: 'lead',
+        eyebrow: 'Nuestros diferenciadores',
+        heading: DIFERENCIA,
+        intro: 'Gestionamos importaciones de productos personalizados y desarrollos especiales para satisfacer necesidades específicas. Supervisamos cada etapa del proceso para garantizar calidad, cumplimiento y entregas oportunas.',
+        features: [
+          {t: 'Desarrollo de productos exclusivos'},
+          {t: 'Fabricación personalizada'},
+          {t: 'Búsqueda de proveedores'},
+          {t: 'Control de calidad'},
+          {t: 'Gestión documental'},
+          {t: 'Coordinación logística'},
+          {t: 'Entrega en México'},
+        ],
+      },
+      {
+        type: 'map',
+        eyebrow: 'Presencia internacional',
+        heading: {pre: 'Conectamos el mundo', accent: 'con México'},
+        intro: 'Trabajamos con fabricantes en distintos países y coordinamos cada envío hasta su entrega en México.',
+        origins: [
+          {id: 'cn', name: 'China', lon: 114, lat: 30, ports: ['Shenzhen (Guangdong)', 'Ningbo (Zhejiang)', 'Xiamen (Fujian)', 'Shanghái']},
+          {id: 'es', name: 'España', lon: -3.7, lat: 40.4},
+          {id: 'it', name: 'Italia', lon: 12.5, lat: 42, labelTop: true},
+        ],
+        dest: {name: 'México', lon: -99.1, lat: 19.4},
+      },
+      {
+        type: 'iconCards',
+        eyebrow: 'Por qué elegirnos',
+        heading: {pre: '¿Por qué importar con', accent: 'Generando Ideas', post: '?'},
+        items: [
+          {t: 'Más de 12 años desarrollando proyectos', icon: 'award'},
+          {t: 'Red internacional de fabricantes', icon: 'globe'},
+          {t: 'Desarrollo de productos exclusivos', icon: 'pen'},
+          {t: 'Producción a la medida', icon: 'factory'},
+          {t: 'Inspecciones de calidad', icon: 'shield'},
+          {t: 'Logística integral', icon: 'plane'},
+        ],
+      },
+      {
+        type: 'process',
+        eyebrow: 'Paso a paso',
+        heading: {pre: 'Nuestro', accent: 'proceso'},
+        steps: [
+          {t: 'Idea', icon: 'bulb'},
+          {t: 'Diseño', icon: 'pen'},
+          {t: 'Muestra', icon: 'box'},
+          {t: 'Producción', icon: 'factory'},
+          {t: 'Control de calidad', icon: 'shield'},
+          {t: 'Importación', icon: 'ship'},
+          {t: 'Entrega', icon: 'truck'},
+        ],
+      },
+      {
+        type: 'facts',
+        eyebrow: 'Sabías que…',
+        items: [
+          'Un desarrollo exclusivo puede ayudarte a diferenciarte de la competencia.',
+          'Fabricar directamente en origen puede abrir opciones de personalización.',
+          'Planear con anticipación permite acceder a más alternativas de producción.',
+        ],
+      },
     ],
-    examples: ['Productos exclusivos', 'Kits corporativos', 'Merchandising personalizado', 'Desarrollos especiales', 'Producción internacional'],
-    seoTitle: 'Importación de Productos Promocionales | Generando Ideas',
-    seoDescription: 'Gestionamos importaciones y desarrollos especiales para ofrecer productos personalizados con alcance global.',
+    cta: {
+      title: '¿Tienes una idea? Nosotros la convertimos en un producto.',
+      label: 'Quiero desarrollar mi proyecto',
+    },
+    seoTitle: 'Importación y Desarrollo de Productos Promocionales | Generando Ideas',
+    seoDescription: 'Desarrollo de productos exclusivos, fabricación personalizada, control de calidad y logística integral desde China y otros países hasta México.',
   },
 };
 
