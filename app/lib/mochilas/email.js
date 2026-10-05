@@ -1,5 +1,6 @@
 // Correo con la elección de mochila de un colaborador.
 import {escapeHtml} from '~/lib/email/escape.js';
+import {brandedEmail} from '~/lib/email/layout.js';
 
 export const MOCHILAS_DEFAULT_TO = 'igarcia@generandoideas.com';
 
@@ -37,7 +38,7 @@ export function buildMochilaEmail({email, values, line, product, variant}) {
   const s = values.shipping;
   const envio =
     values.foraneo && s
-      ? `<h3 style="font:600 16px sans-serif;margin:24px 0 8px">Datos de envío</h3><table>${[
+      ? `<h2 style="margin:24px 0 8px;font-size:16px">Datos de envío</h2><table role="presentation">${[
           row('Calle y número', s.street),
           row('Colonia', s.neighborhood),
           row('Código postal', s.zip),
@@ -54,10 +55,11 @@ export function buildMochilaEmail({email, values, line, product, variant}) {
       )}" width="200" style="display:block;margin:0 0 16px;border-radius:12px">`
     : '';
 
-  const html = `<div style="font:14px/1.5 sans-serif;color:#2e3033;max-width:560px">
-<h2 style="font:700 20px sans-serif;margin:0 0 16px">Nueva elección de mochila</h2>
-${foto}<table>${datos}</table>${envio}
-</div>`;
+  const html = brandedEmail({
+    preheader: `${values.fullName} eligió ${mochila} · ${variant.color}.`,
+    heading: 'Nueva elección de mochila',
+    bodyHtml: `${foto}<table role="presentation">${datos}</table>${envio}`,
+  });
 
   return {subject, html};
 }

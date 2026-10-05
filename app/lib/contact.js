@@ -2,6 +2,7 @@
 // contact form (POST /api/contact). Kept framework-free and side-effect-free
 // so it can be unit tested without a fetch/Resend mock. Ported from
 // gi-website-final/api/contact.js (the original Vercel serverless function).
+import {brandedEmail} from './email/layout.js';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -66,23 +67,24 @@ export function buildContactEmail(fields) {
     ['¿Cómo llegó?', source],
   ];
 
-  const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;color:#101114;line-height:1.5">
-      <h2 style="margin:0 0 16px">Nueva solicitud de contacto</h2>
-      <table style="border-collapse:collapse;width:100%;max-width:560px">
+  const html = brandedEmail({
+    preheader: `${name} (${company}) escribió desde el formulario de contacto.`,
+    heading: 'Nueva solicitud de contacto',
+    bodyHtml: `
+      <table role="presentation" style="border-collapse:collapse;width:100%">
         ${rows
           .map(
             ([k, v]) =>
               `<tr>
-                 <td style="padding:8px 12px;border:1px solid #e5e5e6;background:#fafafa;font-weight:bold;white-space:nowrap">${esc(k)}</td>
-                 <td style="padding:8px 12px;border:1px solid #e5e5e6">${esc(v)}</td>
+                 <td style="padding:8px 12px;border:1px solid #e9eaeb;background:#f4f4f5;font-weight:bold;white-space:nowrap">${esc(k)}</td>
+                 <td style="padding:8px 12px;border:1px solid #e9eaeb">${esc(v)}</td>
                </tr>`,
           )
           .join('')}
       </table>
-      <h3 style="margin:20px 0 8px">Mensaje</h3>
-      <p style="white-space:pre-wrap;margin:0;padding:12px;border:1px solid #e5e5e6;border-radius:8px;background:#fafafa">${esc(message)}</p>
-    </div>`;
+      <h2 style="margin:20px 0 8px;font-size:16px">Mensaje</h2>
+      <p style="white-space:pre-wrap;margin:0;padding:12px;border:1px solid #e9eaeb;border-radius:8px;background:#f4f4f5">${esc(message)}</p>`,
+  });
 
   const text = [...rows.map(([k, v]) => `${k}: ${v}`), '', 'Mensaje:', message].join('\n');
 

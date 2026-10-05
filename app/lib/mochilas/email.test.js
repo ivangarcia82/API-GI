@@ -70,3 +70,14 @@ describe('buildMochilaEmail', () => {
     expect(html).toContain('&lt;b&gt;x&lt;/b&gt;');
   });
 });
+
+describe('buildMochilaEmail · marca', () => {
+  it('usa el diseño de la marca y conserva la elección', async () => {
+    const {LOGO_PATH} = await import('../email/layout.js');
+    const {html} = buildMochilaEmail({email: 'ana@generandoideas.com', values: local, line, product, variant});
+    expect(html).toContain(LOGO_PATH);
+    expect(html).toContain('YOUR ONE STOP SOLUTION');
+    expect(html).toContain('Nueva elección de mochila');
+    expect(html).toContain('Takayama Zen');
+  });
+});

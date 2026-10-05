@@ -31,3 +31,15 @@ describe('buildContactEmail', () => {
     expect(text).toContain('Necesito 500 termos');
   });
 });
+
+describe('buildContactEmail · marca', () => {
+  it('usa el diseño de la marca y conserva datos y mensaje', async () => {
+    const {LOGO_PATH} = await import('~/lib/email/layout');
+    const {html} = buildContactEmail(valid);
+    expect(html).toContain(LOGO_PATH);
+    expect(html).toContain('YOUR ONE STOP SOLUTION');
+    expect(html).toContain('Nueva solicitud de contacto');
+    expect(html).toContain('ana@acme.com');
+    expect(html).toContain('Necesito 500 termos personalizados');
+  });
+});

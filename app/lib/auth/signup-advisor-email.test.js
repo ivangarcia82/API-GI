@@ -150,3 +150,14 @@ describe('buildSignupAdvisorEmail · sin enlaces a Shopify', () => {
     expect(msg.html).toContain('Laura Vega');
   });
 });
+
+describe('buildSignupAdvisorEmail · marca', () => {
+  it('usa el diseño de la marca y conserva los datos del registro', async () => {
+    const {LOGO_PATH} = await import('../email/layout.js');
+    const {html} = build();
+    expect(html).toContain(LOGO_PATH);
+    expect(html).toContain('YOUR ONE STOP SOLUTION');
+    expect(html).toContain('Hola Ailine');
+    expect(html).toContain('mariana@empresa.mx');
+  });
+});

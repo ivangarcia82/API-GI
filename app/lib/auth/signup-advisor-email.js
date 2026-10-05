@@ -5,6 +5,7 @@
 // una pantalla de lead que enseñar. Los datos para decidir la asignación van en
 // el cuerpo.
 import {escapeHtml} from '../email/escape.js';
+import {brandedEmail} from '../email/layout.js';
 
 const DASH = '—';
 
@@ -44,14 +45,16 @@ export function buildSignupAdvisorEmail({
     ? `<p>Hola ${escapeHtml(advisorName)},</p>`
     : '';
 
-  const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1a1a1a;line-height:1.5">
+  const html = brandedEmail({
+    preheader: `${quien} creó una cuenta y espera ejecutivo de venta.`,
+    heading: 'Nuevo registro',
+    bodyHtml: `
       ${saludo}
       <p><strong>${escapeHtml(quien)}</strong> creó una cuenta y está pendiente de que le asignen ejecutivo de venta.</p>
-      <table style="border-collapse:collapse;margin-top:12px">
+      <table role="presentation" style="border-collapse:collapse;margin-top:12px">
         <tbody>${row('Correo', user.email)}${row('Teléfono', user.phone)}${row('Empresa', user.company)}${row('Ya es cliente', yaCliente)}${row('Asesor que indicó', claimedAdvisor)}</tbody>
-      </table>
-      <p style="font-size:12px;color:#666">Generando Ideas</p>
-    </body></html>`;
+      </table>`,
+  });
 
   return {
     to: advisorTo,
