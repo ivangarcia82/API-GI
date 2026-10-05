@@ -173,6 +173,7 @@ export function ProductCard({
         <PH src={product.image} alt={product.imageAlt} zoom />
         <div style={{display: 'flex', flexDirection: 'column', gap: 4}}>
           <div style={{display: 'flex', gap: 6}}>
+            {product.available === false && <span className="tag tag-soldout">Agotado</span>}
             {product.isNew && <span className="tag tag-accent">Nuevo</span>}
             {product.isOffer && <span className="tag tag-ink">Oferta</span>}
           </div>
@@ -193,6 +194,8 @@ export function ProductCard({
       <div className="pcard-img">
         <PH src={product.image} alt={product.imageAlt} zoom />
         <div className="pcard-badges">
+          {/* Desde la portada: no hay que entrar a la ficha para saberlo. */}
+          {product.available === false && <span className="tag tag-soldout">Agotado</span>}
           {product.isNew && <span className="tag tag-accent">Nuevo</span>}
           {product.isOffer && <span className="tag tag-ink">Oferta</span>}
         </div>

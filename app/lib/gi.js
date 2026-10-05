@@ -162,7 +162,7 @@ export function normalizeProduct(node) {
     price: price ? parseFloat(price.amount) : null,
     currency: price?.currencyCode || 'MXN',
     firstVariantId: first?.id || null,
-    available: first?.availableForSale ?? true,
+    available: node.availableForSale ?? first?.availableForSale ?? true,
     colors,
     colorVariants,
     tags,

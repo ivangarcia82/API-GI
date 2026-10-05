@@ -242,6 +242,8 @@ img, svg {
 .tag-ok { background: var(--ok-soft); color: var(--ok); border-color: #b8e0c8; }
 .tag-info { background: var(--info-soft); color: var(--info); border-color: #b8cce8; }
 .tag-ink { background: var(--ink); color: var(--bg-elev); border-color: transparent; }
+/* Agotado: rojo apagado, que se lea como aviso sin competir con "Oferta". */
+.tag-soldout { background: var(--err-soft); color: var(--err); border-color: transparent; }
 .tag-dot::before {
   content: "";
   width: 6px; height: 6px;

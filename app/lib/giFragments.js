@@ -6,6 +6,9 @@ export const GI_PRODUCT_CARD_FRAGMENT = `#graphql
     id
     handle
     title
+    # Disponible si queda alguna variante: la de variants(first: 1) puede
+    # estar agotada aunque otro color no lo esté.
+    availableForSale
     description
     tags
     featuredImage { id url altText width height }

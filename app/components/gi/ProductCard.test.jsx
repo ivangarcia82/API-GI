@@ -209,3 +209,20 @@ describe('ProductCard · colores de marca', () => {
     expect(enviadas[0].get('variantId')).toBe('gid://variant/AZUL');
   });
 });
+
+describe('etiqueta de agotado', () => {
+  it('se ve en la portada cuando el producto no está disponible', () => {
+    montar({}, {producto: {...PRODUCTO, available: false}});
+    expect(screen.getByText('Agotado')).toBeTruthy();
+  });
+
+  it('también en la vista de lista', () => {
+    montar({view: 'list'}, {producto: {...PRODUCTO, available: false}});
+    expect(screen.getByText('Agotado')).toBeTruthy();
+  });
+
+  it('no aparece si está disponible', () => {
+    montar({}, {producto: {...PRODUCTO, available: true}});
+    expect(screen.queryByText('Agotado')).toBeNull();
+  });
+});
