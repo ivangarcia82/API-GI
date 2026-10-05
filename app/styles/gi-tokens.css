@@ -508,6 +508,199 @@ img, svg {
   border-bottom: 2px solid var(--accent);
   border-radius: 6px 6px 0 0;
 }
+
+/* ---- Menú de categorías (CatalogMenu.jsx) ----------------------------- */
+.appbar-cat {
+  display: inline-flex;
+  align-items: center;
+}
+.appbar-cat-toggle {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-left: -6px;
+  border-radius: var(--r-pill);
+  color: var(--ink-3);
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.appbar-cat-toggle:hover { background: var(--bg-soft); color: var(--ink); }
+.appbar-cat-toggle[aria-expanded="true"] { transform: rotate(180deg); color: var(--accent-deep); }
+.catmenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 24px 48px -24px rgba(20, 17, 10, 0.25);
+  animation: fadeIn 160ms var(--ease-out);
+}
+.catmenu-inner {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 40px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 32px 32px;
+  max-height: calc(100vh - var(--header-h, 72px) - 24px);
+  overflow-y: auto;
+}
+.catmenu-l1 {
+  list-style: none;
+  margin: 0;
+  padding: 0 24px 0 0;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.catmenu-l1 a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.catmenu-l1 a svg { opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); }
+.catmenu-l1 a.is-active {
+  background: var(--bg-soft);
+  color: var(--ink);
+}
+.catmenu-l1 a.is-active svg { opacity: 1; color: var(--accent-deep); }
+.catmenu-all {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.catmenu-all a {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-deep);
+}
+.catmenu-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.catmenu-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.catmenu-seeall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-deep);
+}
+.catmenu-seeall:hover { text-decoration: underline; }
+.catmenu-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 28px 32px;
+}
+.catmenu-l2 {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.catmenu-l2:hover { color: var(--accent-deep); }
+.catmenu-l3 {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.catmenu-l3 a {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+.catmenu-l3 a:hover { color: var(--ink); text-decoration: underline; }
+.catmenu a:focus-visible,
+.appbar-cat-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Acordeón del menú móvil. */
+.mcat summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.mcat summary::-webkit-details-marker { display: none; }
+.mcat summary::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--dur-fast) var(--ease-out);
+  margin-right: 4px;
+}
+.mcat details[open] > summary::after,
+.mcat[open] > summary::after { transform: rotate(225deg); }
+.mcat > summary {
+  padding: 16px 0;
+  font-size: 22px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+}
+.mcat-body {
+  display: flex;
+  flex-direction: column;
+  padding-left: 14px;
+}
+.mobile-menu .mcat-body a {
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
+}
+.mobile-menu .mcat-body a.mcat-all {
+  font-weight: 600;
+  color: var(--accent-deep);
+}
+.mcat-l1 > summary {
+  padding: 14px 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+}
+.mcat-l2 > summary {
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Ruta de la categoría en el catálogo (Catálogo › Bebidas › Tazas y tarros). */
+.cat-breadcrumb a { color: inherit; }
+.cat-breadcrumb a:hover { color: var(--accent-deep); text-decoration: underline; }
 .appbar-actions {
   display: flex;
   align-items: center;

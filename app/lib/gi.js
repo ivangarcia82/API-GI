@@ -180,15 +180,18 @@ export function normalizeProduct(node) {
    --------------------------------------------------------------- */
 
 // 8 hero categories shown on the home grid (handle + display label)
+// Las 8 categorías principales del árbol (app/lib/category-tree.js), en orden
+// alfabético. El nombre tiene que coincidir con el del árbol: lo vigila
+// gi.categorias.test.js.
 export const HOME_CATEGORIES = [
   {handle: 'bebidas', name: 'Bebidas', icon: 'drink'},
-  {handle: 'salud-y-bienestar', name: 'Bienestar', icon: 'heart'},
   {handle: 'ecologicos', name: 'Ecológicos', icon: 'leaf'},
   {handle: 'hogar', name: 'Hogar', icon: 'home'},
-  {handle: 'mochilas-y-maletas', name: 'Mochilas y maletas', icon: 'bag'},
   {handle: 'oficina', name: 'Oficina', icon: 'office'},
+  {handle: 'salud-y-belleza', name: 'Salud y belleza', icon: 'heart'},
   {handle: 'tecnologia', name: 'Tecnología', icon: 'tech'},
   {handle: 'textil', name: 'Textil', icon: 'shirt'},
+  {handle: 'tiempo-libre', name: 'Tiempo libre', icon: 'sparkle'},
 ];
 
 /* Las dos colecciones que el home destaca. Es una lista aparte de

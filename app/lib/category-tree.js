@@ -371,3 +371,25 @@ export function flattenTree(tree = CATEGORY_TREE) {
   walk(tree, 1, null);
   return out;
 }
+
+/**
+ * Ruta de una colección dentro del árbol, desde la categoría principal:
+ * `categoryPath('tarros')` → [Bebidas, Tazas y tarros, Tarros]. Vacía si la
+ * colección no está en el árbol (Novedades, Ofertas, una colección suelta).
+ * @param {string} handle
+ * @returns {CategoryNode[]}
+ */
+export function categoryPath(handle, tree = CATEGORY_TREE) {
+  if (!handle) return [];
+  for (const nodo of tree) {
+    if (nodo.handle === handle) return [nodo];
+    const resto = categoryPath(handle, nodo.children ?? []);
+    if (resto.length) return [nodo, ...resto];
+  }
+  return [];
+}
+
+/** Enlace al catálogo filtrado por una colección del árbol. */
+export function categoryHref(handle) {
+  return `/catalogo?cat=${encodeURIComponent(handle)}`;
+}

@@ -69,6 +69,9 @@ export function CatalogFilters({
   filters,
   facets,
   categorias,
+  // La categoría principal a marcar: con un tipo elegido ("Tarros") se marca
+  // su categoría (Bebidas), que es lo que la lista enseña.
+  categoriaActiva = filters.cat,
   onChange,
   onClearAll,
   totalCount,
@@ -149,7 +152,7 @@ export function CatalogFilters({
             <button
               key={c.handle}
               type="button"
-              className={filters.cat === c.handle ? 'active' : ''}
+              className={categoriaActiva === c.handle ? 'active' : ''}
               onClick={() => set({cat: filters.cat === c.handle ? '' : c.handle})}
             >
               {c.name}

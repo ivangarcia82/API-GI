@@ -1,4 +1,4 @@
-import {useLoaderData, useSearchParams, useNavigate, useNavigation} from 'react-router';
+import {Link, useLoaderData, useSearchParams, useNavigate, useNavigation} from 'react-router';
 import {useCallback, useEffect, useState} from 'react';
 import {getPaginationVariables, Pagination} from '@shopify/hydrogen';
 import {Icon} from '~/components/gi/Icon';
@@ -13,6 +13,7 @@ import {
 import {useApp, useToast} from '~/lib/AppContext';
 import {GI_CATALOG_SEARCH_QUERY, GI_CATALOG_COLLECTION_QUERY} from '~/lib/giFragments';
 import {normalizeProduct, HOME_CATEGORIES} from '~/lib/gi';
+import {categoryPath, categoryHref, flattenTree} from '~/lib/category-tree';
 import {
   SORTS,
   parseFilterParams,
@@ -209,6 +210,28 @@ export async function loader({context, request}) {
  * @param {{marcaColores?: string[], hayFiltros?: boolean}} estado
  * @returns {{texto: string, accion: 'limpiar'|'contacto'|null}}
  */
+/* Todas las colecciones del árbol, con el nombre que lleva su chip. */
+const CATEGORIAS_DEL_ARBOL = flattenTree().map((n) => ({handle: n.handle, name: n.title}));
+
+/**
+ * Título del catálogo y, si la categoría es una subcategoría o un tipo, la ruta
+ * de sus padres ("Bebidas › Tazas y tarros") y la categoría principal que se
+ * marca en la barra lateral.
+ *
+ * Se exporta para poder fijarlo con un test sin montar la página entera.
+ * @param {{cat?: string, q?: string}} filtros
+ * @returns {{titulo: string, ruta: Array<{title: string, handle: string}>, raiz: string}}
+ */
+export function encabezadoCatalogo({cat = '', q = ''} = {}) {
+  const camino = categoryPath(cat);
+  const nodo = camino.at(-1);
+  return {
+    titulo: q ? `Resultados · “${q}”` : nodo?.title || 'Todos los productos',
+    ruta: q ? [] : camino.slice(0, -1),
+    raiz: camino[0]?.handle || cat,
+  };
+}
+
 export function estadoVacio({marcaColores = [], hayFiltros = false} = {}) {
   if (marcaColores.length) {
     return hayFiltros
@@ -422,18 +445,28 @@ export default function Catalogo() {
 
   const limpiarTodo = () => navigate('/catalogo', {preventScrollReset: true});
 
-  const chips = activeChips(filtros, {categorias: HOME_CATEGORIES});
+  const chips = activeChips(filtros, {categorias: CATEGORIAS_DEL_ARBOL});
   const hayFiltros = hasActiveFilters(filtros);
   const vacio = estadoVacio({marcaColores, hayFiltros});
 
-  const titulo = filtros.q
-    ? `Resultados · “${filtros.q}”`
-    : HOME_CATEGORIES.find((c) => c.handle === filtros.cat)?.name || 'Todos los productos';
+  const {titulo, ruta, raiz} = encabezadoCatalogo(filtros);
 
   return (
     <div className="container" data-screen-label="04 Catalog">
       <div style={{padding: '32px 0 16px'}}>
-        <div className="eyebrow">// Catálogo · /catalogo</div>
+        {ruta.length ? (
+          <nav className="eyebrow cat-breadcrumb" aria-label="Ruta de la categoría">
+            <Link to="/catalogo">Catálogo</Link>
+            {ruta.map((n) => (
+              <span key={n.handle}>
+                {' › '}
+                <Link to={categoryHref(n.handle)}>{n.title}</Link>
+              </span>
+            ))}
+          </nav>
+        ) : (
+          <div className="eyebrow">// Catálogo · /catalogo</div>
+        )}
         <h1
           style={{
             fontFamily: 'var(--font-display)',
@@ -469,6 +502,7 @@ export default function Catalogo() {
           filters={filtros}
           facets={facetas}
           categorias={HOME_CATEGORIES}
+          categoriaActiva={raiz}
           onChange={aplicar}
           onClearAll={limpiarTodo}
           totalCount={totalCount}

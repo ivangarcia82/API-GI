@@ -5,6 +5,7 @@ import {Icon} from './Icon';
 import {Button} from './ui';
 import {SocialIcons} from '~/components/marketing/SocialIcons';
 import {useApp} from '~/lib/AppContext';
+import {CatalogTrigger, CatalogPanel, MobileCatalogMenu, useCatalogMenu} from './CatalogMenu';
 
 const NAV = [
   {to: '/', label: 'Inicio'},
@@ -33,6 +34,7 @@ export function GiHeader({isLoggedIn}) {
   const {quoteCount, openQuoteDrawer, openSearch} = useApp();
   const [mobile, setMobile] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
+  const catalogMenu = useCatalogMenu();
 
   return (
     <>
@@ -42,12 +44,16 @@ export function GiHeader({isLoggedIn}) {
             <Logo />
           </NavLink>
 
-          <nav className="appbar-nav">
-            {NAV.map((n) => (
-              <NavLink key={n.to} to={n.to} prefetch="intent" end={n.to === '/'}>
-                {n.label}
-              </NavLink>
-            ))}
+          <nav className="appbar-nav" aria-label="Principal">
+            {NAV.map((n) =>
+              n.to === '/catalogo' ? (
+                <CatalogTrigger key={n.to} menu={catalogMenu} />
+              ) : (
+                <NavLink key={n.to} to={n.to} prefetch="intent" end={n.to === '/'}>
+                  {n.label}
+                </NavLink>
+              ),
+            )}
           </nav>
 
           <div className="appbar-actions">
@@ -208,20 +214,25 @@ export function GiHeader({isLoggedIn}) {
             </button>
           </div>
         </div>
+        <CatalogPanel menu={catalogMenu} />
       </header>
 
       {mobile && (
-        <div className="mobile-menu">
-          {NAV.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.to === '/'}
-              onClick={() => setMobile(false)}
-            >
-              {n.label}
-            </NavLink>
-          ))}
+        <nav className="mobile-menu" aria-label="Menú móvil">
+          {NAV.map((n) =>
+            n.to === '/catalogo' ? (
+              <MobileCatalogMenu key={n.to} onNavigate={() => setMobile(false)} />
+            ) : (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                end={n.to === '/'}
+                onClick={() => setMobile(false)}
+              >
+                {n.label}
+              </NavLink>
+            ),
+          )}
           <button
             type="button"
             className="mobile-menu-link"
@@ -265,7 +276,7 @@ export function GiHeader({isLoggedIn}) {
           <div className="gi-mkt mobile-menu-social">
             <SocialIcons variant="nav" />
           </div>
-        </div>
+        </nav>
       )}
     </>
   );

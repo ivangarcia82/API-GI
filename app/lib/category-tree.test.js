@@ -56,3 +56,18 @@ describe('typeTagFor', () => {
     expect(typeTagFor(sub('hieleras-y-loncheras'), p('BOLSA LONDRES'))).toBeNull();
   });
 });
+
+describe('ubicar una categoría', () => {
+  it('categoryPath devuelve la ruta desde la categoría principal', async () => {
+    const {categoryPath} = await import('./category-tree.js');
+    expect(categoryPath('tarros').map((n) => n.title)).toEqual(['Bebidas', 'Tazas y tarros', 'Tarros']);
+    expect(categoryPath('bebidas').map((n) => n.title)).toEqual(['Bebidas']);
+    expect(categoryPath('no-existe')).toEqual([]);
+    expect(categoryPath('')).toEqual([]);
+  });
+
+  it('categoryHref lleva al catálogo filtrado por esa colección', async () => {
+    const {categoryHref} = await import('./category-tree.js');
+    expect(categoryHref('tarros')).toBe('/catalogo?cat=tarros');
+  });
+});

@@ -8,3 +8,13 @@ describe('HOME_CATEGORIES', () => {
     expect(nombres).toEqual(ordenados);
   });
 });
+
+describe('HOME_CATEGORIES y el árbol', () => {
+  it('son las 8 categorías principales del árbol aprobado', async () => {
+    const {CATEGORY_TREE} = await import('./category-tree.js');
+    expect(HOME_CATEGORIES.map((c) => c.handle).sort()).toEqual(CATEGORY_TREE.map((c) => c.handle).sort());
+    for (const c of HOME_CATEGORIES) {
+      expect(c.name).toBe(CATEGORY_TREE.find((t) => t.handle === c.handle).title);
+    }
+  });
+});
