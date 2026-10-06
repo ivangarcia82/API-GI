@@ -1,7 +1,8 @@
 import {useLoaderData, useNavigate} from 'react-router';
 import {Icon} from '~/components/gi/Icon';
 import {PH} from '~/components/gi/ui';
-import {pickCollectionImage} from '~/lib/giFragments';
+import {fetchCollectionCards} from '~/lib/giFragments';
+import {HOME_CATEGORIES} from '~/lib/gi';
 
 /* Shopify modela estas familias como "collections" y de ahí sale la URL, pero
    Generando Ideas las llama categorías de cara al cliente. La ruta se queda
@@ -15,18 +16,18 @@ export const meta = () => [
   },
 ];
 
+/* Sólo las 8 categorías principales, en el orden del home. Antes listaba
+   todas las colecciones de la tienda (hasta 50: tipos, campañas, nuevos…), y
+   "Ver todas las categorías" llevaba a una lista que no era la del menú. */
 export async function loader({context}) {
-  const data = await context.storefront.query(COLLECTIONS_QUERY).catch((error) => {
-    // Don't 500 the whole page on a Storefront hiccup; render an empty state.
-    console.error('[collections] query failed:', error);
-    return null;
-  });
-  const items = (data?.collections?.nodes || []).map((c) => ({
-    id: c.id,
-    handle: c.handle,
-    title: c.title,
-    description: c.description,
-    image: pickCollectionImage(c),
+  const cards = await fetchCollectionCards(
+    context.storefront,
+    HOME_CATEGORIES.map((c) => c.handle),
+  );
+  const porHandle = new Map(cards.map((c) => [c.handle, c]));
+  const items = HOME_CATEGORIES.filter((c) => porHandle.has(c.handle)).map((c) => ({
+    ...porHandle.get(c.handle),
+    title: c.name,
   }));
   return {collections: items};
 }
@@ -52,10 +53,9 @@ export default function Collections() {
         >
           {collections.length > 0 ? (
             <>
-              {collections.length} categorías<br />
-              para campañas{' '}
+              {HOME_CATEGORIES.length} categorías<br />
               <em style={{fontStyle: 'italic', fontWeight: 400, color: 'var(--accent-deep)'}}>
-                precisas
+                especializadas
               </em>
               .
             </>
@@ -132,19 +132,3 @@ export default function Collections() {
     </div>
   );
 }
-
-const COLLECTIONS_QUERY = `#graphql
-  query GiStoreCollections($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 50, sortKey: TITLE) {
-      nodes {
-        id
-        title
-        handle
-        description
-        image { url altText }
-        products(first: 10) { nodes { featuredImage { url altText } } }
-      }
-    }
-  }
-`;
