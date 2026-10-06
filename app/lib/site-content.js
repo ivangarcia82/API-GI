@@ -264,7 +264,7 @@ export const SERVICE_DETAILS = {
     num: '01',
     title: 'Promocionales',
     tagline: 'Productos que convierten marcas en experiencias.',
-    hero: '/promocionales.jpg',
+    hero: '/servicios/promocionales.jpg',
     intro: 'Ofrecemos un amplio portafolio de artículos promocionales para fortalecer la conexión entre tu marca y tu audiencia. Seleccionamos soluciones innovadoras, funcionales y alineadas con los objetivos de cada campaña.',
     color: 'var(--orange-500)',
     blocks: [
@@ -289,7 +289,7 @@ export const SERVICE_DETAILS = {
     num: '02',
     title: 'Print Shop',
     tagline: 'Decorados que dan vida a tus ideas.',
-    hero: '/printshop.jpg',
+    hero: '/servicios/print-shop.jpg',
     intro: 'Personalizamos artículos promocionales y corporativos con procesos de impresión de alta calidad que garantizan acabados duraderos, colores precisos y una excelente presentación de tu marca.',
     color: 'var(--orange-500)',
     blocks: [
@@ -352,7 +352,7 @@ export const SERVICE_DETAILS = {
     title: 'Promotional Workshop',
     tagline: 'Tu marca no solo se ve, se siente y se experimenta.',
     lede: 'Dejamos atrás los catálogos aburridos para convertir tus productos promocionales en una experiencia interactiva única donde tu equipo descubre, compara y elige las mejores opciones para fortalecer su marca.',
-    hero: '/workshop.jpg',
+    hero: '/servicios/promotional-workshop.jpg',
     intro: 'Conoce el abanico de posibilidades del mundo promocional, nuevos productos, tendencias y técnicas de decorado.',
     color: 'var(--orange-500)',
     blocks: [
@@ -434,7 +434,7 @@ export const SERVICE_DETAILS = {
     num: '04',
     title: 'Digital Evolution',
     tagline: 'Tus promocionales, en digital.',
-    hero: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1400&q=80',
+    hero: '/servicios/digital-evolution.jpg',
     intro: 'Llevamos la compra de promocionales al terreno digital: tiendas corporativas con los colores y precios de tu marca, portales de obsequios para tus colaboradores y conexiones con tus sistemas, para que pedir, aprobar y entregar sea más simple.',
     color: 'var(--orange-500)',
     blocks: [
@@ -480,7 +480,7 @@ export const SERVICE_DETAILS = {
     num: '05',
     title: 'Importaciones',
     tagline: 'Importamos mucho más que productos.',
-    hero: 'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=1400&q=80',
+    hero: '/servicios/importaciones.jpg',
     intro: 'Gestionamos importaciones de productos personalizados y desarrollos especiales para satisfacer necesidades específicas. Supervisamos cada etapa del proceso para garantizar calidad, cumplimiento y entregas oportunas.',
     color: 'var(--orange-500)',
     blocks: [
