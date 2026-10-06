@@ -32,7 +32,7 @@ import Homepage from './_index.jsx';
 const datosLoader = {
   isShopLinked: true,
   categoryCards: [],
-  featuredCollections: [],
+  campanas: [],
   products: [],
 };
 

@@ -1,5 +1,6 @@
 import {flatRoutes} from '@react-router/fs-routes';
 import {hydrogenRoutes} from '@shopify/hydrogen';
+import {route} from '@react-router/dev/routes';
 
 export default hydrogenRoutes([
   // Co-located test files (e.g. `*.shape.test.js`) live under app/routes/ but
@@ -17,6 +18,11 @@ export default hydrogenRoutes([
       '**/registro.catalogos.js',
     ],
   })),
+  // Landing de temporada: es el mismo módulo del catálogo con la colección de
+  // la campaña fija. Se registra aquí, con otro id, en vez de con un archivo de
+  // ruta que importe del catálogo: importar de otra ruta mete sus módulos
+  // .server en el bundle del cliente.
+  route('temporada/:handle', 'routes/catalogo.jsx', {id: 'routes/temporada'}),
   // Manual route definitions can be added to this array, in addition to or instead of using the `flatRoutes` file-based routing convention.
   // See https://reactrouter.com/api/framework-conventions/routes.ts#routests
 ]);

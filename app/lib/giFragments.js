@@ -241,6 +241,9 @@ export const GI_CATALOG_COLLECTION_QUERY = `#graphql
     collection(handle: $handle) {
       handle
       title
+      # La landing de temporada pinta su encabezado con esto.
+      description
+      image { url altText width height }
       products(
         filters: $productFilters
         sortKey: $sortKey

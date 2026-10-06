@@ -139,27 +139,30 @@ export function CatalogFilters({
         </button>
       </div>
 
-      <Group title="Categoría" count={filters.cat ? 1 : 0}>
-        <div className="cf-cats">
-          <button
-            type="button"
-            className={!filters.cat ? 'active' : ''}
-            onClick={() => set({cat: ''})}
-          >
-            Todas
-          </button>
-          {categorias.map((c) => (
+{/* Sin categorías (la landing de temporada) el grupo no se pinta. */}
+      {categorias && (
+        <Group title="Categoría" count={filters.cat ? 1 : 0}>
+          <div className="cf-cats">
             <button
-              key={c.handle}
               type="button"
-              className={categoriaActiva === c.handle ? 'active' : ''}
-              onClick={() => set({cat: filters.cat === c.handle ? '' : c.handle})}
+              className={!filters.cat ? 'active' : ''}
+              onClick={() => set({cat: ''})}
             >
-              {c.name}
+              Todas
             </button>
-          ))}
-        </div>
-      </Group>
+            {categorias.map((c) => (
+              <button
+                key={c.handle}
+                type="button"
+                className={categoriaActiva === c.handle ? 'active' : ''}
+                onClick={() => set({cat: filters.cat === c.handle ? '' : c.handle})}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+        </Group>
+      )}
 
       {facets.colores.length > 0 && (
         <Group title="Color" count={filters.color.length}>

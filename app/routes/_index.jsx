@@ -13,7 +13,8 @@ import {ClosingCTA} from '~/components/marketing/ClosingCTA';
 import {useMarketingReveal} from '~/components/marketing/MarketingLayout';
 import {useApp} from '~/lib/AppContext';
 import {fetchCollectionCards} from '~/lib/giFragments';
-import {HOME_CATEGORIES, HOME_FEATURED_COLLECTIONS} from '~/lib/gi';
+import {HOME_CATEGORIES} from '~/lib/gi';
+import {campanasActivas, campanaHref} from '~/lib/campanas';
 
 export const meta = () => [
   {title: 'Generando Ideas — Promocionales que generan memoria'},
@@ -34,10 +35,10 @@ async function loadCriticalData({context}) {
 
   // El hero muestra categorías, no productos: el home ya no pide productos
   // sueltos (ni su paleta de marca ni su precio por cliente).
-  const [categories, featuredCollections] = await Promise.all([
-    fetchCollectionCards(storefront, HOME_CATEGORIES.map((c) => c.handle)),
-    fetchCollectionCards(storefront, HOME_FEATURED_COLLECTIONS),
-  ]);
+  const categories = await fetchCollectionCards(
+    storefront,
+    HOME_CATEGORIES.map((c) => c.handle),
+  );
 
   // Merge category display config (icon + label) with fetched images
   const catMap = Object.fromEntries(categories.map((c) => [c.handle, c]));
@@ -49,7 +50,14 @@ async function loadCriticalData({context}) {
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     categoryCards,
-    featuredCollections,
+    // Las campañas de temporada vigentes hoy, con su portada en contexto.
+    // Reemplazan a Nuevos y Ofertas; fuera de temporada la sección no sale.
+    campanas: campanasActivas().map(({handle, titulo, tema, portada}) => ({
+      handle,
+      titulo,
+      tema,
+      portada,
+    })),
   };
 }
 
@@ -57,7 +65,7 @@ export default function Homepage() {
   const data = useLoaderData();
   const navigate = useNavigate();
   const {isLoggedIn, openQuoteDrawer} = useApp();
-  const {categoryCards, featuredCollections} = data;
+  const {categoryCards, campanas} = data;
   useMarketingReveal();
 
   // El collage del hero muestra las categorías, no productos sueltos. Cuando
@@ -182,80 +190,80 @@ export default function Homepage() {
       {/* SERVICES */}
       <ServicesStrip />
 
-      {/* FEATURED COLLECTIONS */}
-      <section className="section container" style={{paddingTop: 40}}>
-        <div className="section-head">
-          <div>
-            <h2>
-              <span className="text-accent">Colecciones</span> para campañas
-              precisas.
-            </h2>
+      {/* CAMPAÑAS DE TEMPORADA */}
+      {campanas.length > 0 && (
+        <section className="section container" style={{paddingTop: 40}}>
+          <div className="section-head">
+            <div>
+              <h2>
+                <span className="text-accent">Colecciones</span> para campañas
+                precisas.
+              </h2>
+            </div>
+            <p>
+              Cada colección une calidad, oferta y propósito. Diseñadas por nuestro
+              equipo creativo.
+            </p>
           </div>
-          <p>
-            Cada colección une calidad, oferta y propósito. Diseñadas por nuestro
-            equipo creativo.
-          </p>
-        </div>
-        <ScrollReveal>
-          {/* Misma retícula y proporción que las categorías: el cliente pidió
-              que estas tarjetas no fueran más anchas que aquéllas. */}
-          <div className="cat-grid collections-compact">
-            {featuredCollections.map((c, i) => (
-              <div
-                key={c.handle}
-                className="coll-card"
-                onClick={() => navigate(`/collections/${c.handle}`)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate(`/collections/${c.handle}`);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-              >
-                <div className="coll-card-img">
-                  <PH src={c.image} alt={c.title} zoom className="ph-square" />
-                  <div className="coll-card-tag">// {String(i + 1).padStart(2, '0')}</div>
-                </div>
-                <div className="coll-card-info">
-                  <div>
-                    <div className="coll-card-name">{c.title}</div>
-                    <div className="coll-card-meta">
-                      {c.description?.slice(0, 60) || 'Colección destacada'}
+          <ScrollReveal>
+            {/* Misma retícula y proporción que las categorías: el cliente pidió
+                que estas tarjetas no fueran más anchas que aquéllas. */}
+            <div className="cat-grid collections-compact">
+              {campanas.map((c, i) => (
+                <div
+                  key={c.handle}
+                  className="coll-card"
+                  onClick={() => navigate(campanaHref(c.handle))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(campanaHref(c.handle));
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                >
+                  <div className="coll-card-img">
+                    <PH src={c.portada} alt={c.titulo} zoom className="ph-square" />
+                    <div className="coll-card-tag">// {String(i + 1).padStart(2, '0')}</div>
+                  </div>
+                  <div className="coll-card-info">
+                    <div>
+                      <div className="coll-card-name">{c.titulo}</div>
+                      <div className="coll-card-meta">{c.tema}</div>
+                    </div>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        background: 'var(--bg-soft)',
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      <Icon name="arrow_right" size={16} />
                     </div>
                   </div>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: '50%',
-                      display: 'grid',
-                      placeItems: 'center',
-                      background: 'var(--bg-soft)',
-                      color: 'var(--ink)',
-                    }}
-                  >
-                    <Icon name="arrow_right" size={16} />
-                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </ScrollReveal>
+          <div style={{display: 'flex', justifyContent: 'center', marginTop: 32}}>
+            {/* /collections pasó a presentarse como "Categorías", así que el
+                cierre de esta sección lleva al catálogo de productos. */}
+            <Button
+              variant="ghost"
+              size="lg"
+              iconRight="arrow_right"
+              onClick={() => navigate('/catalogo')}
+            >
+              Ver todo el catálogo
+            </Button>
           </div>
-        </ScrollReveal>
-        <div style={{display: 'flex', justifyContent: 'center', marginTop: 32}}>
-          {/* /collections pasó a presentarse como "Categorías", así que el
-              cierre de esta sección lleva al catálogo de productos. */}
-          <Button
-            variant="ghost"
-            size="lg"
-            iconRight="arrow_right"
-            onClick={() => navigate('/catalogo')}
-          >
-            Ver todo el catálogo
-          </Button>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* PROCESS */}
       <div className="gi-mkt">

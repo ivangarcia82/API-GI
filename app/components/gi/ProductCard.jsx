@@ -91,7 +91,7 @@ export function AddControl({product, label, variant, size = 'sm', className = ''
         // Without one, send the user to the PDP to choose a variant instead of
         // creating a $0, imageless quote line.
         if (!variantId) {
-          navigate(`/products/${product.handle}`);
+          navigate(product.url || `/products/${product.handle}`);
           return;
         }
         addToQuote({
@@ -159,7 +159,7 @@ export function ProductCard({
      to compare a dozen products — while the card still reads as one target.
      Everything interactive on top of it needs z-index (see gi-screens.css). */
   const titleLink = (
-    <Link className="pcard-link" to={`/products/${product.handle}`} prefetch="intent">
+    <Link className="pcard-link" to={product.url || `/products/${product.handle}`} prefetch="intent">
       {product.title}
     </Link>
   );

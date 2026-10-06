@@ -32,13 +32,36 @@ import {
 import {getBrandColors, getColorVocabulary, getFacetValues} from '~/lib/brand-colors.server';
 import {applyCustomerPrices, getCustomerMargin} from '~/lib/pricing.server';
 import {brandVariantId} from '~/lib/brand-colors';
+import {campanaHref, campanaPorHandle, enColorDeCampana} from '~/lib/campanas';
 import {
   effectiveColorFamilies,
   visibleColorSelection,
   hayVocabulario,
 } from '~/lib/brand-colors';
 
-export const meta = () => [
+export const meta = ({data}) => (data?.campana ? metaCampana(data) : META_CATALOGO);
+
+/* La landing de temporada (/temporada/:handle, ver app/routes.js) sale de
+   este mismo módulo: título, texto e imagen de su colección de Shopify. */
+function metaCampana({campana, coleccion, origin}) {
+  const titulo = coleccion?.title || campana.titulo;
+  const desc =
+    coleccion?.description ||
+    `Artículos promocionales para ${titulo}. Personalízalos con tu marca y cotiza en línea.`;
+  const url = `${origin}${campanaHref(campana.handle)}`;
+  return [
+    {title: `${titulo} · Generando Ideas`},
+    {name: 'description', content: desc},
+    {tagName: 'link', rel: 'canonical', href: url},
+    {property: 'og:title', content: `${titulo} · Generando Ideas`},
+    {property: 'og:description', content: desc},
+    {property: 'og:type', content: 'website'},
+    {property: 'og:url', content: url},
+    ...(coleccion?.image?.url ? [{property: 'og:image', content: coleccion.image.url}] : []),
+  ];
+}
+
+const META_CATALOGO = [
   {title: 'Catálogo · Generando Ideas'},
   {
     name: 'description',
@@ -78,10 +101,32 @@ const listaDe = (facetas, id) =>
     .filter((v) => v.count > 0)
     .map((v) => ({value: v.label, label: v.label, count: v.count}));
 
-export async function loader({context, request}) {
+export async function loader(args) {
+  // Sin :handle es /catalogo; con él, la landing de una temporada.
+  const handle = args.params?.handle;
+  if (!handle) return cargarCatalogo(args);
+  const campana = campanaPorHandle(handle);
+  if (!campana) throw new Response('Campaña no encontrada', {status: 404});
+  const datos = await cargarCatalogo(args, {cat: campana.handle});
+  return {...datos, campana, origin: new URL(args.request.url).origin};
+}
+
+/**
+ * El catálogo, y también la landing de cada temporada. Con `cat` fijo la
+ * colección no sale de la URL sino de la ruta: los filtros, el orden y la
+ * paginación funcionan igual, pero no hay búsqueda de texto (sacaría los
+ * resultados de la colección) ni chip de categoría que quitar.
+ * @param {{context: object, request: Request}} args
+ * @param {{cat?: string}} [fijo]
+ */
+async function cargarCatalogo({context, request}, {cat} = {}) {
   const {storefront} = context;
   const url = new URL(request.url);
   const filtros = parseFilterParams(url.searchParams);
+  if (cat) {
+    filtros.cat = cat;
+    filtros.q = '';
+  }
   const paginationVariables = getPaginationVariables(request, {pageBy: 24});
   const sortDef = SORTS[filtros.sort];
 
@@ -206,7 +251,13 @@ export async function loader({context, request}) {
     // La colección no expone total: se marca como desconocido en vez de
     // enseñar un 0 que sería falso.
     totalCount: fuente.modo === 'coleccion' ? null : (resultado?.totalCount ?? 0),
-    filtros: appliedFilters(filtrosVisibles),
+    // Con la categoría fija, ni chip ni parámetro: la pone la ruta.
+    filtros: cat
+      ? {...appliedFilters(filtrosVisibles), cat: ''}
+      : appliedFilters(filtrosVisibles),
+    coleccion: coleccion
+      ? {title: coleccion.title, description: coleccion.description, image: coleccion.image}
+      : null,
     marcaColores,
     facetas: {
       colores,
@@ -301,6 +352,39 @@ export function ErrorBoundary() {
   );
 }
 
+/**
+ * Encabezado de la landing de temporada: el banner y, debajo, el título y el
+ * texto de la campaña. Los tres salen de la colección de Shopify; el título de
+ * la configuración sólo cubre una colección sin título.
+ */
+function EncabezadoCampana({campana, coleccion}) {
+  const titulo = coleccion?.title || campana.titulo;
+  return (
+    <header className="campana-hero">
+      <nav className="eyebrow cat-breadcrumb" aria-label="Ruta">
+        <Link to="/">Inicio</Link>
+        {' › '}
+        <span>Temporada</span>
+      </nav>
+      {coleccion?.image?.url && (
+        <div className="campana-banner">
+          <img
+            src={coleccion.image.url}
+            alt={coleccion.image.altText || titulo}
+            width={coleccion.image.width}
+            height={coleccion.image.height}
+            fetchPriority="high"
+          />
+        </div>
+      )}
+      <div className="campana-texto">
+        <h1>{titulo}</h1>
+        {coleccion?.description && <p>{coleccion.description}</p>}
+      </div>
+    </header>
+  );
+}
+
 const paginationLinkStyle = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -353,7 +437,17 @@ export function lineasDeSeleccion(productos, marcaColores) {
 }
 
 export default function Catalogo() {
-  const {products, totalCount, filtros, facetas, marcaColores = []} = useLoaderData();
+  const {campana} = useLoaderData();
+  return <CatalogoVista campana={campana} />;
+}
+
+/**
+ * @param {{campana?: {handle: string, titulo: string}}} props con campaña, la
+ *   página es su landing: encabezado con banner, sin búsqueda ni categorías.
+ */
+function CatalogoVista({campana = null}) {
+  const {products, totalCount, filtros, facetas, coleccion, marcaColores = []} =
+    useLoaderData();
   /* La ruta de colección no expone un total. Se escribe "productos" a secas en
      vez de inventar un número o enseñar un 0 que sería mentira. */
   const totalTexto =
@@ -465,7 +559,12 @@ export default function Catalogo() {
     aplicar(f);
   };
 
-  const limpiarTodo = () => navigate('/catalogo', {preventScrollReset: true});
+  const inicio = campana ? campanaHref(campana.handle) : '/catalogo';
+  const limpiarTodo = () => navigate(inicio, {preventScrollReset: true});
+  /* En la landing cada producto sale en el color de la campaña, salvo para un
+     cliente con paleta: a él sólo se le enseñan sus colores. */
+  const presentar = (p) =>
+    campana && !marcaColores.length ? enColorDeCampana(campana.handle, p) : p;
 
   const chips = activeChips(filtros, {categorias: CATEGORIAS_DEL_ARBOL});
   const hayFiltros = hasActiveFilters(filtros);
@@ -474,39 +573,43 @@ export default function Catalogo() {
   const {titulo, ruta, raiz} = encabezadoCatalogo(filtros);
 
   return (
-    <div className="container" data-screen-label="04 Catalog">
-      <div style={{padding: '32px 0 16px'}}>
-        {ruta.length ? (
-          <nav className="eyebrow cat-breadcrumb" aria-label="Ruta de la categoría">
-            <Link to="/catalogo">Catálogo</Link>
-            {ruta.map((n) => (
-              <span key={n.handle}>
-                {' › '}
-                <Link to={categoryHref(n.handle)}>{n.title}</Link>
-              </span>
-            ))}
-          </nav>
-        ) : (
-          <div className="eyebrow">// Catálogo · /catalogo</div>
-        )}
-        <h1
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 700,
-            fontSize: 'clamp(40px, 6vw, 80px)',
-            letterSpacing: '-0.035em',
-            lineHeight: 0.95,
-            margin: '12px 0 8px',
-          }}
-        >
-          {titulo}
-        </h1>
-        <p style={{color: 'var(--ink-3)', margin: 0, fontSize: 16}}>
-          {totalTexto}
-          {hayFiltros ? ' con los filtros aplicados' : ' en el catálogo'}. Combina
-          categoría, color, precio y acabados.
-        </p>
-      </div>
+    <div className="container" data-screen-label={campana ? `04b Temporada: ${campana.titulo}` : '04 Catalog'}>
+      {campana ? (
+        <EncabezadoCampana campana={campana} coleccion={coleccion} />
+      ) : (
+        <div style={{padding: '32px 0 16px'}}>
+          {ruta.length ? (
+            <nav className="eyebrow cat-breadcrumb" aria-label="Ruta de la categoría">
+              <Link to="/catalogo">Catálogo</Link>
+              {ruta.map((n) => (
+                <span key={n.handle}>
+                  {' › '}
+                  <Link to={categoryHref(n.handle)}>{n.title}</Link>
+                </span>
+              ))}
+            </nav>
+          ) : (
+            <div className="eyebrow">// Catálogo · /catalogo</div>
+          )}
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              fontSize: 'clamp(40px, 6vw, 80px)',
+              letterSpacing: '-0.035em',
+              lineHeight: 0.95,
+              margin: '12px 0 8px',
+            }}
+          >
+            {titulo}
+          </h1>
+          <p style={{color: 'var(--ink-3)', margin: 0, fontSize: 16}}>
+            {totalTexto}
+            {hayFiltros ? ' con los filtros aplicados' : ' en el catálogo'}. Combina
+            categoría, color, precio y acabados.
+          </p>
+        </div>
+      )}
 
       <ActiveFilterChips chips={chips} onRemove={quitarChip} onClearAll={limpiarTodo} />
 
@@ -523,7 +626,7 @@ export default function Catalogo() {
         <CatalogFilters
           filters={filtros}
           facets={facetas}
-          categorias={HOME_CATEGORIES}
+          categorias={campana ? null : HOME_CATEGORIES}
           categoriaActiva={raiz}
           onChange={aplicar}
           onClearAll={limpiarTodo}
@@ -535,28 +638,30 @@ export default function Catalogo() {
 
         <div>
           <div className="cat-toolbar">
-            <form className="cat-search" onSubmit={enviarBusqueda}>
-              <Icon name="search" size={14} />
-              <input
-                placeholder="Buscar producto, SKU o categoría…"
-                value={texto}
-                onChange={(e) => setTexto(e.target.value)}
-                aria-label="Buscar en el catálogo"
-              />
-              {texto && (
-                <button
-                  type="button"
-                  className="cat-search-clear"
-                  aria-label="Borrar búsqueda"
-                  onClick={() => {
-                    setTexto('');
-                    aplicar({...filtros, q: ''});
-                  }}
-                >
-                  <Icon name="x" size={13} />
-                </button>
-              )}
-            </form>
+{!campana && (
+              <form className="cat-search" onSubmit={enviarBusqueda}>
+                <Icon name="search" size={14} />
+                <input
+                  placeholder="Buscar producto, SKU o categoría…"
+                  value={texto}
+                  onChange={(e) => setTexto(e.target.value)}
+                  aria-label="Buscar en el catálogo"
+                />
+                {texto && (
+                  <button
+                    type="button"
+                    className="cat-search-clear"
+                    aria-label="Borrar búsqueda"
+                    onClick={() => {
+                      setTexto('');
+                      aplicar({...filtros, q: ''});
+                    }}
+                  >
+                    <Icon name="x" size={13} />
+                  </button>
+                )}
+              </form>
+            )}
             <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
               <span className="cat-results-meta">
                 {cargando ? 'Buscando…' : totalTexto}
@@ -604,7 +709,7 @@ export default function Catalogo() {
               nextPageUrl,
               state,
             }) => {
-              const visible = nodes.map(normalizeProduct).filter(Boolean);
+              const visible = nodes.map(normalizeProduct).filter(Boolean).map(presentar);
               return (
                 <>
                   {hasPreviousPage && (

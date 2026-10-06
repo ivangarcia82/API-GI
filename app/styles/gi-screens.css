@@ -2931,3 +2931,39 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
   border-radius: inherit;
   border: 1px dashed var(--line);
 }
+
+/* Landing de temporada (/temporada/:handle): el catálogo con la colección de
+   la campaña fija. El banner ya trae el título rotulado, así que va a lo ancho
+   y el texto de la campaña debajo, sin repetir el tamaño gigante del catálogo. */
+.campana-hero { padding: 24px 0 28px; }
+.campana-banner {
+  margin-top: 14px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--bg-soft);
+  aspect-ratio: 1440 / 800;
+}
+.campana-banner img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.campana-texto {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 12px 48px;
+  align-items: end;
+  margin-top: 32px;
+}
+.campana-texto h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(36px, 5vw, 64px);
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+.campana-texto p { margin: 0; color: var(--ink-3); font-size: 18px; line-height: 1.5; max-width: 60ch; }
+@media (max-width: 768px) {
+  .campana-banner { border-radius: 14px; }
+  .campana-texto { grid-template-columns: 1fr; margin-top: 20px; }
+  .campana-texto p { font-size: 16px; }
+}
+/* Sin buscador, lo que queda (conteo, orden, vista) se alinea a la derecha. */
+.cat-toolbar:has(> :only-child) { justify-content: flex-end; }
