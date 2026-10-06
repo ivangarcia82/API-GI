@@ -10,6 +10,7 @@ import {useApp, useToast} from '~/lib/AppContext';
 import {Button} from '~/components/gi/ui';
 import {folioVisible} from '~/lib/quotes/folio';
 import {quoteTotals} from '~/lib/quotes/discount';
+import {textoOpciones} from '~/lib/quotes/variantOptions';
 
 export const meta = () => [{title: 'Cotización · Generando Ideas'}];
 
@@ -174,7 +175,14 @@ export default function CotizacionDetail() {
                         }}
                       />
                     )}
-                    <span>{i.title}</span>
+                    <span>
+                      {i.title}
+                      {textoOpciones(i.options) && (
+                        <span style={{display: 'block', color: 'var(--ink-3)', fontSize: 13}}>
+                          {textoOpciones(i.options)}
+                        </span>
+                      )}
+                    </span>
                   </div>
                 </td>
                 <td>

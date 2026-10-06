@@ -125,6 +125,9 @@ export async function migrate(db) {
   // Idempotent column additions for databases created before the column
   // existed (CREATE TABLE IF NOT EXISTS won't alter an existing table).
   await addColumnIfMissing(db, 'quote_items', 'image', 'TEXT');
+  // Color, talla… de la variante cotizada, como JSON [{name, value}]. NULL en
+  // las líneas anteriores al cambio; el envío las rellena al repreciar.
+  await addColumnIfMissing(db, 'quote_items', 'variant_options', 'TEXT');
   // Folio legible; NULL en las cotizaciones anteriores al cambio, que siguen
   // mostrando su UUID. No se numeran hacia atrás: ya circularon así.
   await addColumnIfMissing(db, 'quotes', 'folio', 'TEXT');

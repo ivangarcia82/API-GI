@@ -54,6 +54,31 @@ export function QuoteDrawer() {
     }
   }, [quoteDrawerOpen]);
 
+  /* Al enviar, la hoja de la cotización se carga fuera de pantalla con
+     ?descargar=1 y baja sola el PDF (ver print.cotizacion.$id.jsx). Avisa por
+     postMessage cuando termina, y entonces el iframe se retira. */
+  const [descargando, setDescargando] = useState(false);
+  useEffect(() => {
+    if (!descargando) return undefined;
+    const alTerminar = (e) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.tipo === 'cotizacion-descargada') {
+        setDescargando(false);
+        toast('Descargamos el PDF de tu cotización', {icon: 'check', accent: true});
+      } else if (e.data?.tipo === 'cotizacion-sin-descarga') {
+        setDescargando(false);
+      }
+    };
+    window.addEventListener('message', alTerminar);
+    // Si algo se cuelga, el botón de "Descargar PDF" sigue ahí.
+    const tope = setTimeout(() => setDescargando(false), 60000);
+    return () => {
+      window.removeEventListener('message', alTerminar);
+      clearTimeout(tope);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [descargando]);
+
   // Reconcile the submit response.
   useEffect(() => {
     const data = submitFetcher.data;
@@ -64,6 +89,7 @@ export function QuoteDrawer() {
       }
       if (data.folio && !result) {
         setResult(data);
+        if (data.quoteId) setDescargando(true);
         toast('Cotización enviada · respuesta en menos de 24h', {icon: 'check', accent: true});
         // The quote is already finalized server-side; clearing local state is
         // best-effort cleanup, so swallow any failure here.
@@ -158,7 +184,26 @@ export function QuoteDrawer() {
         <p style={{fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink-3)'}}>
           Folio · {result.folio}
         </p>
+        {result.quoteId && descargando && (
+          <iframe
+            title="Generando el PDF de la cotización"
+            src={`/print/cotizacion/${result.quoteId}?descargar=1`}
+            aria-hidden="true"
+            tabIndex={-1}
+            className="qd-pdf-frame"
+          />
+        )}
         <div style={{display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap'}}>
+          {result.quoteId && (
+            <a
+              className="btn btn-ghost"
+              href={`/print/cotizacion/${result.quoteId}?descargar=1`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {descargando ? 'Generando PDF…' : 'Descargar PDF'}
+            </a>
+          )}
           <Button variant="primary" iconRight="arrow_right" onClick={() => goAndClose('/account/cotizaciones')}>
             Ver mis cotizaciones
           </Button>

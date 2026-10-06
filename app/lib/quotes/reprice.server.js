@@ -4,6 +4,7 @@
 // y el margen o el costo pudieron cambiar entretanto).
 import {recomputeItemPricing} from './recompute.js';
 import {resolveBasePrices} from '../pricing.server.js';
+import {opcionesDeVariante} from './variantOptions.js';
 
 const LIST_PRICES_QUERY = `#graphql
   query QuoteListPrices($ids: [ID!]!) {
@@ -11,6 +12,7 @@ const LIST_PRICES_QUERY = `#graphql
       ... on ProductVariant {
         id
         price { amount }
+        selectedOptions { name value }
       }
     }
   }
@@ -35,6 +37,14 @@ export async function repriceItems(context, items) {
   }
 
   const vivas = (nodes || []).filter((n) => n?.id && n.price?.amount != null);
+  /* Las líneas guardadas antes de que existiera variant_options llegan sin
+     color ni talla: se completan aquí, que es justo antes de emitir el PDF y
+     los correos. */
+  const opcionesPorId = new Map(vivas.map((n) => [n.id, opcionesDeVariante(n.selectedOptions)]));
+  const conOpciones = (item) =>
+    item.options?.length || !opcionesPorId.get(item.variantId)?.length
+      ? item
+      : {...item, options: opcionesPorId.get(item.variantId)};
   let bases;
   try {
     // Estricto: si el margen o los costos no se pudieron leer, un cliente con
@@ -46,12 +56,12 @@ export async function repriceItems(context, items) {
     );
   } catch (error) {
     console.error('[quote.reprice] no se pudo resolver el precio del cliente:', error);
-    return items;
+    return items.map(conOpciones);
   }
 
   return items.map((item) => {
     // La variante se retiró de la tienda: se queda con el precio con que se cotizó.
-    if (!bases.has(item.variantId)) return item;
+    if (!bases.has(item.variantId)) return conOpciones(item);
     const priced = recomputeItemPricing({
       baseUnitPrice: bases.get(item.variantId),
       technique: item.technique,
@@ -59,9 +69,9 @@ export async function repriceItems(context, items) {
       size: item.size,
       qty: item.qty,
     });
-    if (priced.error) return item;
+    if (priced.error) return conOpciones(item);
     return {
-      ...item,
+      ...conOpciones(item),
       baseUnitPrice: priced.baseUnitPrice,
       decorationTotal: priced.decorationTotal,
       effectiveUnitPrice: priced.effectiveUnitPrice,

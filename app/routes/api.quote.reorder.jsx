@@ -48,6 +48,7 @@ export async function action({request, context}) {
       title: item.title,
       qty: item.qty,
       image: item.image,
+      options: item.options,
       baseUnitPrice: priced.baseUnitPrice,
       technique: item.technique,
       surface: item.surface,

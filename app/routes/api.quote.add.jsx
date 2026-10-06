@@ -5,6 +5,7 @@ import {getOrCreateDraftQuote, upsertQuoteItem, getQuoteWithItems} from '~/lib/q
 import {recomputeItemPricing} from '~/lib/quotes/recompute';
 import {getTechniques} from '~/lib/decoration/engine';
 import {resolveBasePrices} from '~/lib/pricing.server';
+import {opcionesDeVariante} from '~/lib/quotes/variantOptions';
 
 // Authoritative product data for pricing: base price/image PLUS the decoration
 // metafields (material = surface, tecnicas_de_impresion = offered techniques).
@@ -16,6 +17,7 @@ const PRODUCT_PRICE_QUERY = `#graphql
       ... on ProductVariant {
         id
         title
+        selectedOptions { name value }
         price { amount }
         image { url }
         product {
@@ -100,6 +102,7 @@ export async function action({request, context}) {
     title: node.product?.title ?? node.title ?? null,
     qty,
     image,
+    options: opcionesDeVariante(node.selectedOptions),
     baseUnitPrice: priced.baseUnitPrice,
     technique: technique || null,
     surface: wantsDecoration ? authoritativeSurface || null : null,

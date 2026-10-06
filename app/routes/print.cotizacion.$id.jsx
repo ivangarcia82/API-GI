@@ -12,6 +12,7 @@ import {getCustomerAdvisor} from '~/lib/admin/operations';
 import {NOTAS_IMPORTANTES} from '~/lib/quotes/notasImportantes';
 import {folioVisible} from '~/lib/quotes/folio';
 import {BRAND} from '~/lib/site-content';
+import {textoOpciones} from '~/lib/quotes/variantOptions';
 
 const NARANJA = '#ff8300';
 
@@ -36,7 +37,9 @@ function descripcion(item) {
     item.technique && item.technique !== 'Sin decorado'
       ? [item.technique, item.size].filter(Boolean).join(' ')
       : null;
-  return [item.title, decorado].filter(Boolean);
+  // Color y talla debajo del nombre: sin ellos, dos tallas del mismo producto
+  // eran dos renglones idénticos.
+  return [item.title, textoOpciones(item.options), decorado];
 }
 
 /**
@@ -54,7 +57,20 @@ function firma(advisor) {
   };
 }
 
-export async function loader({params, context}) {
+/* El PDF se arma en el navegador con html2pdf (html2canvas + jsPDF) a partir
+   de esta misma hoja: no hay servicio de PDF que mantener en el servidor. A
+   cambio, el archivo es una imagen de la hoja (el texto no se selecciona).
+   Con ?descargar=1 se descarga solo al cargar; así lo usa el cajón al enviar
+   la cotización, desde un iframe fuera de pantalla. */
+const HTML2PDF = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.3/html2pdf.bundle.min.js';
+
+/** Nombre del archivo: el folio, sin lo que un sistema de archivos rechaza. */
+export function nombreArchivo(folio) {
+  return `${String(folio || 'Cotizacion').replace(/[\\/:*?"<>|]+/g, '-')}.pdf`;
+}
+
+export async function loader({params, context, request}) {
+  const descargar = request ? new URL(request.url).searchParams.get('descargar') === '1' : false;
   const sessionUser = await requireUser(context);
   const db = getDb(context.env);
   const {quote, items} = await getQuoteWithItems(db, params.id);
@@ -93,7 +109,7 @@ export async function loader({params, context}) {
 
   const rows = items
     .map((i, idx) => {
-      const [titulo, decorado] = descripcion(i);
+      const [titulo, opciones, decorado] = descripcion(i);
       return `
         <tr>
           <td class="c">${idx + 1}</td>
@@ -104,6 +120,7 @@ export async function loader({params, context}) {
           }</td>
           <td>
             <strong>${esc(titulo)}</strong>
+            ${opciones ? `<div class="sub">${esc(opciones)}</div>` : ''}
             ${decorado ? `<div class="sub">${esc(decorado)}</div>` : ''}
           </td>
           <td class="c">${i.qty}</td>
@@ -131,7 +148,12 @@ export async function loader({params, context}) {
   .hoja { max-width: 820px; margin: 0 auto; }
 
   .actions { margin-bottom: 20px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .actions button { font: inherit; padding: 10px 20px; border: 1px solid #14110a; background: #14110a; color: #fff; border-radius: 999px; cursor: pointer; }
+  .actions button.sec { background: #fff; color: #14110a; }
+  .actions button:disabled { opacity: 0.6; cursor: progress; }
+  /* Mientras se genera el PDF los botones no salen en la imagen. */
+  body.generando .actions { display: none; }
 
   .encabezado { text-align: center; padding-bottom: 20px; }
   .encabezado img { height: 46px; }
@@ -185,10 +207,14 @@ export async function loader({params, context}) {
 </head>
 <body>
   <div class="hoja">
-    <div class="actions"><button onclick="window.print()">Imprimir / Guardar PDF</button></div>
+    <div class="actions">
+      <button type="button" id="descargar">Descargar PDF</button>
+      <button type="button" class="sec" onclick="window.print()">Imprimir</button>
+    </div>
 
     <div class="encabezado">
-      <img src="/brand/gi-logo-horizontal.svg" alt="Generando Ideas" />
+      <!-- PNG y no SVG: html2canvas, que arma el PDF, no pinta bien el SVG. -->
+      <img src="/brand/gi-logo-horizontal-email.png" alt="Generando Ideas" />
     </div>
 
     <div class="datos">
@@ -255,6 +281,42 @@ export async function loader({params, context}) {
       <div><a href="mailto:${esc(BRAND.email)}">${esc(BRAND.email)}</a> · <a href="https://www.generandoideas.com">www.generandoideas.com</a></div>
     </div>
   </div>
+  <script src="${HTML2PDF}"></script>
+  <script>
+    (function () {
+      var NOMBRE = ${JSON.stringify(nombreArchivo(folio)).replace(/</g, '\\u003c')};
+      var AUTO = ${descargar ? 'true' : 'false'};
+      var boton = document.getElementById('descargar');
+      function avisar(tipo) {
+        if (window.parent !== window) window.parent.postMessage({tipo: tipo}, location.origin);
+      }
+      function descargar() {
+        if (!window.html2pdf) { window.print(); return Promise.resolve(); }
+        boton.disabled = true;
+        document.body.classList.add('generando');
+        return window.html2pdf()
+          .set({
+            margin: [8, 8, 8, 8],
+            filename: NOMBRE,
+            image: {type: 'jpeg', quality: 0.95},
+            html2canvas: {scale: 2, useCORS: true},
+            jsPDF: {unit: 'mm', format: 'letter', orientation: 'portrait'},
+            pagebreak: {mode: ['css', 'legacy'], avoid: ['tr', '.totales', '.notas', '.atte', '.pie']},
+          })
+          .from(document.querySelector('.hoja'))
+          .save()
+          .then(function () { avisar('cotizacion-descargada'); })
+          .catch(function () { avisar('cotizacion-sin-descarga'); })
+          .finally(function () {
+            boton.disabled = false;
+            document.body.classList.remove('generando');
+          });
+      }
+      boton.addEventListener('click', descargar);
+      // Las imágenes de los productos tienen que estar cargadas antes de la foto.
+      if (AUTO) window.addEventListener('load', descargar);
+    })();
+  </script>
 </body>
 </html>`;
 

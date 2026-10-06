@@ -6,6 +6,7 @@ import {recomputeItemPricing} from '~/lib/quotes/recompute';
 import {getTechniques} from '~/lib/decoration/engine';
 import {resolveBasePrices} from '~/lib/pricing.server';
 import {MAX_GUEST_LINES} from '~/lib/quote-guest';
+import {opcionesDeVariante} from '~/lib/quotes/variantOptions';
 
 // Migra el carrito que el invitado armo en localStorage al borrador del
 // usuario que acaba de entrar. El cuerpo trae SÓLO intención (variante,
@@ -21,6 +22,7 @@ const VARIANTS_QUERY = `#graphql
       ... on ProductVariant {
         id
         title
+        selectedOptions { name value }
         price { amount }
         image { url }
         product {
@@ -148,6 +150,7 @@ export async function action({request, context}) {
       title: node.product?.title ?? node.title ?? null,
       qty: linea.qty,
       image: node.image?.url ?? node.product?.featuredImage?.url ?? null,
+      options: opcionesDeVariante(node.selectedOptions),
       baseUnitPrice: priced.baseUnitPrice,
       technique: linea.technique || null,
       surface: quiereDecorado ? surface || null : null,

@@ -888,6 +888,9 @@ export type QuoteListPricesQuery = {
     StorefrontAPI.Maybe<
       Pick<StorefrontAPI.ProductVariant, 'id'> & {
         price: Pick<StorefrontAPI.MoneyV2, 'amount'>;
+        selectedOptions: Array<
+          Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
+        >;
       }
     >
   >;
@@ -985,6 +988,9 @@ export type QuoteVariantQueryVariables = StorefrontAPI.Exact<{
 export type QuoteVariantQuery = {
   node?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.ProductVariant, 'id' | 'title'> & {
+      selectedOptions: Array<
+        Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
+      >;
       price: Pick<StorefrontAPI.MoneyV2, 'amount'>;
       image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'url'>>;
       product: Pick<StorefrontAPI.Product, 'handle' | 'title'> & {
@@ -1009,6 +1015,9 @@ export type QuoteMergeVariantsQuery = {
   nodes: Array<
     StorefrontAPI.Maybe<
       Pick<StorefrontAPI.ProductVariant, 'id' | 'title'> & {
+        selectedOptions: Array<
+          Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
+        >;
         price: Pick<StorefrontAPI.MoneyV2, 'amount'>;
         image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'url'>>;
         product: Pick<StorefrontAPI.Product, 'handle' | 'title'> & {
@@ -1771,7 +1780,7 @@ interface GeneratedQueryTypes {
     return: CampanaMochilasQuery;
     variables: CampanaMochilasQueryVariables;
   };
-  '#graphql\n  query QuoteListPrices($ids: [ID!]!) {\n    nodes(ids: $ids) {\n      ... on ProductVariant {\n        id\n        price { amount }\n      }\n    }\n  }\n': {
+  '#graphql\n  query QuoteListPrices($ids: [ID!]!) {\n    nodes(ids: $ids) {\n      ... on ProductVariant {\n        id\n        price { amount }\n        selectedOptions { name value }\n      }\n    }\n  }\n': {
     return: QuoteListPricesQuery;
     variables: QuoteListPricesQueryVariables;
   };
@@ -1779,11 +1788,11 @@ interface GeneratedQueryTypes {
     return: FavoritosNodesQuery;
     variables: FavoritosNodesQueryVariables;
   };
-  '#graphql\n  query QuoteVariant($id: ID!) {\n    node(id: $id) {\n      ... on ProductVariant {\n        id\n        title\n        price { amount }\n        image { url }\n        product {\n          handle\n          title\n          featuredImage { url }\n          metafields(identifiers: [\n            {namespace: "custom", key: "material"},\n            {namespace: "custom", key: "tecnicas_de_impresion"}\n          ]) { namespace key value }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query QuoteVariant($id: ID!) {\n    node(id: $id) {\n      ... on ProductVariant {\n        id\n        title\n        selectedOptions { name value }\n        price { amount }\n        image { url }\n        product {\n          handle\n          title\n          featuredImage { url }\n          metafields(identifiers: [\n            {namespace: "custom", key: "material"},\n            {namespace: "custom", key: "tecnicas_de_impresion"}\n          ]) { namespace key value }\n        }\n      }\n    }\n  }\n': {
     return: QuoteVariantQuery;
     variables: QuoteVariantQueryVariables;
   };
-  '#graphql\n  query QuoteMergeVariants($ids: [ID!]!) {\n    nodes(ids: $ids) {\n      ... on ProductVariant {\n        id\n        title\n        price { amount }\n        image { url }\n        product {\n          handle\n          title\n          featuredImage { url }\n          metafields(identifiers: [\n            {namespace: "custom", key: "material"},\n            {namespace: "custom", key: "tecnicas_de_impresion"}\n          ]) { namespace key value }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query QuoteMergeVariants($ids: [ID!]!) {\n    nodes(ids: $ids) {\n      ... on ProductVariant {\n        id\n        title\n        selectedOptions { name value }\n        price { amount }\n        image { url }\n        product {\n          handle\n          title\n          featuredImage { url }\n          metafields(identifiers: [\n            {namespace: "custom", key: "material"},\n            {namespace: "custom", key: "tecnicas_de_impresion"}\n          ]) { namespace key value }\n        }\n      }\n    }\n  }\n': {
     return: QuoteMergeVariantsQuery;
     variables: QuoteMergeVariantsQueryVariables;
   };

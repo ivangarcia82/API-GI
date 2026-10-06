@@ -193,5 +193,6 @@ export async function action({request, context}) {
 
   // Never surface a stub invoice URL to the user.
   const safeInvoiceUrl = isStubMode(env) ? null : invoiceUrl;
-  return Response.json({folio, draftOrderGid: gid, invoiceUrl: safeInvoiceUrl});
+  // quoteId: el cajón lo usa para descargar el PDF en cuanto se envía.
+  return Response.json({folio, quoteId: quote.id, draftOrderGid: gid, invoiceUrl: safeInvoiceUrl});
 }

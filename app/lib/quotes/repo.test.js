@@ -87,6 +87,21 @@ describe('quotes/repo', () => {
     expect(got.items).toHaveLength(0);
   });
 
+  it('guarda el color y la talla de la variante y los devuelve', async () => {
+    const q = await getOrCreateDraftQuote(db, USER);
+    const options = [{name: 'Color', value: 'ROSA'}, {name: 'Talla', value: 'M'}];
+    await upsertQuoteItem(db, q.id, {id: 'item-1', quoteId: q.id, ...sampleItem({options})});
+    const got = await getQuoteWithItems(db, q.id);
+    expect(got.items[0].options).toEqual(options);
+  });
+
+  it('una línea sin variante elegida se lee con opciones vacías', async () => {
+    const q = await getOrCreateDraftQuote(db, USER);
+    await upsertQuoteItem(db, q.id, {id: 'item-1', quoteId: q.id, ...sampleItem()});
+    const got = await getQuoteWithItems(db, q.id);
+    expect(got.items[0].options).toEqual([]);
+  });
+
   it('listUserQuotes returns quotes for the user', async () => {
     const q = await getOrCreateDraftQuote(db, USER);
     const list = await listUserQuotes(db, USER);

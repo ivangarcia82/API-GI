@@ -4,6 +4,8 @@
 // the variant's catalog price). Falls back to a custom line (no image) only when
 // there is no real ProductVariant gid. Decoration detail rides as a line attribute.
 
+import {textoOpciones} from './variantOptions.js';
+
 const CURRENCY = 'MXN';
 
 function hasDecoration(item) {
@@ -15,11 +17,15 @@ function isVariantGid(variantId) {
 }
 
 function lineTitle(item) {
+  // La línea personalizada no trae la variante de Shopify: el color y la talla
+  // van en el título para que el equipo sepa qué surtir.
+  const opciones = textoOpciones(item.options);
+  const titulo = opciones ? `${item.title} (${opciones})` : item.title;
   if (hasDecoration(item)) {
     const parts = [item.technique, item.size].filter(Boolean).join(' ');
-    return `${item.title} — ${parts}`.trim();
+    return `${titulo} — ${parts}`.trim();
   }
-  return item.title;
+  return titulo;
 }
 
 /** The decoration descriptor as a line attribute (empty when "Sin decorado"). */

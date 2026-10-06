@@ -58,8 +58,33 @@ describe('repriceItems ante un fallo del margen o los costos', () => {
     storefrontQuery.mockResolvedValue({nodes: [{id: V(1), price: {amount: '120.0'}}]});
     resolveBasePrices.mockRejectedValue(new Error('Admin caído'));
     const items = [item()];
-    expect(await repriceItems(ctx(), items)).toBe(items);
+    // Mismos precios guardados; sólo podría sumar color y talla si faltaban.
+    expect(await repriceItems(ctx(), items)).toEqual(items);
     expect(resolveBasePrices.mock.calls[0][2]).toEqual({strict: true});
     error.mockRestore();
+  });
+});
+
+describe('repriceItems completa color y talla', () => {
+  it('a las líneas guardadas antes de que existieran', async () => {
+    storefrontQuery.mockResolvedValue({
+      nodes: [{
+        id: V(1),
+        price: {amount: '120.0'},
+        selectedOptions: [{name: 'Color', value: 'ROSA'}, {name: 'Talla', value: 'M'}],
+      }],
+    });
+    resolveBasePrices.mockResolvedValue(new Map([[V(1), 120]]));
+    const [out] = await repriceItems(ctx(), [item()]);
+    expect(out.options).toEqual([{name: 'Color', value: 'ROSA'}, {name: 'Talla', value: 'M'}]);
+  });
+
+  it('sin pisar las que ya trae la línea', async () => {
+    storefrontQuery.mockResolvedValue({
+      nodes: [{id: V(1), price: {amount: '120.0'}, selectedOptions: [{name: 'Color', value: 'AZUL'}]}],
+    });
+    resolveBasePrices.mockResolvedValue(new Map([[V(1), 120]]));
+    const [out] = await repriceItems(ctx(), [item({options: [{name: 'Color', value: 'ROSA'}]})]);
+    expect(out.options).toEqual([{name: 'Color', value: 'ROSA'}]);
   });
 });

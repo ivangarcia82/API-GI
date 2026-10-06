@@ -34,3 +34,20 @@ describe('itemsTableHtml · cupón', () => {
     expect(pie(html)).toEqual(['10,000.00']);
   });
 });
+
+describe('itemsTableHtml · variante', () => {
+  it('pone el color y la talla debajo del producto', () => {
+    const html = itemsTableHtml([
+      {title: 'Playera Liberty', qty: 50, technique: 'Sin decorado', effectiveUnitPrice: 120,
+        options: [{name: 'Color', value: 'ROSA'}, {name: 'Talla', value: 'M'}]},
+    ]);
+    expect(html).toContain('Color: ROSA · Talla: M');
+  });
+
+  it('una línea sin opciones no deja un renglón vacío', () => {
+    const html = itemsTableHtml([
+      {title: 'Taza', qty: 10, technique: 'Sin decorado', effectiveUnitPrice: 30, options: []},
+    ]);
+    expect(html).not.toContain('font-size:12px;margin-top:2px');
+  });
+});

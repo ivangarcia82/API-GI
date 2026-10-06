@@ -7,6 +7,7 @@ import {advisorCanSee} from '~/lib/quotes/advisorAccess';
 import {folioVisible} from '~/lib/quotes/folio';
 import {quoteTotals} from '~/lib/quotes/discount';
 import {formatPrice} from '~/lib/gi';
+import {textoOpciones} from '~/lib/quotes/variantOptions';
 
 export const meta = () => [{title: 'Cotización asignada · Generando Ideas'}];
 
@@ -109,6 +110,9 @@ export default function AsesorCotizacionDetalle() {
               <div>
                 <strong>{i.title}</strong>
               </div>
+              {textoOpciones(i.options) && (
+                <div style={{color: 'var(--ink-3)', fontSize: 13}}>{textoOpciones(i.options)}</div>
+              )}
               {i.technique && i.technique !== 'Sin decorado' && (
                 <div style={{color: 'var(--ink-3)', fontSize: 13}}>
                   {[i.technique, i.size].filter(Boolean).join(' ')}

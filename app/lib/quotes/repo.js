@@ -1,7 +1,8 @@
 // Server-only: persistence for quotes and quote items (Turso / libSQL).
 // Quote shape: {id,userId,status,folio,notes,deadline,shopifyDraftOrderGid,shopifyInvoiceUrl}
-// Item shape:  {id,quoteId,variantId,productHandle,title,qty,baseUnitPrice,technique,surface,size,decorationTotal,effectiveUnitPrice}
+// Item shape:  {id,quoteId,variantId,productHandle,title,qty,baseUnitPrice,technique,surface,size,decorationTotal,effectiveUnitPrice,image,options}
 import {nextFolio} from './folio.js';
+import {leerOpciones, guardarOpciones} from './variantOptions.js';
 
 function nowIso() {
   return new Date().toISOString();
@@ -45,6 +46,7 @@ function mapItemRow(r) {
     decorationTotal: Number(r.decoration_total),
     effectiveUnitPrice: Number(r.effective_unit_price),
     image: r.image ?? null,
+    options: leerOpciones(r.variant_options),
   };
 }
 
@@ -91,8 +93,8 @@ export async function upsertQuoteItem(db, quoteId, item) {
   const ts = nowIso();
   await db.execute({
     sql: `INSERT INTO quote_items
-            (id,quote_id,variant_id,product_handle,title,qty,base_unit_price,technique,surface,size,decoration_total,effective_unit_price,image,created_at)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            (id,quote_id,variant_id,product_handle,title,qty,base_unit_price,technique,surface,size,decoration_total,effective_unit_price,image,variant_options,created_at)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
           ON CONFLICT(id) DO UPDATE SET
             variant_id=excluded.variant_id,
             product_handle=excluded.product_handle,
@@ -104,7 +106,8 @@ export async function upsertQuoteItem(db, quoteId, item) {
             size=excluded.size,
             decoration_total=excluded.decoration_total,
             effective_unit_price=excluded.effective_unit_price,
-            image=excluded.image`,
+            image=excluded.image,
+            variant_options=excluded.variant_options`,
     args: [
       item.id,
       quoteId,
@@ -119,6 +122,7 @@ export async function upsertQuoteItem(db, quoteId, item) {
       item.decorationTotal ?? 0,
       item.effectiveUnitPrice,
       item.image ?? null,
+      guardarOpciones(item.options),
       ts,
     ],
   });

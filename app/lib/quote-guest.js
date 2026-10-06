@@ -7,6 +7,7 @@
    localStorage manipulado no puede abaratar nada.
    ============================================================ */
 import {recomputeItemPricing} from '~/lib/quotes/recompute';
+import {opcionesDeVariante} from '~/lib/quotes/variantOptions';
 
 /** Técnica por defecto cuando el botón no pasó por el selector de decorado. */
 const SIN_DECORADO = 'Sin decorado';
@@ -46,6 +47,7 @@ export function normalizeGuestLine(input, now) {
     productHandle: texto(input?.productHandle ?? input?.handle),
     title: texto(input?.title),
     image: input?.image ?? null,
+    options: opcionesDeVariante(input?.options),
     baseUnitPrice: precio(input?.baseUnitPrice ?? input?.price),
     addedAt: now,
   };

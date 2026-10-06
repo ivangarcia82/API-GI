@@ -2967,3 +2967,15 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
 }
 /* Sin buscador, lo que queda (conteo, orden, vista) se alinea a la derecha. */
 .cat-toolbar:has(> :only-child) { justify-content: flex-end; }
+
+/* La hoja de la cotización que genera el PDF al enviar. Fuera de pantalla y no
+   con display:none: html2canvas necesita que tenga ancho de página real. */
+.qd-pdf-frame {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 900px;
+  height: 1200px;
+  border: 0;
+  pointer-events: none;
+}

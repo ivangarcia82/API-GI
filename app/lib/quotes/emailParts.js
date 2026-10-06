@@ -2,6 +2,7 @@
 // Kept in one place so both templates render an identical items table.
 import {escapeHtml} from '../email/escape.js';
 import {quoteTotals} from './discount.js';
+import {textoOpciones} from './variantOptions.js';
 
 // Re-exportado para no romper a quien ya lo importa desde aquí.
 export {escapeHtml};
@@ -44,7 +45,11 @@ export function itemsTableHtml(items, {totalLabel = 'Total', discount = null} = 
     .map(
       (i) => `
       <tr>
-        <td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(i.title)}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(i.title)}${
+          textoOpciones(i.options)
+            ? `<div style="color:#666;font-size:12px;margin-top:2px">${escapeHtml(textoOpciones(i.options))}</div>`
+            : ''
+        }</td>
         <td style="padding:6px 10px;border-bottom:1px solid #eee">${escapeHtml(decorationLabel(i))}</td>
         <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right">${i.qty}</td>
         <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right">$${money(i.effectiveUnitPrice)}</td>

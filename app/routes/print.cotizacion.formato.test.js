@@ -89,7 +89,7 @@ describe('formato de cotización · identidad y folio', () => {
 
   it('lleva el logo en el encabezado y el lema en el pie', async () => {
     const html = await render();
-    expect(html).toContain('/brand/gi-logo-horizontal.svg');
+    expect(html).toContain('/brand/gi-logo-horizontal-email.png');
     expect(html).toContain('YOUR ONE STOP SOLUTION');
     expect(html).toContain('www.generandoideas.com');
   });
@@ -227,5 +227,32 @@ describe('formato de cotización · cupón', () => {
     // IVA del neto (11,592.80), no de los 14,491 originales.
     expect(iva).toContain('1,854.85');
     expect(total).toContain('13,447.65');
+  });
+});
+
+describe('formato de cotización · variante y descarga', () => {
+  it('pone el color y la talla debajo del nombre del producto', async () => {
+    getQuoteWithItems.mockResolvedValueOnce({
+      quote: {id: 'q1', userId: 'u1', folio: 'GIP.Web.Cotización_007'},
+      items: [{...ITEMS[0], options: [{name: 'Color', value: 'ROSA'}, {name: 'Talla', value: 'M'}]}],
+    });
+    expect(await render()).toContain('Color: ROSA · Talla: M');
+  });
+
+  it('con ?descargar=1 baja el PDF solo, con el folio como nombre', async () => {
+    const res = await loader({
+      params: {id: 'q1'},
+      context,
+      request: new Request('https://gi.test/print/cotizacion/q1?descargar=1'),
+    });
+    const html = await res.text();
+    expect(html).toContain('var AUTO = true');
+    expect(html).toContain('GIV.CDMX.20260007.pdf');
+  });
+
+  it('sin el parámetro sólo ofrece el botón', async () => {
+    const html = await render();
+    expect(html).toContain('var AUTO = false');
+    expect(html).toContain('Descargar PDF');
   });
 });
