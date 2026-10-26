@@ -896,16 +896,6 @@ export type QuoteListPricesQuery = {
   >;
 };
 
-export type CampanaConProductosQueryVariables = StorefrontAPI.Exact<{
-  handle: StorefrontAPI.Scalars['String']['input'];
-}>;
-
-export type CampanaConProductosQuery = {
-  collection?: StorefrontAPI.Maybe<{
-    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
-  }>;
-};
-
 export type FavoritosNodesQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -1766,10 +1756,6 @@ interface GeneratedQueryTypes {
   '#graphql\n  query QuoteListPrices($ids: [ID!]!) {\n    nodes(ids: $ids) {\n      ... on ProductVariant {\n        id\n        price { amount }\n        selectedOptions { name value }\n      }\n    }\n  }\n': {
     return: QuoteListPricesQuery;
     variables: QuoteListPricesQueryVariables;
-  };
-  '#graphql\n  query CampanaConProductos($handle: String!) {\n    collection(handle: $handle) { products(first: 1) { nodes { id } } }\n  }\n': {
-    return: CampanaConProductosQuery;
-    variables: CampanaConProductosQueryVariables;
   };
   '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        options { name optionValues { name } }\n        variants(first: 1) { nodes { id price { amount currencyCode } } }\n      }\n    }\n  }\n': {
     return: FavoritosNodesQuery;

@@ -6,15 +6,11 @@
        cambia desde el admin sin deploy.
      - Productos: la etiqueta. La pone scripts/campanas.mjs a partir del Excel
        de SKUs (scripts/campanas/skus.json).
-     - Cuándo sale en el home y con qué portada: aquí. Sin portada, o con la
-       colección vacía, no sale.
+     - Qué sale en el home y con qué portada: aquí. Sale toda campaña con
+       portada, en el orden de esta lista; sin portada no sale.
      - `tags`: las etiquetas que junta la colección (cualquiera de ellas).
        `tag` es la que pone el script; `tags` suma las que pone el equipo a
-       mano en Shopify. Sin `tags`, la colección usa sólo `tag`.
-
-   Las fechas son mes-día (MM-DD) en hora de México y se repiten cada año. Una
-   ventana que cruza el año (12-26 → 01-15) también vale. La landing sigue
-   abierta fuera de su ventana: sólo deja de anunciarse en el home. */
+       mano en Shopify. Sin `tags`, la colección usa sólo `tag`. */
 import variantes from './campanas-variantes.js';
 
 export const CAMPANAS = [
@@ -22,8 +18,6 @@ export const CAMPANAS = [
     handle: 'octubre-rosa',
     titulo: 'Octubre Rosa',
     tag: 'Campaña_OctubreRosa',
-    desde: '10-01',
-    hasta: '10-31',
     portada: '/campanas/octubre-rosa-portada.jpg',
     tema: 'Prevención y detección oportuna',
   },
@@ -31,8 +25,6 @@ export const CAMPANAS = [
     handle: 'dia-de-muertos',
     titulo: 'Día de Muertos',
     tag: 'Campaña_DiaDeMuertos',
-    desde: '10-15',
-    hasta: '11-02',
     portada: null,
     tema: 'Tradición mexicana',
   },
@@ -40,8 +32,6 @@ export const CAMPANAS = [
     handle: 'navidad',
     titulo: 'Navidad',
     tag: 'Campaña_Navidad',
-    desde: '11-15',
-    hasta: '12-25',
     portada: '/campanas/navidad-portada.jpg',
     tema: 'Compartir, agradecer y disfrutar juntos',
   },
@@ -51,8 +41,6 @@ export const CAMPANAS = [
     tag: 'Campaña_AnoNuevo',
     // La del Excel de SKUs y la que usa el equipo en Shopify.
     tags: ['Campaña_AnoNuevo', 'Campaña_Año Nuevo'],
-    desde: '12-26',
-    hasta: '01-15',
     portada: '/campanas/ano-nuevo-portada.jpg',
     tema: 'Nuevos comienzos',
   },
@@ -60,8 +48,6 @@ export const CAMPANAS = [
     handle: 'agendas-2027',
     titulo: 'Agendas 2027',
     tag: 'Campaña_Agendas2027',
-    desde: '10-15',
-    hasta: '01-31',
     portada: '/campanas/agendas-2027-portada.jpg',
     tema: 'Ideas, planes y nuevos objetivos',
   },
@@ -75,28 +61,9 @@ export const campanaPorHandle = (handle) =>
 
 export const campanaHref = (handle) => `/temporada/${handle}`;
 
-/** "MM-DD" de una fecha, en hora de México (el servidor corre en UTC). */
-export function mesDia(fecha = new Date()) {
-  const partes = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Mexico_City',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(fecha);
-  const v = (t) => partes.find((p) => p.type === t).value;
-  return `${v('month')}-${v('day')}`;
-}
-
-/** ¿Cae `md` (MM-DD) en la ventana? Las cadenas MM-DD se comparan en orden. */
-export function enVentana({desde, hasta}, md) {
-  return desde <= hasta
-    ? md >= desde && md <= hasta
-    : md >= desde || md <= hasta;
-}
-
-/** Las campañas que el home anuncia hoy: con portada y dentro de su ventana. */
-export function campanasActivas(fecha = new Date()) {
-  const md = mesDia(fecha);
-  return CAMPANAS.filter((c) => c.portada && enVentana(c, md));
+/** Las campañas que el home anuncia: todas las que tienen portada. */
+export function campanasActivas() {
+  return CAMPANAS.filter((c) => c.portada);
 }
 
 /**

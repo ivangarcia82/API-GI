@@ -27,12 +27,7 @@ describe('home · loader', () => {
   it('no pide productos sueltos', async () => {
     const out = await loader({context});
     expect(out.products).toBeUndefined();
-    // Sólo se pregunta si cada campaña vigente tiene al menos un producto.
-    for (const [consulta, opciones] of storefrontQuery.mock.calls) {
-      expect(consulta).toContain('CampanaConProductos');
-      expect(consulta).toContain('products(first: 1)');
-      expect(opciones.variables.handle).toBeTruthy();
-    }
+    expect(storefrontQuery).not.toHaveBeenCalled();
   });
 
   it('trae las imágenes de categoría para el hero', async () => {
