@@ -896,6 +896,16 @@ export type QuoteListPricesQuery = {
   >;
 };
 
+export type CampanaConProductosQueryVariables = StorefrontAPI.Exact<{
+  handle: StorefrontAPI.Scalars['String']['input'];
+}>;
+
+export type CampanaConProductosQuery = {
+  collection?: StorefrontAPI.Maybe<{
+    products: {nodes: Array<Pick<StorefrontAPI.Product, 'id'>>};
+  }>;
+};
+
 export type FavoritosNodesQueryVariables = StorefrontAPI.Exact<{
   ids:
     | Array<StorefrontAPI.Scalars['ID']['input']>
@@ -1120,33 +1130,6 @@ export type GiCollectionQuery = {
       };
     }
   >;
-};
-
-export type GiStoreCollectionsQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-}>;
-
-export type GiStoreCollectionsQuery = {
-  collections: {
-    nodes: Array<
-      Pick<
-        StorefrontAPI.Collection,
-        'id' | 'title' | 'handle' | 'description'
-      > & {
-        image?: StorefrontAPI.Maybe<
-          Pick<StorefrontAPI.Image, 'url' | 'altText'>
-        >;
-        products: {
-          nodes: Array<{
-            featuredImage?: StorefrontAPI.Maybe<
-              Pick<StorefrontAPI.Image, 'url' | 'altText'>
-            >;
-          }>;
-        };
-      }
-    >;
-  };
 };
 
 export type GiPageQueryVariables = StorefrontAPI.Exact<{
@@ -1784,6 +1767,10 @@ interface GeneratedQueryTypes {
     return: QuoteListPricesQuery;
     variables: QuoteListPricesQueryVariables;
   };
+  '#graphql\n  query CampanaConProductos($handle: String!) {\n    collection(handle: $handle) { products(first: 1) { nodes { id } } }\n  }\n': {
+    return: CampanaConProductosQuery;
+    variables: CampanaConProductosQueryVariables;
+  };
   '#graphql\n  query FavoritosNodes($ids: [ID!]!, $country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    nodes(ids: $ids) {\n      __typename\n      ... on Product {\n        id\n        handle\n        title\n        featuredImage { url altText width height }\n        priceRange { minVariantPrice { amount currencyCode } }\n        options { name optionValues { name } }\n        variants(first: 1) { nodes { id price { amount currencyCode } } }\n      }\n    }\n  }\n': {
     return: FavoritosNodesQuery;
     variables: FavoritosNodesQueryVariables;
@@ -1799,10 +1786,6 @@ interface GeneratedQueryTypes {
   '#graphql\n  #graphql\n  fragment GiProductCard on Product {\n    id\n    handle\n    title\n    # Disponible si queda alguna variante: la de variants(first: 1) puede\n    # estar agotada aunque otro color no lo esté.\n    availableForSale\n    description\n    tags\n    featuredImage { id url altText width height }\n    priceRange { minVariantPrice { amount currencyCode } }\n    # firstSelectableVariant es lo que permite cotizar en el color de la marca\n    # del cliente: variants(first: 1), abajo, devuelve una variante cualquiera,\n    # que puede ser de un color que ese cliente no puede pedir.\n    options {\n      name\n      optionValues { name firstSelectableVariant { id } }\n    }\n    variants(first: 1) {\n      nodes {\n        id\n        title\n        sku\n        availableForSale\n        price { amount currencyCode }\n        image { url altText }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "tecnicas_de_impresion"},\n      {namespace: "custom", key: "material"}\n    ]) { key namespace value }\n  }\n\n  query GiCollection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $filters: [ProductFilter!]\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image { url altText width height }\n      products(\n        filters: $filters\n        first: $first\n        last: $last\n        before: $startCursor\n        after: $endCursor\n      ) {\n        nodes { ...GiProductCard }\n        pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n      }\n    }\n  }\n': {
     return: GiCollectionQuery;
     variables: GiCollectionQueryVariables;
-  };
-  '#graphql\n  query GiStoreCollections($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 50, sortKey: TITLE) {\n      nodes {\n        id\n        title\n        handle\n        description\n        image { url altText }\n        products(first: 10) { nodes { featuredImage { url altText } } }\n      }\n    }\n  }\n': {
-    return: GiStoreCollectionsQuery;
-    variables: GiStoreCollectionsQueryVariables;
   };
   '#graphql\n  query GiPage($language: LanguageCode, $country: CountryCode, $handle: String!)\n    @inContext(language: $language, country: $country) {\n    page(handle: $handle) {\n      id\n      title\n      body\n      seo {\n        description\n        title\n      }\n    }\n  }\n': {
     return: GiPageQuery;
