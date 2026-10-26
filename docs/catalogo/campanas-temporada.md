@@ -10,14 +10,19 @@ sus filtros.
 | Octubre Rosa   | `octubre-rosa`   | `Campaña_OctubreRosa`  | 1–31 oct     |
 | Día de Muertos | `dia-de-muertos` | `Campaña_DiaDeMuertos` | 15 oct–2 nov |
 | Navidad        | `navidad`        | `Campaña_Navidad`      | 15 nov–25 dic|
-| Año Nuevo      | `ano-nuevo`      | `Campaña_AnoNuevo`     | 26 dic–15 ene|
+| Año Nuevo      | `ano-nuevo`      | `Campaña_AnoNuevo` o `Campaña_Año Nuevo` | 26 dic–15 ene|
+| Agendas 2027   | `agendas-2027`   | `Campaña_Agendas2027`  | 15 oct–31 ene|
+
+El home sólo anuncia una campaña si está en sus fechas, tiene portada y su
+colección ya tiene al menos un producto.
 
 ## Qué se cambia dónde
 
 - **Título, texto y banner:** en la colección de Shopify (Productos →
   Colecciones). Se ven en la landing al momento, sin deploy.
 - **Productos:** la etiqueta de la campaña. Se puede poner a mano en Shopify o
-  con el script (abajo).
+  con el script (abajo). Si el equipo usa otra etiqueta, se agrega en `tags`
+  de `app/lib/campanas.js` y el script se la suma a la colección.
 - **Portada del home y fechas:** en `app/lib/campanas.js`. Una campaña sin
   `portada` no sale en el home, aunque sea su temporada. Requiere deploy.
 

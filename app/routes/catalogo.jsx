@@ -280,8 +280,8 @@ async function cargarCatalogo({context, request}, {cat} = {}) {
  * Generando Ideas y no él, así que la única salida real es escribirnos.
  *
  * Se exporta para poder fijarlo con un test sin montar la página entera.
- * @param {{marcaColores?: string[], hayFiltros?: boolean}} estado
- * @returns {{texto: string, accion: 'limpiar'|'contacto'|null}}
+ * @param {{marcaColores?: string[], hayFiltros?: boolean, campana?: boolean}} estado
+ * @returns {{texto: string, accion: 'limpiar'|'contacto'|'catalogo'|null}}
  */
 /* Todas las colecciones del árbol, con el nombre que lleva su chip. */
 const CATEGORIAS_DEL_ARBOL = flattenTree().map((n) => ({handle: n.handle, name: n.title}));
@@ -305,7 +305,15 @@ export function encabezadoCatalogo({cat = '', q = ''} = {}) {
   };
 }
 
-export function estadoVacio({marcaColores = [], hayFiltros = false} = {}) {
+export function estadoVacio({marcaColores = [], hayFiltros = false, campana = false} = {}) {
+  // Una campaña recién creada puede no tener productos todavía: su etiqueta
+  // la pone el equipo en Shopify y puede llegar después que el banner.
+  if (campana && !hayFiltros && !marcaColores.length) {
+    return {
+      texto: 'Estamos preparando los productos de esta campaña. Mientras, explora el catálogo.',
+      accion: 'catalogo',
+    };
+  }
   if (marcaColores.length) {
     return hayFiltros
       ? {
@@ -568,7 +576,7 @@ function CatalogoVista({campana = null}) {
 
   const chips = activeChips(filtros, {categorias: CATEGORIAS_DEL_ARBOL});
   const hayFiltros = hasActiveFilters(filtros);
-  const vacio = estadoVacio({marcaColores, hayFiltros});
+  const vacio = estadoVacio({marcaColores, hayFiltros, campana: Boolean(campana)});
 
   const {titulo, ruta, raiz} = encabezadoCatalogo(filtros);
 
@@ -733,6 +741,11 @@ function CatalogoVista({campana = null}) {
                       {vacio.accion === 'contacto' && (
                         <Button variant="ghost" onClick={() => navigate('/contacto')}>
                           Escríbenos
+                        </Button>
+                      )}
+                      {vacio.accion === 'catalogo' && (
+                        <Button variant="ghost" onClick={() => navigate('/catalogo')}>
+                          Ver catálogo
                         </Button>
                       )}
                     </div>

@@ -66,3 +66,18 @@ describe('landing de temporada', () => {
     expect(storefrontQuery).not.toHaveBeenCalled();
   });
 });
+
+import {estadoVacio} from './catalogo.jsx';
+
+describe('landing de temporada · sin productos todavía', () => {
+  it('no pide "otras palabras de búsqueda": manda al catálogo', () => {
+    expect(estadoVacio({campana: true})).toEqual({
+      texto: 'Estamos preparando los productos de esta campaña. Mientras, explora el catálogo.',
+      accion: 'catalogo',
+    });
+  });
+
+  it('con filtros aplicados sigue ofreciendo limpiarlos', () => {
+    expect(estadoVacio({campana: true, hayFiltros: true}).accion).toBe('limpiar');
+  });
+});

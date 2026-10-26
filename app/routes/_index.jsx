@@ -25,6 +25,28 @@ export const meta = () => [
   },
 ];
 
+const CAMPANA_CON_PRODUCTOS_QUERY = `#graphql
+  query CampanaConProductos($handle: String!) {
+    collection(handle: $handle) { products(first: 1) { nodes { id } } }
+  }
+`;
+
+/* Una campaña sale en el home sólo si su colección ya tiene productos: la
+   etiqueta la pone el equipo en Shopify y puede llegar después que la
+   portada. Si la consulta falla se anuncia igual; es mejor que esconderla
+   por un hipo de la Storefront. */
+export async function campanasConProductos(storefront, campanas) {
+  const tiene = await Promise.all(
+    campanas.map((c) =>
+      storefront
+        .query(CAMPANA_CON_PRODUCTOS_QUERY, {variables: {handle: c.handle}})
+        .then((r) => (r?.collection?.products?.nodes?.length ?? 0) > 0)
+        .catch(() => true),
+    ),
+  );
+  return campanas.filter((_, i) => tiene[i]);
+}
+
 export async function loader(args) {
   const criticalData = await loadCriticalData(args);
   return criticalData;
@@ -35,10 +57,10 @@ async function loadCriticalData({context}) {
 
   // El hero muestra categorías, no productos: el home ya no pide productos
   // sueltos (ni su paleta de marca ni su precio por cliente).
-  const categories = await fetchCollectionCards(
-    storefront,
-    HOME_CATEGORIES.map((c) => c.handle),
-  );
+  const [categories, campanas] = await Promise.all([
+    fetchCollectionCards(storefront, HOME_CATEGORIES.map((c) => c.handle)),
+    campanasConProductos(storefront, campanasActivas()),
+  ]);
 
   // Merge category display config (icon + label) with fetched images
   const catMap = Object.fromEntries(categories.map((c) => [c.handle, c]));
@@ -52,7 +74,7 @@ async function loadCriticalData({context}) {
     categoryCards,
     // Las campañas de temporada vigentes hoy, con su portada en contexto.
     // Reemplazan a Nuevos y Ofertas; fuera de temporada la sección no sale.
-    campanas: campanasActivas().map(({handle, titulo, tema, portada}) => ({
+    campanas: campanas.map(({handle, titulo, tema, portada}) => ({
       handle,
       titulo,
       tema,

@@ -170,5 +170,6 @@ export default {
   },
   "dia-de-muertos": {},
   "navidad": {},
-  "ano-nuevo": {}
+  "ano-nuevo": {},
+  "agendas-2027": {}
 };

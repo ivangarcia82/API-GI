@@ -6,9 +6,11 @@
 // Por cada campaña de app/lib/campanas.js:
 //   1. Busca cada SKU de scripts/campanas/skus.json y le agrega al producto la
 //      etiqueta de la campaña (tagsAdd: no quita ni cambia ninguna otra).
-//   2. Crea la colección automática (etiqueta = campaña) si no existe, con el
-//      texto de DESCRIPCIONES, y la publica en Online Store y API GI. Si ya
-//      existe no se toca: el título y el texto los edita mercadotecnia.
+//   2. Crea la colección automática (cualquiera de las etiquetas de la
+//      campaña) si no existe, con el texto de DESCRIPCIONES, y la publica en
+//      Online Store y API GI. Si ya existe, sólo le pone el texto si no tiene
+//      ninguno y le suma las etiquetas que le falten: lo demás lo edita
+//      mercadotecnia.
 //   3. Si hay banner en scripts/campanas/<handle>-banner.jpg y la colección no
 //      tiene imagen, lo sube como imagen de la colección.
 //   4. Escribe app/lib/campanas-variantes.js con la variante que fija cada
@@ -20,7 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {adminFetch, isStubMode} from '../app/lib/admin/client.js';
-import {CAMPANAS} from '../app/lib/campanas.js';
+import {CAMPANAS, etiquetasDe} from '../app/lib/campanas.js';
 import VARIANTES_ACTUALES from '../app/lib/campanas-variantes.js';
 
 const dryRun = process.argv.includes('--dry-run');
@@ -34,6 +36,12 @@ const SALIDA = path.join(RAIZ, 'app/lib/campanas-variantes.js');
 const DESCRIPCIONES = {
   'octubre-rosa':
     'Porque cuidarnos también es un acto de amor. Una colección que se suma para crear conciencia y promover la prevención y la detección oportuna.',
+  navidad:
+    'Una temporada para celebrar lo que nos une. Una colección que celebra el espíritu de compartir, agradecer y disfrutar juntos.',
+  'ano-nuevo':
+    'Un nuevo año, nuevas posibilidades. Una colección que celebra los nuevos comienzos, los propósitos y todo lo que está por venir.',
+  'agendas-2027':
+    'Ideas, planes y nuevos objetivos. Encuentra la agenda ideal para organizar tu 2027.',
 };
 
 if (!env.PUBLIC_STORE_DOMAIN) {
@@ -65,7 +73,12 @@ const VARIANTES = `
 
 const COLECCION = `
   query coleccion($q: String!) {
-    collections(first: 1, query: $q) { nodes { id handle image { url } } }
+    collections(first: 1, query: $q) {
+      nodes {
+        id handle descriptionHtml image { url }
+        ruleSet { rules { condition } }
+      }
+    }
     publications(first: 20) { nodes { id name } }
   }
 `;
@@ -276,8 +289,16 @@ for (const campana of CAMPANAS.filter((c) => !solo || c.handle === solo)) {
     `scripts/campanas/${campana.handle}-banner.jpg`,
   );
   const subirBanner = fs.existsSync(banner) && !coleccion?.image;
+  const etiquetas = etiquetasDe(campana);
+  const reglas = (etiquetasLista) => ({
+    appliedDisjunctively: true,
+    rules: etiquetasLista.map((condition) => ({column: 'TAG', relation: 'EQUALS', condition})),
+  });
+  const actuales = (coleccion?.ruleSet?.rules ?? []).map((r) => r.condition);
+  const faltanEtiquetas = coleccion ? etiquetas.filter((t) => !actuales.includes(t)) : [];
+  const ponerTexto = Boolean(coleccion && !coleccion.descriptionHtml && DESCRIPCIONES[campana.handle]);
   console.log(
-    `  colección: ${coleccion ? 'ya existe' : 'se crea'}${subirBanner ? ' · se sube el banner' : ''}`,
+    `  colección: ${coleccion ? 'ya existe' : 'se crea'}${subirBanner ? ' · se sube el banner' : ''}${ponerTexto ? ' · se pone el texto' : ''}${faltanEtiquetas.length ? ` · se suman ${faltanEtiquetas.join(', ')}` : ''}`,
   );
 
   if (dryRun) continue;
@@ -298,10 +319,7 @@ for (const campana of CAMPANAS.filter((c) => !solo || c.handle === solo)) {
         descriptionHtml: DESCRIPCIONES[campana.handle]
           ? `<p>${DESCRIPCIONES[campana.handle]}</p>`
           : '',
-        ruleSet: {
-          appliedDisjunctively: false,
-          rules: [{column: 'TAG', relation: 'EQUALS', condition: campana.tag}],
-        },
+        ruleSet: reglas(etiquetas),
       },
     });
     if (collectionCreate.userErrors.length) {
@@ -321,6 +339,19 @@ for (const campana of CAMPANAS.filter((c) => !solo || c.handle === solo)) {
     if (publishablePublish.userErrors.length) {
       console.error(
         `  ✗ sin publicar: ${publishablePublish.userErrors.map((e) => e.message).join('; ')}`,
+      );
+    }
+  }
+
+  if (ponerTexto || faltanEtiquetas.length) {
+    const input = {id: coleccion.id};
+    if (ponerTexto) input.descriptionHtml = `<p>${DESCRIPCIONES[campana.handle]}</p>`;
+    // Suma, nunca quita: las que ya tenía se quedan.
+    if (faltanEtiquetas.length) input.ruleSet = reglas([...actuales, ...faltanEtiquetas]);
+    const {collectionUpdate} = await admin(IMAGEN, {input});
+    if (collectionUpdate.userErrors.length) {
+      console.error(
+        `  ✗ texto o etiquetas: ${collectionUpdate.userErrors.map((e) => e.message).join('; ')}`,
       );
     }
   }

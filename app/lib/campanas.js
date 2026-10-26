@@ -6,7 +6,11 @@
        cambia desde el admin sin deploy.
      - Productos: la etiqueta. La pone scripts/campanas.mjs a partir del Excel
        de SKUs (scripts/campanas/skus.json).
-     - Cuándo sale en el home y con qué portada: aquí. Sin portada no sale.
+     - Cuándo sale en el home y con qué portada: aquí. Sin portada, o con la
+       colección vacía, no sale.
+     - `tags`: las etiquetas que junta la colección (cualquiera de ellas).
+       `tag` es la que pone el script; `tags` suma las que pone el equipo a
+       mano en Shopify. Sin `tags`, la colección usa sólo `tag`.
 
    Las fechas son mes-día (MM-DD) en hora de México y se repiten cada año. Una
    ventana que cruza el año (12-26 → 01-15) también vale. La landing sigue
@@ -38,19 +42,33 @@ export const CAMPANAS = [
     tag: 'Campaña_Navidad',
     desde: '11-15',
     hasta: '12-25',
-    portada: null,
-    tema: 'Regalos de fin de año',
+    portada: '/campanas/navidad-portada.jpg',
+    tema: 'Compartir, agradecer y disfrutar juntos',
   },
   {
     handle: 'ano-nuevo',
     titulo: 'Año Nuevo',
     tag: 'Campaña_AnoNuevo',
+    // La del Excel de SKUs y la que usa el equipo en Shopify.
+    tags: ['Campaña_AnoNuevo', 'Campaña_Año Nuevo'],
     desde: '12-26',
     hasta: '01-15',
-    portada: null,
-    tema: 'Arranque de año',
+    portada: '/campanas/ano-nuevo-portada.jpg',
+    tema: 'Nuevos comienzos',
+  },
+  {
+    handle: 'agendas-2027',
+    titulo: 'Agendas 2027',
+    tag: 'Campaña_Agendas2027',
+    desde: '10-15',
+    hasta: '01-31',
+    portada: '/campanas/agendas-2027-portada.jpg',
+    tema: 'Ideas, planes y nuevos objetivos',
   },
 ];
+
+/** Las etiquetas que junta la colección de una campaña. */
+export const etiquetasDe = (campana) => campana.tags ?? [campana.tag];
 
 export const campanaPorHandle = (handle) =>
   CAMPANAS.find((c) => c.handle === handle) ?? null;

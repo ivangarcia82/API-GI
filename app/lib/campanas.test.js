@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {CAMPANAS, campanasActivas, enVentana, mesDia, enColorDeCampana} from './campanas';
+import {CAMPANAS, campanasActivas, enVentana, mesDia, enColorDeCampana, etiquetasDe} from './campanas';
 
 // Mediodía en México: sin ambigüedad de zona horaria.
 const dia = (iso) => new Date(`${iso}T18:00:00Z`);
@@ -17,18 +17,38 @@ describe('ventanas de temporada', () => {
     expect(enVentana(v, '06-01')).toBe(false);
   });
 
-  it('en octubre el home anuncia Octubre Rosa', () => {
+  it('a principios de octubre el home anuncia Octubre Rosa', () => {
     expect(campanasActivas(dia('2026-10-06')).map((c) => c.handle)).toEqual(['octubre-rosa']);
   });
 
+  it('a finales de octubre se suma Agendas 2027', () => {
+    expect(campanasActivas(dia('2026-10-26')).map((c) => c.handle)).toEqual(['octubre-rosa', 'agendas-2027']);
+  });
+
+  it('en diciembre: Navidad y luego Año Nuevo, con las agendas todo el tiempo', () => {
+    expect(campanasActivas(dia('2026-12-10')).map((c) => c.handle)).toEqual(['navidad', 'agendas-2027']);
+    expect(campanasActivas(dia('2026-12-31')).map((c) => c.handle)).toEqual(['ano-nuevo', 'agendas-2027']);
+  });
+
   it('una campaña sin portada no sale en el home aunque sea su temporada', () => {
-    expect(CAMPANAS.find((c) => c.handle === 'navidad').portada).toBeNull();
-    expect(campanasActivas(dia('2026-12-10'))).toEqual([]);
+    expect(CAMPANAS.find((c) => c.handle === 'dia-de-muertos').portada).toBeNull();
+    expect(campanasActivas(dia('2026-11-01')).map((c) => c.handle)).not.toContain('dia-de-muertos');
+  });
+
+  it('Año Nuevo junta la etiqueta del Excel y la del equipo', () => {
+    expect(etiquetasDe(CAMPANAS.find((c) => c.handle === 'ano-nuevo'))).toEqual([
+      'Campaña_AnoNuevo',
+      'Campaña_Año Nuevo',
+    ]);
   });
 
   it('cada campaña tiene su etiqueta Campaña_ y un handle único', () => {
     expect(new Set(CAMPANAS.map((c) => c.handle)).size).toBe(CAMPANAS.length);
-    for (const c of CAMPANAS) expect(c.tag).toMatch(/^Campaña_[A-Za-z]+$/);
+    for (const c of CAMPANAS) {
+      expect(c.tag).toMatch(/^Campaña_[A-Za-z0-9]+$/);
+      // La etiqueta que pone el script siempre la junta la colección.
+      expect(etiquetasDe(c)).toContain(c.tag);
+    }
   });
 });
 
