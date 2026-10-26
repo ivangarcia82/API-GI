@@ -1,17 +1,20 @@
 /* Generando Ideas — site header */
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {NavLink, useNavigate, useSubmit} from 'react-router';
 import {Icon} from './Icon';
 import {Button} from './ui';
 import {SocialIcons} from '~/components/marketing/SocialIcons';
 import {useApp} from '~/lib/AppContext';
 import {CatalogTrigger, CatalogPanel, MobileCatalogMenu, useCatalogMenu} from './CatalogMenu';
+import {CollectionsTrigger, CollectionsPanel, MobileCollectionsMenu} from './CollectionsMenu';
 
 const NAV = [
   {to: '/', label: 'Inicio'},
   {to: '/conocenos', label: 'Conócenos'},
   {to: '/servicios', label: 'Servicios'},
   {to: '/catalogo', label: 'Catálogo'},
+  // Sin página propia: abre el panel de las landings de temporada.
+  {to: '#colecciones', label: 'Colecciones'},
   {to: '/blog', label: 'Blog'},
   {to: '/contacto', label: 'Contacto'},
 ];
@@ -35,6 +38,17 @@ export function GiHeader({isLoggedIn}) {
   const [mobile, setMobile] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
   const catalogMenu = useCatalogMenu();
+  const collectionsMenu = useCatalogMenu();
+
+  // Un panel a la vez: abrir uno cierra el otro.
+  useEffect(() => {
+    if (collectionsMenu.open) catalogMenu.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionsMenu.open]);
+  useEffect(() => {
+    if (catalogMenu.open) collectionsMenu.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogMenu.open]);
 
   return (
     <>
@@ -48,6 +62,8 @@ export function GiHeader({isLoggedIn}) {
             {NAV.map((n) =>
               n.to === '/catalogo' ? (
                 <CatalogTrigger key={n.to} menu={catalogMenu} />
+              ) : n.to === '#colecciones' ? (
+                <CollectionsTrigger key={n.to} menu={collectionsMenu} />
               ) : (
                 <NavLink key={n.to} to={n.to} prefetch="intent" end={n.to === '/'}>
                   {n.label}
@@ -215,6 +231,7 @@ export function GiHeader({isLoggedIn}) {
           </div>
         </div>
         <CatalogPanel menu={catalogMenu} />
+        <CollectionsPanel menu={collectionsMenu} />
       </header>
 
       {mobile && (
@@ -222,6 +239,8 @@ export function GiHeader({isLoggedIn}) {
           {NAV.map((n) =>
             n.to === '/catalogo' ? (
               <MobileCatalogMenu key={n.to} onNavigate={() => setMobile(false)} />
+            ) : n.to === '#colecciones' ? (
+              <MobileCollectionsMenu key={n.to} onNavigate={() => setMobile(false)} />
             ) : (
               <NavLink
                 key={n.to}
