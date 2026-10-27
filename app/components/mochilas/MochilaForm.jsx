@@ -123,6 +123,18 @@ export function MochilaForm({fetcher, collaborator, selection, onChange}) {
           required
           error={errors.phone}
         />
+        <Field
+          label="Iniciales para grabar"
+          name="initials"
+          required
+          maxLength={3}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          placeholder="Ej. IGP"
+          className="mc-initials"
+          error={errors.initials}
+        />
       </div>
 
       <fieldset className="mc-delivery" aria-describedby={errors.foraneo ? 'mc-foraneo-error' : undefined}>

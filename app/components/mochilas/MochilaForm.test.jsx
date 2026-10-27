@@ -90,3 +90,18 @@ describe('MochilaForm · datos', () => {
     expect(screen.getByRole('alert').textContent).toMatch('No pudimos enviar');
   });
 });
+
+describe('MochilaForm · iniciales', () => {
+  it('pide las iniciales para grabar, máximo 3 caracteres', () => {
+    montar();
+    const campo = screen.getByLabelText('Iniciales para grabar');
+    expect(campo.getAttribute('name')).toBe('initials');
+    expect(campo.getAttribute('maxlength')).toBe('3');
+    expect(campo.hasAttribute('required')).toBe(true);
+  });
+
+  it('muestra el error del servidor junto al campo', () => {
+    montar({data: {ok: false, errors: {initials: 'Usa de 1 a 3 letras, sin números ni símbolos.'}}});
+    expect(screen.getByText('Usa de 1 a 3 letras, sin números ni símbolos.')).toBeTruthy();
+  });
+});

@@ -35,7 +35,7 @@ export async function createMochilaRequest(db, r) {
  */
 export async function findMochilaRequest(db, userId) {
   const res = await db.execute({
-    sql: `SELECT line, model, color, image, foraneo, created_at
+    sql: `SELECT line, model, color, image, foraneo, details, created_at
             FROM mochila_requests WHERE user_id = ?`,
     args: [userId],
   });
@@ -47,8 +47,18 @@ export async function findMochilaRequest(db, userId) {
     color: row.color,
     image: row.image ?? null,
     foraneo: Number(row.foraneo) === 1,
+    // Las solicitudes anteriores al campo no tienen iniciales.
+    initials: leerIniciales(row.details),
     createdAt: row.created_at,
   };
+}
+
+function leerIniciales(details) {
+  try {
+    return JSON.parse(String(details ?? '{}')).initials || null;
+  } catch {
+    return null;
+  }
 }
 
 /**

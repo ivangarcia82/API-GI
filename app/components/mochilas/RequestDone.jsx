@@ -11,7 +11,7 @@ const FECHA = new Intl.DateTimeFormat('es-MX', {
 /**
  * Cierre de la campaña: lo ve quien acaba de enviar y quien vuelve después.
  * @param {{request: {line: string, model: string, color: string, image?: string|null,
- *   foraneo: boolean, createdAt?: string}, collaborator: {fullName: string, email: string}}} props
+ *   foraneo: boolean, initials?: string|null, createdAt?: string}, collaborator: {fullName: string, email: string}}} props
  */
 export function RequestDone({request, collaborator}) {
   const firstName = collaborator.fullName.split(' ')[0];
@@ -41,6 +41,12 @@ export function RequestDone({request, collaborator}) {
               <dt>Color</dt>
               <dd>{request.color}</dd>
             </div>
+            {request.initials ? (
+              <div>
+                <dt>Iniciales</dt>
+                <dd>{request.initials}</dd>
+              </div>
+            ) : null}
             <div>
               <dt>Entrega</dt>
               <dd>{request.foraneo ? 'Envío a domicilio' : 'Entrega en oficina'}</dd>

@@ -11,6 +11,7 @@ const BASE = {
   fullName: 'Ana López',
   position: 'Diseño',
   phone: '5512345678',
+  initials: 'ALG',
   variantId: 'gid://shopify/ProductVariant/1',
   foraneo: 'no',
 };
@@ -22,6 +23,29 @@ const SHIP = {
   city: 'Guadalajara',
   state: 'Jalisco',
 };
+
+describe('validateMochilaRequest · iniciales para grabar', () => {
+  it.each([
+    ['alg', 'ALG'],
+    [' a.l.g ', 'ALG'],
+    ['ñm', 'ÑM'],
+    ['j', 'J'],
+  ])('%s se guarda como %s', (entrada, guardado) => {
+    expect(validateMochilaRequest(form({...BASE, initials: entrada})).values.initials).toBe(guardado);
+  });
+
+  it.each(['ABCD', 'A1', 'A&B'])('rechaza %s', (initials) => {
+    expect(validateMochilaRequest(form({...BASE, initials})).errors.initials).toBe(
+      'Usa de 1 a 3 letras, sin números ni símbolos.',
+    );
+  });
+
+  it('son obligatorias', () => {
+    expect(validateMochilaRequest(form({...BASE, initials: '  '})).errors.initials).toBe(
+      'Escribe las iniciales que se grabarán.',
+    );
+  });
+});
 
 describe('validateMochilaRequest · local', () => {
   it('acepta lo mínimo y no pide dirección', () => {
@@ -39,7 +63,7 @@ describe('validateMochilaRequest · local', () => {
     const r = validateMochilaRequest(form({}));
     expect(r.ok).toBe(false);
     expect(Object.keys(r.errors).sort()).toEqual(
-      ['foraneo', 'fullName', 'phone', 'position', 'variantId'].sort(),
+      ['foraneo', 'fullName', 'initials', 'phone', 'position', 'variantId'].sort(),
     );
   });
 

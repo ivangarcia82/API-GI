@@ -92,6 +92,7 @@ export async function action({request, context}) {
       fullName: values.fullName,
       position: values.position,
       phone: values.phone,
+      initials: values.initials,
       shipping: values.shipping,
     },
   });
@@ -133,6 +134,7 @@ export async function action({request, context}) {
       color: match.variant.color,
       image: match.variant.image,
       foraneo: values.foraneo,
+      initials: values.initials,
     },
   });
 }

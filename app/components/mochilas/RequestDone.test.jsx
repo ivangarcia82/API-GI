@@ -39,3 +39,18 @@ describe('RequestDone', () => {
     expect(screen.queryByText(/de septiembre/)).toBeNull();
   });
 });
+
+describe('RequestDone · iniciales', () => {
+  const quien = {fullName: 'Ana López', email: 'ana@generandoideas.com'};
+
+  it('confirma las iniciales que se grabarán', () => {
+    render(<RequestDone request={{...REQUEST, initials: 'ALG'}} collaborator={quien} />);
+    expect(screen.getByText('Iniciales')).toBeTruthy();
+    expect(screen.getByText('ALG')).toBeTruthy();
+  });
+
+  it('una solicitud anterior al campo no muestra la fila', () => {
+    render(<RequestDone request={REQUEST} collaborator={quien} />);
+    expect(screen.queryByText('Iniciales')).toBeNull();
+  });
+});

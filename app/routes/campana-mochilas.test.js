@@ -76,6 +76,7 @@ const VALID = {
   fullName: 'Ana López',
   position: 'Diseño',
   phone: '5512345678',
+  initials: 'alg',
   variantId: 'v-ok',
   foraneo: 'no',
 };
@@ -130,6 +131,8 @@ describe('una sola solicitud por colaborador', () => {
         variantId: 'v-ok',
         image: 'https://cdn/zen.png',
         foraneo: false,
+        // Se guardan como se graban: en mayúsculas.
+        details: expect.objectContaining({initials: 'ALG'}),
       }),
     );
     expect(createMochilaRequest.mock.invocationCallOrder[0]).toBeLessThan(
@@ -199,6 +202,7 @@ describe('action', () => {
         color: 'Negro',
         image: 'https://cdn/zen.png',
         foraneo: false,
+        initials: 'ALG',
       },
     });
     const [, msg] = sendEmail.mock.calls[0];

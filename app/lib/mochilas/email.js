@@ -32,6 +32,7 @@ export function buildMochilaEmail({email, values, line, product, variant}) {
     row('Área / puesto', values.position),
     row('Teléfono', values.phone),
     row('Mochila', `${mochila} · ${variant.color}`),
+    row('Iniciales a grabar', values.initials),
     row('Entrega', values.foraneo ? 'Foráneo (envío)' : 'Entrega en oficina'),
   ].join('');
 

@@ -8,6 +8,7 @@ const local = {
   fullName: 'Ana López',
   position: 'Diseño',
   phone: '5512345678',
+  initials: 'ALG',
   variantId: 'v1',
   foraneo: false,
   shipping: null,
@@ -28,6 +29,11 @@ describe('mochilasRecipient', () => {
 });
 
 describe('buildMochilaEmail', () => {
+  it('lleva las iniciales a grabar', () => {
+    expect(build().html).toContain('Iniciales a grabar');
+    expect(build().html).toContain('ALG');
+  });
+
   it('arma el asunto con la línea', () => {
     expect(build().subject).toBe('Mochila – Ana López – Takayama Zen / Azul / Negro');
   });
