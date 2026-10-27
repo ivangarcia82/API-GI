@@ -2,7 +2,7 @@
 import {escapeHtml} from '~/lib/email/escape.js';
 import {brandedEmail} from '~/lib/email/layout.js';
 
-export const MOCHILAS_DEFAULT_TO = 'igarcia@generandoideas.com';
+export const MOCHILAS_DEFAULT_TO = 'ycastillo@generandoideas.com';
 
 export function mochilasRecipient(env) {
   return (env && env.MOCHILAS_EMAIL) || MOCHILAS_DEFAULT_TO;

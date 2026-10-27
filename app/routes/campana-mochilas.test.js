@@ -213,7 +213,7 @@ describe('action', () => {
     expect(createMochilaRequest).not.toHaveBeenCalled();
   });
 
-  it('manda el correo a igarcia con copia al colaborador', async () => {
+  it('manda el correo a ycastillo con copia al colaborador', async () => {
     const r = await read(await action({request: post(VALID), context: makeContext()}));
     expect(r.body).toEqual({
       ok: true,
@@ -228,7 +228,7 @@ describe('action', () => {
       },
     });
     const [, msg] = sendEmail.mock.calls[0];
-    expect(msg.to).toBe('igarcia@generandoideas.com');
+    expect(msg.to).toBe('ycastillo@generandoideas.com');
     expect(msg.cc).toBe('ana@generandoideas.com');
     expect(msg.replyTo).toBe('ana@generandoideas.com');
     expect(msg.subject).toBe('Mochila – Ana López – Takayama Zen / Negro');

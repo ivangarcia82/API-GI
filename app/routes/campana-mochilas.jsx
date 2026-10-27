@@ -118,7 +118,7 @@ export async function action({request, context}) {
     });
   } catch (err) {
     console.error('[campana-mochilas] send failed:', err);
-    // Sin correo, igarcia@ no se entera: se libera para que el colaborador reintente.
+    // Sin correo, ycastillo@ no se entera: se libera para que el colaborador reintente.
     await deleteMochilaRequest(db, user.id);
     return data(
       {ok: false, formError: 'No pudimos enviar tu elección, intenta de nuevo.'},

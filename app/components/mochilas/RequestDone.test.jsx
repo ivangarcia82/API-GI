@@ -22,8 +22,8 @@ describe('RequestDone', () => {
     expect(screen.getByText('Azul')).toBeTruthy();
     expect(screen.getByText('Envío foráneo')).toBeTruthy();
     expect(screen.getByText(/25 de septiembre/)).toBeTruthy();
-    expect(screen.getByRole('link', {name: 'igarcia@generandoideas.com'}).getAttribute('href')).toBe(
-      'mailto:igarcia@generandoideas.com',
+    expect(screen.getByRole('link', {name: 'ycastillo@generandoideas.com'}).getAttribute('href')).toBe(
+      'mailto:ycastillo@generandoideas.com',
     );
     expect(screen.getByRole('img').getAttribute('src')).toBe('https://cdn/spa.png');
   });

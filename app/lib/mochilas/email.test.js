@@ -20,8 +20,8 @@ function build(values = local) {
 
 describe('mochilasRecipient', () => {
   it('usa MOCHILAS_EMAIL o el default', () => {
-    expect(MOCHILAS_DEFAULT_TO).toBe('igarcia@generandoideas.com');
-    expect(mochilasRecipient({})).toBe('igarcia@generandoideas.com');
+    expect(MOCHILAS_DEFAULT_TO).toBe('ycastillo@generandoideas.com');
+    expect(mochilasRecipient({})).toBe('ycastillo@generandoideas.com');
     expect(mochilasRecipient({MOCHILAS_EMAIL: 'otra@generandoideas.com'})).toBe(
       'otra@generandoideas.com',
     );
