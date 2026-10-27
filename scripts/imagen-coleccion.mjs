@@ -9,6 +9,7 @@
 //
 // La imagen se reduce a 1200 px de ancho (JPEG) antes de subirla: las
 // originales de Diseño pesan más de 1 MB y la tarjeta más grande mide ~500 px.
+// Los banners de temporada van a lo ancho de la página: --ancho=1440.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -18,7 +19,8 @@ import {subirImagen} from './lib/subir-imagen.mjs';
 
 const env = process.env;
 const dryRun = process.argv.includes('--dry-run');
-const pares = process.argv.slice(2).filter((a) => a.includes('='));
+const ancho = process.argv.find((a) => a.startsWith('--ancho='))?.split('=')[1] ?? '1200';
+const pares = process.argv.slice(2).filter((a) => a.includes('=') && !a.startsWith('--'));
 
 if (!env.PUBLIC_STORE_DOMAIN || isStubMode(env)) {
   console.error('✗ Carga el .env y define PUBLIC_STORE_DOMAIN antes de correr.');
@@ -71,7 +73,7 @@ for (const par of pares) {
   }
   // sips viene con macOS; se reescala sin tocar el original.
   const reducida = path.join(tmp, `${handle}.jpg`);
-  execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '82', '--resampleWidth', '1200', archivo, '--out', reducida], {stdio: 'ignore'});
+  execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '82', '--resampleWidth', ancho, archivo, '--out', reducida], {stdio: 'ignore'});
   const src = await subirImagen(admin, reducida);
   const {collectionUpdate} = await admin(IMAGEN, {input: {id: c.id, image: {src, altText: c.title}}});
   if (collectionUpdate.userErrors.length) {
