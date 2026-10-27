@@ -16,7 +16,11 @@ const REQUEST = {
   variantId: 'gid://shopify/ProductVariant/1',
   image: 'https://cdn/zen.png',
   foraneo: true,
-  details: {phone: '5512345678', shipping: {city: 'Guadalajara'}},
+  details: {
+    phone: '5512345678',
+    initials: 'ALG',
+    shipping: {destino: 'sonora', estado: 'Sonora', entrega: 'Sucursal'},
+  },
 };
 
 let db;
@@ -51,6 +55,8 @@ describe('solicitudes de mochila', () => {
       color: 'Negro',
       image: 'https://cdn/zen.png',
       foraneo: true,
+      initials: 'ALG',
+      sede: 'Sonora · Sucursal',
       createdAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
     });
   });

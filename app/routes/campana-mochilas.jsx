@@ -135,6 +135,7 @@ export async function action({request, context}) {
       image: match.variant.image,
       foraneo: values.foraneo,
       initials: values.initials,
+      sede: values.shipping ? `${values.shipping.estado} · ${values.shipping.entrega}` : null,
     },
   });
 }

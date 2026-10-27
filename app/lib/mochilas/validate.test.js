@@ -16,13 +16,6 @@ const BASE = {
   foraneo: 'no',
 };
 
-const SHIP = {
-  street: 'Av. Juárez 10',
-  neighborhood: 'Centro',
-  zip: '44100',
-  city: 'Guadalajara',
-  state: 'Jalisco',
-};
 
 describe('validateMochilaRequest · iniciales para grabar', () => {
   it.each([
@@ -55,8 +48,8 @@ describe('validateMochilaRequest · local', () => {
     });
   });
 
-  it('ignora campos de envío si no es foráneo', () => {
-    expect(validateMochilaRequest(form({...BASE, ...SHIP})).values.shipping).toBeNull();
+  it('ignora la sede si no es foráneo', () => {
+    expect(validateMochilaRequest(form({...BASE, destino: 'sonora'})).values.shipping).toBeNull();
   });
 
   it('marca los obligatorios que faltan', () => {
@@ -88,23 +81,24 @@ describe('validateMochilaRequest · teléfono', () => {
 });
 
 describe('validateMochilaRequest · foráneo', () => {
-  it('exige la dirección', () => {
+  it('exige elegir una sede, no una dirección', () => {
     const r = validateMochilaRequest(form({...BASE, foraneo: 'si'}));
-    expect(Object.keys(r.errors).sort()).toEqual(
-      ['city', 'neighborhood', 'state', 'street', 'zip'].sort(),
-    );
+    expect(Object.keys(r.errors)).toEqual(['destino']);
   });
 
-  it('valida el código postal', () => {
-    const r = validateMochilaRequest(form({...BASE, foraneo: 'si', ...SHIP, zip: '4410'}));
-    expect(r.errors.zip).toBeTruthy();
-  });
-
-  it('acepta la dirección completa; referencias y quien recibe son opcionales', () => {
-    const r = validateMochilaRequest(form({...BASE, foraneo: 'si', ...SHIP}));
+  it.each([
+    ['michoacan', {destino: 'michoacan', estado: 'Michoacán', entrega: 'Gil y Noé'}],
+    ['sonora', {destino: 'sonora', estado: 'Sonora', entrega: 'Sucursal'}],
+    ['yucatan', {destino: 'yucatan', estado: 'Yucatán', entrega: 'Sucursal'}],
+  ])('acepta %s', (destino, shipping) => {
+    const r = validateMochilaRequest(form({...BASE, foraneo: 'si', destino}));
     expect(r.ok).toBe(true);
-    expect(r.values.foraneo).toBe(true);
-    expect(r.values.shipping).toEqual({...SHIP, references: '', recipient: ''});
+    expect(r.values.shipping).toEqual(shipping);
+  });
+
+  it('rechaza una sede que no está en la lista', () => {
+    const r = validateMochilaRequest(form({...BASE, foraneo: 'si', destino: 'jalisco'}));
+    expect(r.errors.destino).toBe('Elige a qué sede te la enviamos.');
   });
 
   it('rechaza un valor de foráneo fuera de catálogo', () => {

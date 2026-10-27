@@ -20,7 +20,7 @@ describe('RequestDone', () => {
     expect(screen.getByRole('heading', {level: 1}).textContent).toMatch('Ana');
     expect(screen.getByText('Wagner Space')).toBeTruthy();
     expect(screen.getByText('Azul')).toBeTruthy();
-    expect(screen.getByText('Envío a domicilio')).toBeTruthy();
+    expect(screen.getByText('Envío foráneo')).toBeTruthy();
     expect(screen.getByText(/25 de septiembre/)).toBeTruthy();
     expect(screen.getByRole('link', {name: 'igarcia@generandoideas.com'}).getAttribute('href')).toBe(
       'mailto:igarcia@generandoideas.com',
@@ -52,5 +52,17 @@ describe('RequestDone · iniciales', () => {
   it('una solicitud anterior al campo no muestra la fila', () => {
     render(<RequestDone request={REQUEST} collaborator={quien} />);
     expect(screen.queryByText('Iniciales')).toBeNull();
+  });
+});
+
+describe('RequestDone · sede', () => {
+  it('dice a qué sede va el envío', () => {
+    render(
+      <RequestDone
+        request={{...REQUEST, sede: 'Yucatán · Sucursal'}}
+        collaborator={{fullName: 'Ana López', email: 'ana@generandoideas.com'}}
+      />,
+    );
+    expect(screen.getByText('Envío a Yucatán · Sucursal')).toBeTruthy();
   });
 });

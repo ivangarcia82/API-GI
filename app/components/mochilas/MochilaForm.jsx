@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {Icon} from '~/components/gi/Icon';
+import {DESTINOS} from '~/lib/mochilas/destinos';
 
 function Field({label, name, error, className = '', children, ...input}) {
   const id = `mc-${name}`;
@@ -27,7 +28,7 @@ function Field({label, name, error, className = '', children, ...input}) {
 
 const ENTREGAS = [
   {value: 'no', icon: 'home', title: 'En la oficina', desc: 'La recoges con el equipo.'},
-  {value: 'si', icon: 'truck', title: 'Envío a domicilio', desc: 'Si eres foráneo, te la mandamos.'},
+  {value: 'si', icon: 'truck', title: 'Envío foráneo', desc: 'Te la mandamos a tu sede.'},
 ];
 
 /**
@@ -38,6 +39,7 @@ const ENTREGAS = [
  */
 export function MochilaForm({fetcher, collaborator, selection, onChange}) {
   const [foraneo, setForaneo] = useState('');
+  const [destino, setDestino] = useState('');
   const formRef = useRef(null);
   const busy = fetcher.state !== 'idle';
   const result = fetcher.data;
@@ -164,45 +166,34 @@ export function MochilaForm({fetcher, collaborator, selection, onChange}) {
       </fieldset>
 
       {foraneo === 'si' ? (
-        <div className="mc-shipping">
-          <div className="mc-grid-2">
-            <Field
-              label="Calle y número"
-              name="street"
-              required
-              autoComplete="address-line1"
-              error={errors.street}
-              className="mc-span-2"
-            />
-            <Field label="Colonia" name="neighborhood" required error={errors.neighborhood} />
-            <Field
-              label="Código postal"
-              name="zip"
-              required
-              inputMode="numeric"
-              pattern="\d{5}"
-              maxLength={5}
-              autoComplete="postal-code"
-              error={errors.zip}
-            />
-            <Field label="Ciudad" name="city" required autoComplete="address-level2" error={errors.city} />
-            <Field label="Estado" name="state" required autoComplete="address-level1" error={errors.state} />
-            <Field
-              label="Quién recibe (opcional)"
-              name="recipient"
-              placeholder="Si no eres tú"
-              className="mc-span-2"
-            />
-            <Field label="Referencias (opcional)" name="references" className="mc-span-2">
-              <textarea
-                id="mc-references"
-                name="references"
-                rows={2}
-                placeholder="Entre calles, color de fachada…"
-              />
-            </Field>
+        <fieldset
+          className="mc-delivery mc-destinos"
+          aria-describedby={errors.destino ? 'mc-destino-error' : undefined}
+        >
+          <legend>¿A qué sede te la enviamos?</legend>
+          <div className="mc-delivery-options">
+            {DESTINOS.map((d) => (
+              <label key={d.clave} className={`mc-delivery-option${destino === d.clave ? ' is-on' : ''}`}>
+                <input
+                  type="radio"
+                  name="destino"
+                  value={d.clave}
+                  checked={destino === d.clave}
+                  onChange={() => setDestino(d.clave)}
+                  data-invalid={errors.destino ? 'true' : undefined}
+                />
+                <Icon name="package" size={22} />
+                <span className="mc-delivery-title">{d.estado}</span>
+                <span className="mc-delivery-desc">{d.entrega}</span>
+              </label>
+            ))}
           </div>
-        </div>
+          {errors.destino ? (
+            <p id="mc-destino-error" className="mc-error">
+              {errors.destino}
+            </p>
+          ) : null}
+        </fieldset>
       ) : null}
 
       <button type="submit" className="mc-btn mc-btn-primary mc-btn-lg mc-submit" disabled={busy || !selection}>

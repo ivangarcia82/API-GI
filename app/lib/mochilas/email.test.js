@@ -45,28 +45,18 @@ describe('buildMochilaEmail', () => {
     expect(html).toContain('5512345678');
     expect(html).toContain('Takayama Zen · Azul / Negro');
     expect(html).toContain('Entrega en oficina');
-    expect(html).not.toContain('Código postal');
+    expect(html).not.toContain('Sede');
   });
 
-  it('incluye la dirección si es foráneo', () => {
+  it('incluye la sede si es foráneo', () => {
     const {html} = build({
       ...local,
       foraneo: true,
-      shipping: {
-        street: 'Av. Juárez 10',
-        neighborhood: 'Centro',
-        zip: '44100',
-        city: 'Guadalajara',
-        state: 'Jalisco',
-        references: '',
-        recipient: '',
-      },
+      shipping: {destino: 'michoacan', estado: 'Michoacán', entrega: 'Gil y Noé'},
     });
-    expect(html).toContain('Foráneo');
-    expect(html).toContain('Av. Juárez 10');
-    expect(html).toContain('44100');
-    // Sin "quién recibe", recibe el colaborador.
-    expect(html).toMatch(/Recibe<\/td><td[^>]*>Ana López/);
+    expect(html).toContain('Foráneo · Michoacán (Gil y Noé)');
+    expect(html).toMatch(/Sede<\/td><td[^>]*>Michoacán/);
+    expect(html).toMatch(/Entrega a<\/td><td[^>]*>Gil y Noé/);
   });
 
   it('asunto en una línea y HTML escapado', () => {

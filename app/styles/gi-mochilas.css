@@ -279,7 +279,8 @@ body > main:has(> .mc-page) { margin: 0; }
 .mc-delivery-option.is-on { background: var(--mc-warm); box-shadow: inset 0 0 0 2px var(--mc-cta); }
 .mc-delivery-option:has(input:focus-visible) { outline: 3px solid var(--mc-cta); outline-offset: 2px; }
 
-.mc-shipping { padding-top: 4px; animation: mc-fade 0.35s var(--mc-ease); }
+.mc-destinos { animation: mc-fade 0.35s var(--mc-ease); }
+.mc-destinos .mc-delivery-options { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 .mc-submit { width: 100%; }
 
 /* ---------- Cierre y estados ---------- */

@@ -33,20 +33,20 @@ export function buildMochilaEmail({email, values, line, product, variant}) {
     row('Teléfono', values.phone),
     row('Mochila', `${mochila} · ${variant.color}`),
     row('Iniciales a grabar', values.initials),
-    row('Entrega', values.foraneo ? 'Foráneo (envío)' : 'Entrega en oficina'),
+    row(
+      'Entrega',
+      values.foraneo && values.shipping
+        ? `Foráneo · ${values.shipping.estado} (${values.shipping.entrega})`
+        : 'Entrega en oficina',
+    ),
   ].join('');
 
   const s = values.shipping;
   const envio =
     values.foraneo && s
-      ? `<h2 style="margin:24px 0 8px;font-size:16px">Datos de envío</h2><table role="presentation">${[
-          row('Calle y número', s.street),
-          row('Colonia', s.neighborhood),
-          row('Código postal', s.zip),
-          row('Ciudad', s.city),
-          row('Estado', s.state),
-          ...(s.references ? [row('Referencias', s.references)] : []),
-          row('Recibe', s.recipient || values.fullName),
+      ? `<h2 style="margin:24px 0 8px;font-size:16px">Envío</h2><table role="presentation">${[
+          row('Sede', s.estado),
+          row('Entrega a', s.entrega),
         ].join('')}</table>`
       : '';
 

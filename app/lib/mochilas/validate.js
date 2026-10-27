@@ -1,5 +1,6 @@
 // Validación del formulario de la campaña de mochilas. El navegador ya valida,
 // pero el action es la única puerta que cuenta.
+import {destinoPorClave} from './destinos.js';
 const MAX = 200;
 
 function field(form, name) {
@@ -45,22 +46,12 @@ export function validateMochilaRequest(form) {
   }
 
   const foraneo = foraneoRaw === 'si';
+  // Foráneo no captura dirección: elige una de las sedes de DESTINOS.
   let shipping = null;
   if (foraneo) {
-    shipping = {
-      street: field(form, 'street'),
-      neighborhood: field(form, 'neighborhood'),
-      zip: field(form, 'zip'),
-      city: field(form, 'city'),
-      state: field(form, 'state'),
-      references: field(form, 'references'),
-      recipient: field(form, 'recipient'),
-    };
-    if (!shipping.street) errors.street = 'Escribe calle y número.';
-    if (!shipping.neighborhood) errors.neighborhood = 'Escribe la colonia.';
-    if (!/^\d{5}$/.test(shipping.zip)) errors.zip = 'El código postal debe tener 5 dígitos.';
-    if (!shipping.city) errors.city = 'Escribe la ciudad.';
-    if (!shipping.state) errors.state = 'Escribe el estado.';
+    const destino = destinoPorClave(field(form, 'destino'));
+    if (destino) shipping = {destino: destino.clave, estado: destino.estado, entrega: destino.entrega};
+    else errors.destino = 'Elige a qué sede te la enviamos.';
   }
 
   if (Object.keys(errors).length > 0) return {ok: false, errors};

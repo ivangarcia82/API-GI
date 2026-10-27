@@ -48,17 +48,23 @@ export async function findMochilaRequest(db, userId) {
     image: row.image ?? null,
     foraneo: Number(row.foraneo) === 1,
     // Las solicitudes anteriores al campo no tienen iniciales.
-    initials: leerIniciales(row.details),
+    initials: detalle(row.details).initials || null,
+    // Sede de envío; las solicitudes con dirección libre (antes de las sedes) no la tienen.
+    sede: textoSede(detalle(row.details).shipping),
     createdAt: row.created_at,
   };
 }
 
-function leerIniciales(details) {
+function detalle(details) {
   try {
-    return JSON.parse(String(details ?? '{}')).initials || null;
+    return JSON.parse(String(details ?? '{}')) || {};
   } catch {
-    return null;
+    return {};
   }
+}
+
+function textoSede(shipping) {
+  return shipping?.estado ? `${shipping.estado} · ${shipping.entrega}` : null;
 }
 
 /**

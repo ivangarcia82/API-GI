@@ -68,13 +68,16 @@ describe('MochilaForm · datos', () => {
     expect(correo.getAttribute('name')).toBeNull();
   });
 
-  it('pide la dirección sólo con envío a domicilio', () => {
+  it('con envío foráneo ofrece sólo las 3 sedes, sin dirección', () => {
     montar();
+    expect(screen.queryByLabelText(/Sonora/)).toBeNull();
+    fireEvent.click(screen.getByLabelText(/Envío foráneo/));
+    const sedes = screen.getAllByRole('radio').filter((r) => r.name === 'destino');
+    expect(sedes.map((r) => r.value)).toEqual(['michoacan', 'sonora', 'yucatan']);
+    expect(screen.getByLabelText(/Michoacán/).closest('label').textContent).toContain('Gil y Noé');
     expect(screen.queryByLabelText('Código postal')).toBeNull();
-    fireEvent.click(screen.getByLabelText(/Envío a domicilio/));
-    expect(screen.getByLabelText('Código postal')).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/En la oficina/));
-    expect(screen.queryByLabelText('Código postal')).toBeNull();
+    expect(screen.queryByLabelText(/Sonora/)).toBeNull();
   });
 
   it('liga cada error a su campo', () => {

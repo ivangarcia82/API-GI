@@ -192,6 +192,27 @@ describe('loader', () => {
 });
 
 describe('action', () => {
+  it('foráneo: guarda la sede y la confirma', async () => {
+    const r = await read(
+      await action({request: post({...VALID, foraneo: 'si', destino: 'yucatan'}), context: makeContext()}),
+    );
+    expect(r.body.summary.sede).toBe('Yucatán · Sucursal');
+    expect(createMochilaRequest.mock.calls[0][1].details.shipping).toEqual({
+      destino: 'yucatan',
+      estado: 'Yucatán',
+      entrega: 'Sucursal',
+    });
+    const [, msg] = sendEmail.mock.calls[0];
+    expect(msg.html).toContain('Foráneo · Yucatán (Sucursal)');
+  });
+
+  it('foráneo sin sede no se acepta', async () => {
+    const r = await read(await action({request: post({...VALID, foraneo: 'si'}), context: makeContext()}));
+    expect(r.status).toBe(400);
+    expect(r.body.errors.destino).toBeTruthy();
+    expect(createMochilaRequest).not.toHaveBeenCalled();
+  });
+
   it('manda el correo a igarcia con copia al colaborador', async () => {
     const r = await read(await action({request: post(VALID), context: makeContext()}));
     expect(r.body).toEqual({
@@ -203,6 +224,7 @@ describe('action', () => {
         image: 'https://cdn/zen.png',
         foraneo: false,
         initials: 'ALG',
+        sede: null,
       },
     });
     const [, msg] = sendEmail.mock.calls[0];
