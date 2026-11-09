@@ -2,9 +2,8 @@ import {describe, it, expect} from 'vitest';
 import {CAMPANAS, campanasActivas, enColorDeCampana, etiquetasDe} from './campanas';
 
 describe('campañas en el home', () => {
-  it('salen todas las que tienen portada, en el orden de la lista', () => {
+  it('salen las que tienen portada y no están apagadas, en el orden de la lista', () => {
     expect(campanasActivas().map((c) => c.handle)).toEqual([
-      'octubre-rosa',
       'navidad',
       'ano-nuevo',
       'agendas-2027',
@@ -14,6 +13,13 @@ describe('campañas en el home', () => {
   it('una campaña sin portada no sale', () => {
     expect(CAMPANAS.find((c) => c.handle === 'dia-de-muertos').portada).toBeNull();
     expect(campanasActivas().map((c) => c.handle)).not.toContain('dia-de-muertos');
+  });
+
+  it('una campaña apagada no sale aunque tenga portada', () => {
+    const rosa = CAMPANAS.find((c) => c.handle === 'octubre-rosa');
+    expect(rosa.portada).toBeTruthy();
+    expect(rosa.apagada).toBe(true);
+    expect(campanasActivas().map((c) => c.handle)).not.toContain('octubre-rosa');
   });
 
   it('Año Nuevo junta la etiqueta del Excel y la del equipo', () => {

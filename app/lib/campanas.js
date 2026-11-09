@@ -8,6 +8,8 @@
        de SKUs (scripts/campanas/skus.json).
      - Qué sale en el home y con qué portada: aquí. Sale toda campaña con
        portada, en el orden de esta lista; sin portada no sale.
+     - `apagada: true`: la campaña ya pasó y deja de salir en el home y en el
+       menú "Colecciones". Su landing sigue respondiendo.
      - `tags`: las etiquetas que junta la colección (cualquiera de ellas).
        `tag` es la que pone el script; `tags` suma las que pone el equipo a
        mano en Shopify. Sin `tags`, la colección usa sólo `tag`. */
@@ -20,6 +22,7 @@ export const CAMPANAS = [
     tag: 'Campaña_OctubreRosa',
     portada: '/campanas/octubre-rosa-portada.jpg',
     tema: 'Prevención y detección oportuna',
+    apagada: true,
   },
   {
     handle: 'dia-de-muertos',
@@ -61,9 +64,9 @@ export const campanaPorHandle = (handle) =>
 
 export const campanaHref = (handle) => `/temporada/${handle}`;
 
-/** Las campañas que el home anuncia: todas las que tienen portada. */
+/** Las campañas que el home anuncia: las que tienen portada y no están apagadas. */
 export function campanasActivas() {
-  return CAMPANAS.filter((c) => c.portada);
+  return CAMPANAS.filter((c) => c.portada && !c.apagada);
 }
 
 /**
