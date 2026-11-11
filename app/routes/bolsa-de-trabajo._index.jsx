@@ -78,6 +78,15 @@ export default function BolsaDeTrabajoIndex() {
         <section className="section careers-jobs-sec">
           <div className="wrap">
             <h2 className="display careers-h2 reveal">Vacantes disponibles</h2>
+            {jobs.length === 0 ? (
+              <div className="careers-empty reveal" role="status">
+                <h3 className="careers-empty-h">No hay vacantes</h3>
+                <p className="careers-empty-p">
+                  Por el momento no tenemos posiciones abiertas. Puedes enviarnos tu CV y te
+                  contactamos cuando se abra una.
+                </p>
+              </div>
+            ) : (
             <div className="jobs-list reveal">
               {jobs.map((j) => (
                 <Link className="job-row careers-job" to={`/bolsa-de-trabajo/${j.id}`} key={j.id}>
@@ -107,6 +116,7 @@ export default function BolsaDeTrabajoIndex() {
                 </Link>
               ))}
             </div>
+            )}
           </div>
         </section>
 

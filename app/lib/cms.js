@@ -8,7 +8,7 @@
  * so the CMS base URL must be passed explicitly from the loader's
  * context.env (set CMS_API_URL in Vercel env vars).
  */
-import {JOBS as STATIC_JOBS, RECRUITMENT as STATIC_RECRUITMENT, RECRUITMENT_DISCLAIMER as STATIC_DISCLAIMER} from './site-content';
+import {RECRUITMENT as STATIC_RECRUITMENT, RECRUITMENT_DISCLAIMER as STATIC_DISCLAIMER} from './site-content';
 
 const TIMEOUT_MS = 3_000;
 
@@ -43,22 +43,20 @@ async function cmsFetch(path, cmsUrl) {
 
 /**
  * Fetch all active vacantes from the CMS.
- * Falls back to the static JOBS array from site-content.js.
+ * Sin vacantes en el CMS (o si no responde) regresa []: la página dice que
+ * no hay vacantes en lugar de anunciar puestos que ya no existen.
  *
  * @param {string} [cmsUrl] - CMS base URL from context.env.CMS_API_URL
  * @returns {Promise<import('./site-content').Job[]>}
  */
 export async function getJobs(cmsUrl) {
   const data = await cmsFetch('/api/vacantes/public', cmsUrl);
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    return STATIC_JOBS;
-  }
-  return data;
+  return Array.isArray(data) ? data : [];
 }
 
 /**
  * Fetch a single vacante by ID from the CMS.
- * Falls back to the static JOBS array.
+ * Sin respaldo: si no está en el CMS, la ficha manda al listado.
  *
  * @param {string|number} id
  * @param {string} [cmsUrl] - CMS base URL from context.env.CMS_API_URL
@@ -66,11 +64,7 @@ export async function getJobs(cmsUrl) {
  */
 export async function getJobById(id, cmsUrl) {
   const data = await cmsFetch(`/api/vacantes/public/${id}`, cmsUrl);
-  if (data && data.id) {
-    return data;
-  }
-  // Fallback: search in static array
-  return STATIC_JOBS.find((j) => String(j.id) === String(id));
+  return data && data.id ? data : undefined;
 }
 
 /**
