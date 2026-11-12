@@ -31,7 +31,6 @@ import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
 import {getVariantInventory} from '~/lib/admin/operations';
-import {ORGANIZATION_ID} from '~/lib/seo';
 
 export const meta = ({data}) => {
   const p = data?.product;
@@ -44,31 +43,11 @@ export const meta = ({data}) => {
   const title = `${p?.title ?? 'Producto'} · Generando Ideas`;
   const url = `${origin}/products/${p?.handle}`;
 
-  /* Clave, precio y existencia de la variante con la que abre la ficha: lo
-     mismo que ve cualquier visitante sin sesión (precio de lista, sin IVA).
-     Sin precio no se declara oferta: una oferta sin importe no es válida. */
+  /* Sólo la clave de la variante con la que abre la ficha. El precio NO se
+     declara aquí a propósito (decisión del negocio, 12-nov-2026): los
+     buscadores y los asistentes de IA no deben leer precios. Sin precio no hay
+     oferta válida, así que tampoco se declara la existencia. */
   const variante = p?.selectedOrFirstAvailableVariant;
-  const precio = Number(variante?.price?.amount);
-  const moneda = variante?.price?.currencyCode || 'MXN';
-  const oferta =
-    precio > 0
-      ? {
-          '@type': 'Offer',
-          url,
-          price: precio,
-          priceCurrency: moneda,
-          priceSpecification: {
-            '@type': 'UnitPriceSpecification',
-            price: precio,
-            priceCurrency: moneda,
-            valueAddedTaxIncluded: false,
-          },
-          availability: variante.availableForSale
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock',
-          seller: {'@id': ORGANIZATION_ID},
-        }
-      : null;
 
   return [
     {title},
@@ -89,7 +68,6 @@ export const meta = ({data}) => {
         ...(img ? {image: [img]} : {}),
         brand: {'@type': 'Brand', name: 'Generando Ideas'},
         url,
-        ...(oferta ? {offers: oferta} : {}),
       },
     },
   ];

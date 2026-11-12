@@ -1,6 +1,6 @@
-/* La ficha enseña clave, precio de lista y existencia a cualquier visitante.
-   Los datos estructurados tienen que decir lo mismo: es lo que leen los
-   buscadores y los asistentes de IA para recomendar un producto concreto. */
+/* Decisión del negocio (12-nov-2026): los buscadores y los asistentes de IA
+   no deben leer precios en los datos estructurados. La ficha declara qué
+   producto es y su clave; el precio se consulta en la página o al cotizar. */
 import {describe, it, expect} from 'vitest';
 import {meta} from './products.$handle.jsx';
 
@@ -26,27 +26,14 @@ describe('ficha de producto: datos estructurados', () => {
     expect(esquema(producto()).sku).toBe('A2558.01');
   });
 
-  it('declara el precio de lista en pesos y sin IVA, como lo dice la ficha', () => {
-    const {offers} = esquema(producto());
-    expect(offers).toMatchObject({
-      '@type': 'Offer',
-      url: `${ORIGEN}/products/dv-a2558`,
-      price: 133,
-      priceCurrency: 'MXN',
-      priceSpecification: {valueAddedTaxIncluded: false},
-    });
+  it('no declara oferta: sin precio no hay oferta válida que publicar', () => {
+    expect('offers' in esquema(producto())).toBe(false);
   });
 
-  it('marca la existencia igual que la etiqueta En stock / Agotado', () => {
-    expect(esquema(producto()).offers.availability).toBe('https://schema.org/InStock');
-    expect(esquema(producto({availableForSale: false})).offers.availability).toBe(
-      'https://schema.org/OutOfStock',
-    );
-  });
-
-  it('no inventa una oferta cuando el producto no tiene precio', () => {
-    expect(esquema(producto({price: null})).offers).toBeUndefined();
-    expect(esquema(producto({price: {amount: '0.0', currencyCode: 'MXN'}})).offers).toBeUndefined();
+  it('no deja el precio en ninguna parte del bloque', () => {
+    const texto = JSON.stringify(esquema(producto()));
+    expect(texto).not.toMatch(/price/i);
+    expect(texto).not.toContain('133');
   });
 
   it('no declara clave si la variante no la trae', () => {
