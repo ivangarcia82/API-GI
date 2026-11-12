@@ -21,7 +21,7 @@ export const meta = () => [
   {
     name: 'description',
     content:
-      'Headless commerce B2B de productos promocionales personalizables. Cotiza, aprueba arte y produce en una sola plataforma.',
+      'Artículos promocionales y regalos corporativos personalizados para empresas en México. Cotiza en línea, aprueba arte y produce en una sola plataforma.',
   },
 ];
 
@@ -92,9 +92,9 @@ export default function Homepage() {
               </h1>
 
               <p className="home-hero-sub fade-up" style={{animationDelay: '160ms'}}>
-                Más de 1,800 productos personalizables para tu próxima campaña, kit
-                de bienvenida o evento corporativo. Cotiza, aprueba arte y produce en
-                una sola plataforma.
+                Más de 1,800 artículos promocionales personalizables para empresas en
+                México: campañas, kits de bienvenida y eventos corporativos. Cotiza,
+                aprueba arte y produce en una sola plataforma.
               </p>
 
               <div className="home-hero-actions fade-up" style={{animationDelay: '220ms'}}>

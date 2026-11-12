@@ -27,7 +27,7 @@ vi.mock('~/lib/AppContext', () => ({
   }),
 }));
 
-import Homepage from './_index.jsx';
+import Homepage, {meta} from './_index.jsx';
 
 const datosLoader = {
   isShopLinked: true,
@@ -105,5 +105,26 @@ describe('home: hero', () => {
     const srcs = [...container.querySelectorAll('.hero-collage img')].map((i) => i.getAttribute('src'));
     expect(srcs).toContain('https://cdn/cat-bebidas.jpg');
     expect(srcs).not.toContain('https://cdn/producto.jpg');
+  });
+});
+
+/* Un asistente de IA o un buscador decide de qué trata el sitio con la
+   descripción y el primer párrafo. Si ahí no dice qué se vende ni en qué país,
+   no hay forma de que lo recomiende a quien busca promocionales en México. */
+describe('home: qué somos y dónde', () => {
+  it('la descripción dice qué se vende y en qué país, sin jerga técnica', () => {
+    const {content} = meta().find((d) => d.name === 'description');
+    expect(content).toMatch(/artículos promocionales/i);
+    expect(content).toContain('México');
+    expect(content).not.toMatch(/headless/i);
+  });
+
+  it('el primer párrafo dice que son promocionales para empresas en México', async () => {
+    const Stub = createRoutesStub([
+      {path: '/', Component: Homepage, loader: () => datosLoader},
+    ]);
+    render(<Stub initialEntries={['/']} />);
+    const parrafo = await screen.findByText(/artículos promocionales/i, {selector: '.home-hero-sub'});
+    expect(parrafo.textContent).toMatch(/empresas en México/);
   });
 });
