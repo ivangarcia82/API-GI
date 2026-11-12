@@ -23,6 +23,7 @@ import {getBrandColors} from '~/lib/brand-colors.server';
 import {getDb} from '~/lib/db/client';
 import {listWishlist} from '~/lib/wishlist/repo';
 import {getOrCreateDraftQuote, getQuoteWithItems} from '~/lib/quotes/repo';
+import {organizationSchema, jsonLd} from '~/lib/seo';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -56,37 +57,20 @@ export const shouldRevalidate = ({formMethod, currentUrl, nextUrl}) => {
 /**
  * Brand SEO defaults. React Router renders the deepest route's meta, so this
  * applies as a fallback to routes that don't export their own meta.
+ *
+ * El bloque Organization NO va aquí: como el meta de la ruta hija sustituye a
+ * éste, sólo salía en las páginas sin meta propio. Lo pinta el Layout, que sí
+ * envuelve a todas.
  * @type {Route.MetaFunction}
  */
-export const meta = ({data}) => {
-  const origin = data?.origin ?? '';
-  return [
-    {title: 'Generando Ideas · Artículos promocionales y regalos corporativos B2B'},
-    {
-      name: 'description',
-      content:
-        'Catálogo B2B de artículos promocionales y regalos corporativos personalizados en México. Cotiza en línea con precios por proyecto.',
-    },
-    {
-      'script:ld+json': {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'Generando Ideas',
-        description:
-          'Catálogo B2B de artículos promocionales y regalos corporativos personalizados en México.',
-        ...(origin ? {url: origin, logo: `${origin}/brand/gi-logo-horizontal.svg`} : {}),
-        areaServed: 'MX',
-        contactPoint: {
-          '@type': 'ContactPoint',
-          contactType: 'sales',
-          email: 'marketing@generandoideas.com',
-          telephone: '+525570988100',
-          availableLanguage: 'Spanish',
-        },
-      },
-    },
-  ];
-};
+export const meta = () => [
+  {title: 'Generando Ideas · Artículos promocionales y regalos corporativos B2B'},
+  {
+    name: 'description',
+    content:
+      'Catálogo B2B de artículos promocionales y regalos corporativos personalizados en México. Cotiza en línea con precios por proyecto.',
+  },
+];
 
 export function links() {
   return [
@@ -259,6 +243,13 @@ export function Layout({children}) {
         />
         <Meta />
         <Links />
+        {/* Quién es la empresa, en todas las páginas: contacto, servicios y
+            blog apuntan a este @id. No es código ejecutable, así que no lleva
+            nonce. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: jsonLd(organizationSchema())}}
+        />
       </head>
       <body>
         {children}
