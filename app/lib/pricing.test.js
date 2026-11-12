@@ -1,5 +1,12 @@
 import {describe, it, expect} from 'vitest';
-import {LIST_MARGIN, parseMargin, customerPrice, listFactor, toListRange} from './pricing.js';
+import {
+  LIST_MARGIN,
+  parseMargin,
+  customerPrice,
+  listFactor,
+  toListRange,
+  sinImportes,
+} from './pricing.js';
 
 describe('parseMargin', () => {
   it('acepta porcentajes entre 0 y 100, exclusivos', () => {
@@ -61,5 +68,58 @@ describe('listFactor y toListRange', () => {
     const r = toListRange({min: 10, max: 10}, 35);
     expect(r.min).toBe(21.66);
     expect(r.max).toBe(21.67);
+  });
+});
+
+/* Sin sesión no sale ningún importe del servidor: ni en el texto de la página
+   ni en los datos con que se hidrata. Es lo que impide que un buscador o un
+   asistente de IA lea precios. */
+describe('sinImportes', () => {
+  const V = 'gid://shopify/ProductVariant/1';
+  const producto = () => ({
+    id: 'gid://shopify/Product/9',
+    title: 'Taza',
+    priceRange: {
+      minVariantPrice: {amount: '333.33', currencyCode: 'MXN'},
+      maxVariantPrice: {amount: '400.0', currencyCode: 'MXN'},
+    },
+    selectedOrFirstAvailableVariant: {
+      id: V,
+      sku: 'T-1',
+      availableForSale: true,
+      price: {amount: '333.33', currencyCode: 'MXN'},
+      compareAtPrice: {amount: '400.0', currencyCode: 'MXN'},
+    },
+    variants: {nodes: [{id: V, price: {amount: '333.33', currencyCode: 'MXN'}}]},
+  });
+
+  it('no deja un solo importe, esté donde esté', () => {
+    const out = sinImportes({a: [producto()], b: {x: producto()}});
+    expect(JSON.stringify(out)).not.toMatch(/amount|333|400/);
+  });
+
+  it('deja en null el precio, para que las páginas pinten su aviso', () => {
+    const p = sinImportes(producto());
+    expect(p.selectedOrFirstAvailableVariant.price).toBeNull();
+    expect(p.selectedOrFirstAvailableVariant.compareAtPrice).toBeNull();
+    expect(p.variants.nodes[0].price).toBeNull();
+    expect(p.priceRange.minVariantPrice).toBeNull();
+  });
+
+  it('conserva todo lo que no es dinero', () => {
+    const p = sinImportes(producto());
+    expect(p.title).toBe('Taza');
+    expect(p.selectedOrFirstAvailableVariant).toMatchObject({id: V, sku: 'T-1', availableForSale: true});
+  });
+
+  it('no escribe sobre el original: puede venir de una caché compartida', () => {
+    const data = producto();
+    sinImportes(data);
+    expect(data.variants.nodes[0].price.amount).toBe('333.33');
+  });
+
+  it('tolera null y valores sueltos', () => {
+    expect(sinImportes(null)).toBeNull();
+    expect(sinImportes('x')).toBe('x');
   });
 });

@@ -93,27 +93,33 @@ describe('selección múltiple', () => {
   });
 });
 
-/* El precio dejó de estar tras el login: un comprador que compara proveedores
-   no crea una cuenta para saber si estamos en su rango. Lo que sigue cerrado
-   es cotizar. */
-describe('precio visible sin sesión', () => {
-  it('muestra el precio en la cuadrícula aunque no haya sesión', () => {
+/* El precio es sólo para quien inició sesión (decisión del negocio,
+   12-nov-2026). El servidor ya no lo entrega sin sesión; la tarjeta además no
+   lo pinta aunque le llegue, porque "vistos recientemente" sale de
+   localStorage y puede traer un precio guardado de una sesión anterior. */
+describe('precio sólo con sesión', () => {
+  it('con sesión muestra el precio', () => {
+    montar();
+    expect(screen.getByText('$129')).toBeTruthy();
+  });
+
+  it('sin sesión no lo muestra en la cuadrícula, aunque el dato venga', () => {
     montar({}, {isLoggedIn: false});
-    expect(screen.getByText('$129')).toBeTruthy();
-    expect(screen.queryByText(/Precio para clientes/i)).toBeNull();
+    expect(screen.queryByText('$129')).toBeNull();
+    expect(screen.getByText(/Precio para clientes/i)).toBeTruthy();
   });
 
-  it('muestra el precio en la vista de lista aunque no haya sesión', () => {
+  it('sin sesión no lo muestra en la vista de lista', () => {
     montar({view: 'list'}, {isLoggedIn: false});
-    expect(screen.getByText('$129')).toBeTruthy();
-    expect(screen.queryByText(/Inicia sesión/i)).toBeNull();
+    expect(screen.queryByText('$129')).toBeNull();
+    expect(screen.getByText(/Inicia sesión/i)).toBeTruthy();
   });
 
-  it('dice a quién preguntar cuando el producto no trae precio', () => {
+  it('con sesión dice a quién preguntar cuando el producto no trae precio', () => {
     // normalizeProduct deja price en null si la variante no tiene precio
     // (gi.js). formatPrice devuelve '' con null, así que sin esta rama la
     // tarjeta pintaba "desde" seguido de un hueco.
-    montar({}, {isLoggedIn: false, producto: {...PRODUCTO, price: null}});
+    montar({}, {producto: {...PRODUCTO, price: null}});
     expect(screen.getByText(/Consultar con asesor/i)).toBeTruthy();
     expect(screen.queryByText('desde')).toBeNull();
   });

@@ -66,3 +66,28 @@ export function toListRange({min = null, max = null}, margin) {
     max: max == null ? null : aCentavos(max * f, Math.ceil),
   };
 }
+
+/* Un importe de Storefront (MoneyV2): un objeto con `amount`. */
+const esImporte = (v) =>
+  v != null && typeof v === 'object' && !Array.isArray(v) && 'amount' in v;
+
+/**
+ * Copia de una respuesta de Storefront sin un solo importe: cada precio queda
+ * en null, esté donde esté (variante, priceRange, compareAtPrice…). Es lo que
+ * recibe quien no ha iniciado sesión.
+ *
+ * Devuelve una copia: la respuesta puede venir de una caché compartida con las
+ * peticiones de clientes con sesión y no se debe escribir encima.
+ * @template T
+ * @param {T} data
+ * @returns {T}
+ */
+export function sinImportes(data) {
+  if (Array.isArray(data)) return data.map(sinImportes);
+  if (data == null || typeof data !== 'object') return data;
+  const copia = {};
+  for (const [clave, valor] of Object.entries(data)) {
+    copia[clave] = esImporte(valor) ? null : sinImportes(valor);
+  }
+  return copia;
+}

@@ -13,7 +13,7 @@ import {Icon} from '~/components/gi/Icon';
 import {RouteError} from '~/components/gi/RouteError';
 import {Button, PH} from '~/components/gi/ui';
 import {useApp, useToast} from '~/lib/AppContext';
-import {formatPrice, colorHex, normalizeProduct} from '~/lib/gi';
+import {colorHex, normalizeProduct} from '~/lib/gi';
 import {buildProductSpecs} from '~/lib/specs';
 import {resumen, separarFrasesPegadas} from '~/lib/text';
 import {useVariantGallery} from '~/lib/gallery';
@@ -29,6 +29,7 @@ import {
 import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
+import {PdpPrice} from '~/components/gi/PdpPrice';
 import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
 import {getVariantInventory} from '~/lib/admin/operations';
 
@@ -143,13 +144,24 @@ async function loadCriticalData({context, params, request}) {
 }
 
 /**
+ * ¿Se ofrece el selector de decorado? No pinta importes —sólo recoge técnica,
+ * sustrato y medida para la línea—, así que el invitado lo conserva aunque el
+ * precio ya no le llegue. A quien tiene sesión se le ofrece sólo si la
+ * variante trae precio: sin él no hay nada que cotizar en línea.
+ */
+export function ofreceDecorado({isLoggedIn, unit, techniques}) {
+  if (!techniques?.length) return false;
+  return !isLoggedIn || unit != null;
+}
+
+/**
  * Arma la línea que la ficha manda a cotizar.
  *
  * Va aparte y exportada porque sirve a dos destinos: con sesión el servidor
  * sólo lee las cinco claves de intención y vuelve a pedirle a Shopify precio,
  * título e imagen; sin sesión el carrito de invitado pinta el cajón con lo que
- * traiga la línea, así que el precio de lista tiene que viajar o el usuario
- * vería $0 hasta que se registre.
+ * traiga la línea. El invitado ya no recibe precios (`unit` le llega en null):
+ * su cajón no pinta importes y el servidor precia la línea cuando entra.
  */
 export function lineaDeFicha({product, selectedVariant, mainImage, unit, decoDetail, qty}) {
   return {
@@ -174,7 +186,7 @@ export function lineaDeFicha({product, selectedVariant, mainImage, unit, decoDet
 export default function Product() {
   const {product, stock, recommendations = [], marcaColores = []} = useLoaderData();
   const navigate = useNavigate();
-  const {favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
+  const {isLoggedIn, favs, toggleFav, addToQuote, openQuoteDrawer} = useApp();
   const toast = useToast();
 
   const selectedVariant = useOptimisticVariant(
@@ -381,65 +393,21 @@ export default function Product() {
             <p className="pdp-desc">{resumen(product.description)}</p>
           )}
 
-          {/* PRICE — se pinta con o sin sesión. Lo que sigue pidiendo login
-              es cotizar (ver ACTIONS), no consultar el precio. */}
-          {unit != null ? (
-            <div className="pdp-price-bar">
-              <div>
-                <div className="pdp-price-from">Precio por pieza</div>
-                <div className="pdp-price">{formatPrice(effUnit, currency)}</div>
-                {compareAt != null && compareAt > unit && decoTotal === 0 && (
-                  <div
-                    style={{
-                      textDecoration: 'line-through',
-                      color: 'var(--ink-4)',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 13,
-                      marginTop: 2,
-                    }}
-                  >
-                    {formatPrice(compareAt, currency)}
-                  </div>
-                )}
-              </div>
-              <div style={{textAlign: 'right'}}>
-                <div className="pdp-price-from">Total · {qtyNum} pz</div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontWeight: 600,
-                    fontSize: 22,
-                    color: 'var(--ink-2)',
-                    letterSpacing: '-0.01em',
-                  }}
-                >
-                  {formatPrice(effTotal, currency)}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="pdp-price-bar">
-              <div>
-                <div className="pdp-price-from">Precio</div>
-                <div className="pdp-price" style={{fontSize: 20}}>
-                  Consultar con asesor
-                </div>
-              </div>
-            </div>
-          )}
+          {/* PRICE — sólo con sesión; sin ella, cómo verlo (ver PdpPrice). */}
+          <PdpPrice
+            isLoggedIn={isLoggedIn}
+            unit={unit}
+            effUnit={effUnit}
+            effTotal={effTotal}
+            compareAt={compareAt}
+            decoTotal={decoTotal}
+            qty={qtyNum}
+            currency={currency}
+          />
 
-          {/* El precio dejó de estar tras el login, pero sigue siendo precio
-              de lista: volumen, decorado y plazo se cierran en la cotización.
-              Decirlo aquí evita que se lea como un total cerrado. */}
-          {unit != null && (
-            <p className="pdp-price-note">
-              {currency} · sin IVA · precio de lista
-            </p>
-          )}
-
-          {/* DECORATION SELECTOR — también sin sesión: es lo que hace visible
-              cómo la técnica y el volumen mueven el precio por pieza. */}
-          {unit != null && decoProduct.techniques.length > 0 && (
+          {/* DECORATION SELECTOR — también sin sesión: no pinta importes y
+              el invitado lo necesita para dejar su decorado en la lista. */}
+          {ofreceDecorado({isLoggedIn, unit, techniques: decoProduct.techniques}) && (
             <div className="pdp-section">
               <h3>Decorado</h3>
               <DecorationSelector

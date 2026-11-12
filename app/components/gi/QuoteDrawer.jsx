@@ -267,9 +267,13 @@ export function QuoteDrawer() {
                       <Icon name="plus" size={12} />
                     </button>
                   </div>
-                  <span className="qd-item-price">
-                    {formatPrice((item.effectiveUnitPrice || 0) * item.qty)}
-                  </span>
+                  {/* El precio es sólo para quien inició sesión: la línea del
+                      invitado no trae importe y pintaría "$0". */}
+                  {isLoggedIn && (
+                    <span className="qd-item-price">
+                      {formatPrice((item.effectiveUnitPrice || 0) * item.qty)}
+                    </span>
+                  )}
                   <button
                     className="qd-remove"
                     aria-label="Quitar producto"
@@ -378,26 +382,30 @@ export function QuoteDrawer() {
             <span>Piezas totales</span>
             <span className="mono">{totalPieces}</span>
           </div>
-          <div className="cart-summary-line">
-            <span>Subtotal estimado</span>
-            <span className="mono">{formatPrice(totales.subtotal)}</span>
-          </div>
-          {quoteDiscount && (
-            <div className="cart-summary-line qd-linea-descuento">
-              <span>
-                Descuento · {quoteDiscount.code} ({quoteDiscount.percentage}%)
-              </span>
-              <span className="mono">-{formatPrice(totales.descuento)}</span>
-            </div>
+          {isLoggedIn && (
+            <>
+              <div className="cart-summary-line">
+                <span>Subtotal estimado</span>
+                <span className="mono">{formatPrice(totales.subtotal)}</span>
+              </div>
+              {quoteDiscount && (
+                <div className="cart-summary-line qd-linea-descuento">
+                  <span>
+                    Descuento · {quoteDiscount.code} ({quoteDiscount.percentage}%)
+                  </span>
+                  <span className="mono">-{formatPrice(totales.descuento)}</span>
+                </div>
+              )}
+              <div className="cart-summary-line">
+                <span>IVA estimado</span>
+                <span className="mono">{formatPrice(totales.iva)}</span>
+              </div>
+              <div className="cart-summary-line total">
+                <span>Total estimado</span>
+                <span className="mono">{formatPrice(totales.total)}</span>
+              </div>
+            </>
           )}
-          <div className="cart-summary-line">
-            <span>IVA estimado</span>
-            <span className="mono">{formatPrice(totales.iva)}</span>
-          </div>
-          <div className="cart-summary-line total">
-            <span>Total estimado</span>
-            <span className="mono">{formatPrice(totales.total)}</span>
-          </div>
           {isLoggedIn ? (
             <Button
               variant="accent"
@@ -435,7 +443,7 @@ export function QuoteDrawer() {
           <p className="qd-foot-note">
             {isLoggedIn
               ? 'Precios estimados · sin compromiso de compra. Respuesta < 24h hábiles.'
-              : 'Tu lista se guarda y te espera: al entrar la vas a encontrar completa.'}
+              : 'Los precios se muestran al iniciar sesión. Tu lista se guarda y te espera: al entrar la vas a encontrar completa.'}
           </p>
         </div>
       </>

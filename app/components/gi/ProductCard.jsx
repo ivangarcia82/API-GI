@@ -36,15 +36,26 @@ function Swatches({colors, size = 14}) {
 }
 
 /**
- * Precio de la tarjeta. Se pinta con o sin sesión: el comprador que compara
- * proveedores no abre una cuenta para saber si estamos en su rango. Cotizar
- * sí sigue pidiendo login (ver AddControl).
+ * Precio de la tarjeta. Sólo con sesión (decisión del negocio, 12-nov-2026):
+ * el servidor ya no entrega importes a quien no ha entrado, y aquí tampoco se
+ * pintan aunque lleguen —"vistos recientemente" sale de localStorage y puede
+ * traer un precio guardado de una sesión anterior—. Armar la cotización sigue
+ * abierto al invitado (ver AddControl).
  *
  * `product.price` es null cuando la variante no trae precio (normalizeProduct
  * en ~/lib/gi) y formatPrice devuelve '' con null: sin esta rama la tarjeta
  * pintaría "desde" seguido de un hueco.
  */
 function Precio({product, view}) {
+  const {isLoggedIn} = useApp();
+  if (!isLoggedIn) {
+    return (
+      <span className="pcard-quote-label">
+        <Icon name="eye_off" size={11} />{' '}
+        {view === 'list' ? 'Inicia sesión' : 'Precio para clientes'}
+      </span>
+    );
+  }
   if (product.price == null) {
     return <span className="pcard-price-ask">Consultar con asesor</span>;
   }

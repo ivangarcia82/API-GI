@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {lineaDeFicha} from './products.$handle.jsx';
+import {lineaDeFicha, ofreceDecorado} from './products.$handle.jsx';
 
 /* La línea que arma la ficha viaja a dos destinos distintos: con sesión, al
    servidor, que sólo lee variante/técnica/sustrato/talla/cantidad y vuelve a
@@ -53,5 +53,29 @@ describe('lineaDeFicha', () => {
     expect(linea.title).toBe('TERMO CARICH T 367');
     expect(linea.image).toBe('https://cdn.example/termo.jpg');
     expect(linea.handle).toBe('termo-carich');
+  });
+});
+
+/* El selector de decorado no pinta importes: sólo recoge técnica, sustrato y
+   medida para la línea. Por eso el invitado lo sigue teniendo aunque ya no vea
+   precios; a quien tiene sesión se le ofrece sólo si hay precio que afectar. */
+describe('ofreceDecorado', () => {
+  const tecnicas = ['SERIGRAFIA'];
+
+  it('con sesión y precio, sí', () => {
+    expect(ofreceDecorado({isLoggedIn: true, unit: 129, techniques: tecnicas})).toBe(true);
+  });
+
+  it('con sesión y sin precio de lista, no: no hay qué cotizar en línea', () => {
+    expect(ofreceDecorado({isLoggedIn: true, unit: null, techniques: tecnicas})).toBe(false);
+  });
+
+  it('sin sesión sí, aunque el precio no le llegue', () => {
+    expect(ofreceDecorado({isLoggedIn: false, unit: null, techniques: tecnicas})).toBe(true);
+  });
+
+  it('sin técnicas no hay selector para nadie', () => {
+    expect(ofreceDecorado({isLoggedIn: true, unit: 129, techniques: []})).toBe(false);
+    expect(ofreceDecorado({isLoggedIn: false, unit: null, techniques: []})).toBe(false);
   });
 });

@@ -7,11 +7,13 @@
  *   - el costo no depende de quién mira: una entrada compartida por todos.
  * Sin margen no se pide ni un costo: el visitante anónimo y el cliente sin
  * margen no pagan nada por esta funcionalidad.
+ *
+ * El visitante anónimo, además, no recibe precios: ver applyCustomerPrices.
  */
 import {CacheShort} from '@shopify/hydrogen';
 import {getSessionUser} from './auth/session.js';
 import {getCustomerMarginRaw, getVariantCosts} from './admin/operations.js';
-import {parseMargin, customerPrice} from './pricing.js';
+import {parseMargin, customerPrice, sinImportes} from './pricing.js';
 
 /* Memo por request, igual que en brand-colors.server.js: root y la ruta corren
    en paralelo y no deben pagar dos veces la misma lectura. */
@@ -143,9 +145,15 @@ const esVarianteConPrecio = (n) =>
  * tarjetas, ficha, recomendaciones, búsqueda predictiva. Encuentra las
  * variantes por su gid, así que no depende de la forma de cada consulta.
  *
- * Sin margen devuelve `data` intacto (misma referencia) y no hace consultas.
- * Con margen trabaja sobre una copia: la respuesta de Storefront puede venir de
- * una caché compartida y no se debe escribir encima.
+ * SIN SESIÓN no entrega ningún importe (decisión del negocio, 12-nov-2026: el
+ * precio es sólo para clientes registrados, y ni buscadores ni asistentes de
+ * IA deben leerlo). Es la única garantía: lo que no sale de aquí no llega ni
+ * al texto de la página ni a los datos con que se hidrata. Toda ruta que
+ * devuelva productos al navegador tiene que pasar por esta función.
+ *
+ * Con sesión y sin margen devuelve `data` intacto (misma referencia) y no hace
+ * consultas. Con margen trabaja sobre una copia: la respuesta de Storefront
+ * puede venir de una caché compartida y no se debe escribir encima.
  * @template T
  * @param {any} context
  * @param {T} data
@@ -153,6 +161,7 @@ const esVarianteConPrecio = (n) =>
  */
 export async function applyCustomerPrices(context, data) {
   if (data == null) return data;
+  if (!getSessionUser(context.session)) return sinImportes(data);
   const margin = await getCustomerMargin(context);
   if (margin == null) return data;
 

@@ -14,7 +14,12 @@ vi.mock('~/lib/brand-colors.server', () => ({
 
 import {loader, SEARCH_QUERY} from './search.jsx';
 
-const context = {storefront: {query: (...a) => storefrontQuery(...a)}, session: {}};
+/* Sesión de visitante anónimo: la búsqueda pasa su respuesta por la capa de
+   precios, que pregunta quién mira. */
+const context = {
+  storefront: {query: (...a) => storefrontQuery(...a)},
+  session: {get: () => undefined},
+};
 const pedir = () =>
   loader({context, request: new Request('https://gi.test/search?q=termo')});
 

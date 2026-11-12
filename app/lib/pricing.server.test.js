@@ -123,11 +123,27 @@ describe('applyCustomerPrices', () => {
     },
   });
 
-  it('sin margen devuelve lo mismo y no pide costos', async () => {
-    getSessionUser.mockReturnValue(null);
+  it('con sesión y sin margen devuelve lo mismo y no pide costos', async () => {
+    getSessionUser.mockReturnValue({userId: 'u1', gid: null});
     const data = {nodes: [producto()]};
     expect(await applyCustomerPrices(hazContexto(), data)).toBe(data);
     expect(getVariantCosts).not.toHaveBeenCalled();
+  });
+
+  /* Decisión del negocio (12-nov-2026): el precio es sólo para quien inició
+     sesión. Al visitante anónimo —y con él a buscadores y asistentes de IA—
+     no se le entrega ningún importe. */
+  it('sin sesión no entrega ningún importe', async () => {
+    getSessionUser.mockReturnValue(null);
+    const data = {nodes: [producto()]};
+    const out = await applyCustomerPrices(hazContexto(), data);
+    expect(JSON.stringify(out)).not.toMatch(/amount|333|400/);
+    expect(out.nodes[0].variants.nodes[0].price).toBeNull();
+    expect(out.nodes[0].priceRange.minVariantPrice).toBeNull();
+    // Ni toca la red ni escribe sobre el original.
+    expect(getCustomerMarginRaw).not.toHaveBeenCalled();
+    expect(getVariantCosts).not.toHaveBeenCalled();
+    expect(data.nodes[0].variants.nodes[0].price.amount).toBe('333.33');
   });
 
   it('reescribe precio de variante y priceRange, y quita compareAtPrice', async () => {

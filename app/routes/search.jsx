@@ -239,9 +239,13 @@ async function regularSearch({request, context}) {
     : null;
 
   // Search articles, pages, and products for the `q` term
-  const {errors, ...items} = await storefront.query(SEARCH_QUERY, {
-    variables: {...variables, term, productFilters},
-  });
+  // Por la capa de precios, como la búsqueda instantánea: sin sesión no sale
+  // ningún importe y con margen sale el del cliente.
+  const {errors, ...items} = await storefront
+    .query(SEARCH_QUERY, {
+      variables: {...variables, term, productFilters},
+    })
+    .then((r) => applyCustomerPrices(context, r));
 
   if (!items) {
     throw new Error('No search data returned from Shopify API');

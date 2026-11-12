@@ -1716,9 +1716,10 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
   letter-spacing: -0.01em;
 }
 .pcard-price-from { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); margin-right: 4px; }
-/* Sustituye a .pcard-quote-label ("Precio para clientes"), que desapareció al
-   abrir los precios: ahora el único hueco sin importe es el del producto que
-   de verdad no tiene precio de lista. */
+/* Dos huecos sin importe: .pcard-quote-label ("Precio para clientes") es el
+   del visitante sin sesión, a quien no se le muestran precios;
+   .pcard-price-ask es el del producto que de verdad no tiene precio de lista. */
+.pcard-quote-label,
 .pcard-price-ask {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -2111,8 +2112,29 @@ body:has(.bulk-bar) .toast-stack { bottom: 96px; }
 }
 .pdp-trust-item { display: flex; gap: 10px; min-width: 0; }
 
-/* Letra chica bajo el precio. Sustituye a .pdp-gated, el bloque que tapaba el
-   precio a quien no había iniciado sesión. */
+/* Lo que ve en lugar del precio quien no ha iniciado sesión. */
+.pdp-gated {
+  background: var(--bg-elev);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  text-align: center;
+}
+.pdp-gated h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 0 6px;
+  text-transform: none;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+/* El ícono es un svg en bloque: sin margen automático se queda a la izquierda. */
+.pdp-gated > svg { margin: 0 auto 8px; }
+.pdp-gated p { margin: 0 0 16px; font-size: 14px; color: var(--ink-3); }
+.pdp-gated-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+/* Letra chica bajo el precio, para quien sí lo ve. */
 .pdp-price-note {
   margin: -8px 0 0;
   font-family: var(--font-mono);
