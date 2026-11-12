@@ -31,6 +31,7 @@ import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
 import {getVariantInventory} from '~/lib/admin/operations';
+import {ORGANIZATION_ID} from '~/lib/seo';
 
 export const meta = ({data}) => {
   const p = data?.product;
@@ -42,6 +43,33 @@ export const meta = ({data}) => {
   const img = p?.featuredImage?.url;
   const title = `${p?.title ?? 'Producto'} · Generando Ideas`;
   const url = `${origin}/products/${p?.handle}`;
+
+  /* Clave, precio y existencia de la variante con la que abre la ficha: lo
+     mismo que ve cualquier visitante sin sesión (precio de lista, sin IVA).
+     Sin precio no se declara oferta: una oferta sin importe no es válida. */
+  const variante = p?.selectedOrFirstAvailableVariant;
+  const precio = Number(variante?.price?.amount);
+  const moneda = variante?.price?.currencyCode || 'MXN';
+  const oferta =
+    precio > 0
+      ? {
+          '@type': 'Offer',
+          url,
+          price: precio,
+          priceCurrency: moneda,
+          priceSpecification: {
+            '@type': 'UnitPriceSpecification',
+            price: precio,
+            priceCurrency: moneda,
+            valueAddedTaxIncluded: false,
+          },
+          availability: variante.availableForSale
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          seller: {'@id': ORGANIZATION_ID},
+        }
+      : null;
+
   return [
     {title},
     {name: 'description', content: desc},
@@ -52,17 +80,16 @@ export const meta = ({data}) => {
     {property: 'og:url', content: url},
     ...(img ? [{property: 'og:image', content: img}] : []),
     {
-      // Product JSON-LD. Price is intentionally OMITTED — this storefront hides
-      // prices from anonymous visitors ("precio para clientes"), so exposing a
-      // concrete price publicly would contradict that gating.
       'script:ld+json': {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: p?.title,
         description: desc,
+        ...(variante?.sku ? {sku: variante.sku} : {}),
         ...(img ? {image: [img]} : {}),
         brand: {'@type': 'Brand', name: 'Generando Ideas'},
         url,
+        ...(oferta ? {offers: oferta} : {}),
       },
     },
   ];
