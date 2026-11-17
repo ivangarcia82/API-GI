@@ -101,7 +101,9 @@ export function GiSearchModal() {
     const q = term.trim();
     if (!q) return;
     closeSearch();
-    navigate(`/search?q=${encodeURIComponent(q)}`);
+    // Al catálogo con el término ya aplicado: ahí están las tarjetas, los
+    // filtros y el orden. /search sólo sirve los resultados instantáneos.
+    navigate(`/catalogo?q=${encodeURIComponent(q)}`);
   }
 
   // Client requirement: hide products with no image everywhere, including

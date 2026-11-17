@@ -54,14 +54,8 @@ export function urlWithTrackingParams({
  *   error?: string;
  *   result: {total: number; items: Items};
  * }} ResultWithItems
- * @template {'predictive' | 'regular'} Type
+ * @template {'predictive'} Type
  * @template Items
- */
-/**
- * @typedef {ResultWithItems<
- *   'regular',
- *   RegularSearchQuery
- * >} RegularSearchReturn
  */
 /**
  * @typedef {ResultWithItems<
@@ -78,4 +72,3 @@ export function urlWithTrackingParams({
  */
 
 /** @typedef {import('storefrontapi.generated').PredictiveSearchQuery} PredictiveSearchQuery */
-/** @typedef {import('storefrontapi.generated').RegularSearchQuery} RegularSearchQuery */

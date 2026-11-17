@@ -1,13 +1,10 @@
 /* El precio es sólo para quien inició sesión. La garantía vive en un solo
    sitio (applyCustomerPrices); lo que estas pruebas fijan es que ninguna ruta
-   que devuelve productos se lo salte. La búsqueda normal lo hacía: mandaba la
-   respuesta cruda de Shopify, con el precio de lista dentro. */
+   que devuelve productos se lo salte. Catálogo, colección y favoritos están en
+   precios.margen.test.js; aquí, el buscador instantáneo. La búsqueda completa
+   ya no devuelve productos: redirige al catálogo (search.redirige.test.js). */
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 
-vi.mock('@shopify/hydrogen', async (importOriginal) => ({
-  ...(await importOriginal()),
-  getPaginationVariables: () => ({first: 8, endCursor: null}),
-}));
 vi.mock('~/lib/brand-colors.server', () => ({
   getBrandColors: async () => null,
   getColorVocabulary: async () => null,
@@ -46,16 +43,22 @@ beforeEach(() => {
 });
 
 describe('ninguna ruta entrega el precio crudo de Shopify', () => {
-  it('búsqueda normal (/search?q=)', async () => {
+  it('buscador instantáneo (/search?predictive)', async () => {
     storefrontQuery.mockResolvedValue({
-      products: {nodes: [producto()], pageInfo: {}},
-      pages: {nodes: []},
-      articles: {nodes: []},
+      predictiveSearch: {
+        articles: [],
+        collections: [],
+        pages: [],
+        queries: [],
+        products: [producto()],
+      },
     });
     const {loader} = await import('./search.jsx');
-    const out = await loader({context, request: new Request('https://gi.test/search?q=taza')});
+    const out = await loader({
+      context,
+      request: new Request('https://gi.test/search?q=taza&predictive=true&limit=6'),
+    });
     expect(JSON.stringify(out)).not.toContain('333.33');
-    expect(out.result.items.products.nodes[0].selectedOrFirstAvailableVariant.price.amount).toBe('1');
-    expect(out.result.total).toBe(1);
+    expect(out.result.items.products[0].selectedOrFirstAvailableVariant.price.amount).toBe('1');
   });
 });

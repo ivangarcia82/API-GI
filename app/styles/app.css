@@ -396,20 +396,6 @@ button.reset:hover:not(:has(> *)) {
   height: 100%;
 }
 
-.search-result {
-  margin-bottom: 1.5rem;
-}
-
-.search-results-item {
-  margin-bottom: 0.5rem;
-}
-
-.search-results-item a {
-  display: flex;
-  flex: row;
-  align-items: center;
-  gap: 1rem;
-}
 
 /*
 * --------------------------------------------------
