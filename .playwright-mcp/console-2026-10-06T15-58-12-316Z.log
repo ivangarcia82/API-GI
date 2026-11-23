@@ -1,0 +1,1143 @@
+[    9791ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[    9800ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "7a8441590fc5f891628e6c0533051044" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    9807ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    9807ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    9837ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    9837ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    9840ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[    9849ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    9849ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   13036ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   13037ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   16236ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   16236ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   19438ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   19439ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   22636ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   22636ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   25836ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   25836ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   29036ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   29036ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   32236ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   32236ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   35436ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   35436ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   38420ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   38424ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "d597c383a51919f3066c390ec27477e8" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   38428ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   38428ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   38435ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   38437ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   38437ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   38441ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   38441ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   41635ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   41636ms] [ERROR] Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s https://cdn.shopify.com/s/files/1/0903/9852/3695/files/A3289_lrg.jpg?v=1791017227 
+    at div
+    at div
+    at div
+    at HeroCollage (http://127.0.0.1:3000/app/components/gi/HomeSections.jsx?t=1791301934009:48:3)
+    at div
+    at div
+    at section
+    at div
+    at Homepage (http://127.0.0.1:3000/app/routes/_index.jsx:25:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   43880ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   43883ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "6055f683675a637eedeb1b26c82e56bc" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   43911ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   46641ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   46644ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "1b937c907d0424ee07cc9de1be95793b" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   46664ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   51190ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   51193ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "b9cf74a7bfcd02efc15fc9eb8fcd2ce4" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   51205ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   51421ms] [ERROR] [h2:error:ShopifyAnalytics] Can't set up product view analytics events because the `vendor` is missing from your `<Analytics.ProductView>`. Make sure `vendor` is part of your products data prop. Check the Hydrogen Skeleton template for reference: https://github.com/Shopify/hydrogen/blob/main/templates/skeleton/app/routes/products.%24handle.tsx#L159-L165. @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3346
+[   54529ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   54533ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "0a14d21673625e75ec582c32ccef3538" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   54538ms] [ERROR] Warning: React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element.%s fetchPriority fetchpriority 
+    at img
+    at div
+    at header
+    at EncabezadoCampana (http://127.0.0.1:3000/app/routes/catalogo.jsx:204:3)
+    at div
+    at CatalogoVista (http://127.0.0.1:3000/app/routes/catalogo.jsx:349:3)
+    at Catalogo (http://127.0.0.1:3000/app/routes/catalogo.jsx:331:7)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at Outlet (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4569:25)
+    at main
+    at PageLayout (http://127.0.0.1:3000/app/components/PageLayout.jsx?t=1791302008673:15:3)
+    at AppProvider (http://127.0.0.1:3000/app/lib/AppContext.jsx?t=1791301934009:57:3)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3607:40)
+    at App (http://127.0.0.1:3000/app/root.jsx:272:16)
+    at WithComponentProps2 (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4750:17)
+    at body
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   54563ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   58842ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   58844ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "b076dec3ceda5502909334b259f4e066" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   58855ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   62563ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   62566ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "ed2c74668371fe62fe020922eae3b59b" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   62576ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   66695ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:3000/favicon.ico:0
+[ 2007866ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[ 2007884ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "a108477630646f4061cf9b2d4663c547" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[ 2007907ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[ 4046593ms] [ERROR] Connecting to 'https://otlp-http-production.shopifysvc.com/v1/metrics' violates the following Content Security Policy directive: "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://conversations-widget.brevo.com https://api.brevo.com https://*.brevo.com 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com https://development-gi.myshopify.com http://localhost:* ws://localhost:* ws://127.0.0.1:* ws://*.tryhydrogen.dev:*". The action has been blocked. @ https://cdn.shopify.com/shopifycloud/perf-kit/shopify-perf-kit-spa.min.js:0
+[ 4046594ms] [ERROR] Fetch API cannot load https://otlp-http-production.shopifysvc.com/v1/metrics. Refused to connect because it violates the document's Content Security Policy. @ https://cdn.shopify.com/shopifycloud/perf-kit/shopify-perf-kit-spa.min.js:0

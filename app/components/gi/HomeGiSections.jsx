@@ -65,7 +65,7 @@ export function ServicesStrip() {
 export function ClientTestimonials() {
   const featured = TESTIMONIALS.slice(0, 6);
   return (
-    <section className="section container">
+    <section className="section container" style={{display: 'none'}}>
       <div className="section-head">
         <div>
           <div className="eyebrow">Lo que dicen nuestros clientes</div>

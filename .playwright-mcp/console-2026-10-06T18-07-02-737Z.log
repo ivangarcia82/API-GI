@@ -1,0 +1,129 @@
+[     452ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[     464ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "0721b772ae4229a434fac340f7ceeaa8" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[     482ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[    3987ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[    3996ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "bb9d7da5fd89f053390f414d48fadb46" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    4008ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[    6504ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[    6507ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "bee6c6a06069bceb6b2cfdca5d0dbe0a" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    6517ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[    8989ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[    8991ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "134a45608c9c0ae96deeba71ace34623" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[    9001ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[   11575ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:17232
+[   11579ms] [ERROR] Warning: Prop `%s` did not match. Server: %s Client: %s%s nonce "" "e9599ddc5c7f4222e132ecbb319fd74c" 
+    at script
+    at head
+    at html
+    at Layout (http://127.0.0.1:3000/app/root.jsx:125:3)
+    at RenderedRoute (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4003:26)
+    at RenderErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:3939:3)
+    at DataRoutes (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4510:23)
+    at Router (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4574:29)
+    at RouterProvider (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:4321:27)
+    at RouterProvider2
+    at RemixErrorBoundary (http://127.0.0.1:3000/node_modules/.vite/deps/chunk-2UH5WJXA-DPOph4Q6.js?v=c3ae97f0:6864:3)
+    at HydratedRouter (http://127.0.0.1:3000/node_modules/.vite/deps/react-router_dom.js?v=c3ae97f0:115:51) @ http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:442
+[   11588ms] [ERROR] Error: [h2:error:Analytics.Provider] - consent.checkoutDomain is required. Make sure PUBLIC_CHECKOUT_DOMAIN is defined in your environment variables. See https://h2o.fyi/analytics/consent to learn how to setup environment variables in the Shopify admin.
+    at errorOnce (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3543:17)
+    at AnalyticsProvider (http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3618:32)
+    at renderWithHooks (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:9632:19)
+    at updateFunctionComponent (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:12122:19)
+    at beginWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:13096:13)
+    at beginWork$1 (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15982:12)
+    at performUnitOfWork (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15568:12)
+    at workLoopSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15517:36)
+    at renderRootSync (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15500:6)
+    at performConcurrentWorkOnRoot (http://127.0.0.1:3000/node_modules/.vite/deps/react-dom-DMMFDBzB.js?v=c3ae97f0:15140:146) @ http://127.0.0.1:3000/node_modules/.vite/deps/@shopify_hydrogen.js?v=c3ae97f0:3542
+[ 4511168ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:3000/@vite/client:992
+[ 4511169ms] [ERROR] Creating a worker from 'blob:http://127.0.0.1:3000/54398ee1-099f-40c0-b4c7-d51035b06cf0' violates the following Content Security Policy directive: "script-src 'self' https://cdn.shopify.com https://www.googletagmanager.com https://www.google-analytics.com https://conversations-widget.brevo.com 'nonce-e9599ddc5c7f4222e132ecbb319fd74c'". Note that 'worker-src' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked. @ http://127.0.0.1:3000/@vite/client:1062
+[ 6773118ms] [ERROR] Connecting to 'https://otlp-http-production.shopifysvc.com/v1/metrics' violates the following Content Security Policy directive: "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://conversations-widget.brevo.com https://api.brevo.com https://*.brevo.com 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com https://development-gi.myshopify.com http://localhost:* ws://localhost:* ws://127.0.0.1:* ws://*.tryhydrogen.dev:*". The action has been blocked. @ https://cdn.shopify.com/shopifycloud/perf-kit/shopify-perf-kit-spa.min.js:0
+[ 6773119ms] [ERROR] Fetch API cannot load https://otlp-http-production.shopifysvc.com/v1/metrics. Refused to connect because it violates the document's Content Security Policy. @ https://cdn.shopify.com/shopifycloud/perf-kit/shopify-perf-kit-spa.min.js:0
