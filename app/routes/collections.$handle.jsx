@@ -8,6 +8,7 @@ import {normalizeProduct} from '~/lib/gi';
 import {getBrandColors, getColorVocabulary} from '~/lib/brand-colors.server';
 import {applyCustomerPrices} from '~/lib/pricing.server';
 import {brandProductFilters} from '~/lib/brand-colors';
+import {describirColeccion} from '~/lib/collection-description';
 
 const paginationLinkStyle = {
   display: 'inline-flex',
@@ -26,9 +27,12 @@ const paginationLinkStyle = {
 export const meta = ({data}) => {
   const c = data?.collection;
   const origin = data?.origin ?? '';
+  // El texto que mercadotecnia le escribió en Shopify manda; si no hay, la
+  // descripción armada con los datos de la propia colección.
   const desc =
     c?.description ||
-    `Productos de la colección ${c?.title ?? ''} para campañas y regalos corporativos. Cotiza en línea.`;
+    data?.descripcion?.meta ||
+    `Artículos promocionales de ${c?.title ?? 'esta colección'} personalizables con tu marca.`;
   const url = `${origin}/collections/${c?.handle}`;
   return [
     {title: `${c?.title ?? 'Colección'} · Generando Ideas`},
@@ -81,11 +85,23 @@ export async function loader(args) {
     throw new Response(`Collection ${handle} not found`, {status: 404});
   }
 
-  return {collection, origin: new URL(request.url).origin};
+  /* Las facetas sólo sirven para describir la colección: se usan aquí y no
+     viajan al navegador (traen, entre otras, todos los colores). Una colección
+     con texto propio en Shopify no necesita descripción armada. */
+  const {filters: facetas, ...products} = collection.products ?? {};
+  const descripcion = collection.description
+    ? null
+    : describirColeccion({titulo: collection.title, facetas});
+
+  return {
+    collection: {...collection, products},
+    descripcion,
+    origin: new URL(request.url).origin,
+  };
 }
 
 export default function Collection() {
-  const {collection} = useLoaderData();
+  const {collection, descripcion} = useLoaderData();
   const navigate = useNavigate();
   const products = (collection.products?.nodes || [])
     .map(normalizeProduct)
@@ -120,8 +136,7 @@ export default function Collection() {
           <div className="eyebrow">// Colección</div>
           <h1>{collection.title}</h1>
           <p style={{marginTop: 24}}>
-            {collection.description ||
-              'Una línea cuidadosamente seleccionada por nuestro equipo creativo para maximizar impacto y minimizar desperdicio.'}
+            {collection.description || descripcion?.texto}
           </p>
         </div>
         <div style={{borderRadius: 16, overflow: 'hidden', border: '1px solid var(--line)'}}>
@@ -222,6 +237,8 @@ const COLLECTION_QUERY = `#graphql
       ) {
         nodes { ...GiProductCard }
         pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
+        # Conteos por material y técnica: con ellos se describe la colección.
+        filters { id values { label count } }
       }
     }
   }
