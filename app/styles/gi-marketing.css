@@ -4099,3 +4099,137 @@
   .gi-mkt .contacto .contact-h1 { transition-delay: 0.06s; }
   .gi-mkt .contacto .contact-lead { transition-delay: 0.12s; }
 }
+
+/* ============================================================
+   Preguntas frecuentes (/preguntas-frecuentes)
+   Todo a la vista: pregunta, respuesta y detalle, sin acordeones. La medida
+   de línea se acota para que cada respuesta se lea como un párrafo corto.
+   ============================================================ */
+.gi-mkt .faq .faq-hero { padding-bottom: 48px; }
+.gi-mkt .faq .faq-h1 {
+  font-size: clamp(48px, 7vw, 104px);
+  margin: 20px 0 28px;
+  max-width: 1100px;
+}
+.gi-mkt .faq .faq-lead {
+  font-size: 20px;
+  color: var(--gray-700);
+  line-height: 1.5;
+  max-width: 760px;
+}
+.gi-mkt .faq .faq-body { padding-top: 24px; }
+/* El índice va arriba, como accesos: `.gi-mkt` recorta el desborde
+   horizontal y eso anula `position: sticky` en una columna lateral. */
+.gi-mkt .faq .faq-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 880px);
+  gap: 56px;
+}
+.gi-mkt .faq .faq-index ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gi-mkt .faq .faq-index a {
+  display: block;
+  padding: 9px 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-700);
+  transition: color 0.15s, border-color 0.15s;
+}
+.gi-mkt .faq .faq-index a:hover {
+  color: var(--ink);
+  border-color: var(--orange-500);
+}
+.gi-mkt .faq .faq-group { scroll-margin-top: 112px; }
+.gi-mkt .faq .faq-group + .faq-group { margin-top: 88px; }
+.gi-mkt .faq .faq-group-t {
+  font-size: clamp(28px, 3.2vw, 40px);
+  line-height: 1.05;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+.gi-mkt .faq .faq-item {
+  padding: 32px 0;
+  border-top: 1px solid var(--gray-200);
+}
+.gi-mkt .faq .faq-group .faq-item:last-child { padding-bottom: 0; }
+.gi-mkt .faq .faq-q {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin: 0 0 12px;
+  color: var(--ink);
+  max-width: 34ch;
+}
+.gi-mkt .faq .faq-a {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--gray-700);
+  max-width: 68ch;
+}
+.gi-mkt .faq .faq-steps {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+  display: grid;
+  gap: 10px;
+  max-width: 68ch;
+}
+.gi-mkt .faq .faq-steps li {
+  counter-increment: paso;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.gi-mkt .faq .faq-steps li::before {
+  content: counter(paso, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--orange-700);
+}
+.gi-mkt .faq .faq-table { margin-top: 24px; max-width: 760px; }
+.gi-mkt .faq .faq-cierre-inner { text-align: center; }
+.gi-mkt .faq .faq-cierre-t {
+  font-size: clamp(32px, 4.4vw, 56px);
+  line-height: 1;
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+.gi-mkt .faq .faq-cierre-p {
+  margin: 0 auto 28px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--gray-700);
+  max-width: 52ch;
+}
+.gi-mkt .faq .faq-cierre-cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .gi-mkt .faq .faq-layout { gap: 40px; }
+  .gi-mkt .faq .faq-group + .faq-group { margin-top: 64px; }
+  .gi-mkt .faq .faq-q { font-size: 20px; max-width: none; }
+  .gi-mkt .faq .faq-table .svc-table tbody th { white-space: normal; }
+}

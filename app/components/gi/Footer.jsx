@@ -70,6 +70,9 @@ export function GiFooter() {
                   <NavLink to={ROUTES.blog}>Blog</NavLink>
                 </li>
                 <li>
+                  <NavLink to={ROUTES.faq}>Preguntas frecuentes</NavLink>
+                </li>
+                <li>
                   <NavLink to={ROUTES.careers}>Bolsa de trabajo</NavLink>
                 </li>
                 <li>

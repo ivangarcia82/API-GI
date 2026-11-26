@@ -13,6 +13,7 @@ const STATIC_PATHS = [
   '/blog',
   '/bolsa-de-trabajo',
   '/contacto',
+  '/preguntas-frecuentes',
   '/catalogo',
 ];
 

@@ -34,3 +34,14 @@ describe('footer legal', () => {
     expect(ROUTES.terms).toBe('/legal/terminos-y-condiciones.pdf');
   });
 });
+
+describe('footer · recursos', () => {
+  it('enlaza las preguntas frecuentes', () => {
+    renderFooter();
+    expect(screen.getByRole('link', {name: 'Preguntas frecuentes'})).toHaveAttribute(
+      'href',
+      '/preguntas-frecuentes',
+    );
+    expect(ROUTES.faq).toBe('/preguntas-frecuentes');
+  });
+});

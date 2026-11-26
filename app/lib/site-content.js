@@ -96,6 +96,7 @@ export const ROUTES = {
   blog: '/blog',
   contact: '/contacto',
   careers: '/bolsa-de-trabajo',
+  faq: '/preguntas-frecuentes',
   privacy: '/legal/aviso-de-privacidad-esi-2026.pdf',
   // Pendiente de subir a public/legal/: hasta entonces el enlace da 404.
   terms: '/legal/terminos-y-condiciones.pdf',
