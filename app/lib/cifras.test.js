@@ -55,12 +55,12 @@ describe('una sola fuente para cada dato', () => {
     expect(leer('app/routes/products.$handle.jsx')).toMatch(/\{TIEMPO_ENTREGA\}/);
   });
 
-  it('el inicio, la banda y el blog toman sus cifras de COMPANY_FACTS', () => {
+  it('el inicio, la banda y los artículos del blog toman sus cifras de COMPANY_FACTS', () => {
     for (const ruta of [
       'app/routes/_index.jsx',
       'app/components/gi/HomeSections.jsx',
       'app/components/marketing/ImpactBand.jsx',
-      'app/routes/blog.$slug.jsx',
+      'app/lib/blog/posts/tiempo-de-entrega-promocionales.js',
     ]) {
       expect(leer(ruta), ruta).toMatch(/COMPANY_FACTS/);
     }

@@ -87,6 +87,18 @@
   overflow-x: hidden;
 }
 
+/* Páginas con una columna lateral que acompaña al bajar (blog, preguntas
+   frecuentes). `overflow-x: hidden` convierte a `.gi-mkt` en contenedor de
+   scroll y eso anula `position: sticky` dentro de él; `clip` recorta igual el
+   desborde horizontal sin ese efecto. `flow-root` conserva el contexto de
+   formato que daba `hidden`, para que los márgenes no cambien. Un navegador
+   sin `clip` ignora la línea y se queda con `hidden`: la columna simplemente
+   no acompaña. */
+.gi-mkt.gi-mkt-sticky {
+  overflow-x: clip;
+  display: flow-root;
+}
+
 /* Reemplazo mínimo de los resets globales de global.css (img/a/button),
    aplicado solo dentro de .gi-mkt para no tocar el reset de comercio. */
 .gi-mkt img { max-width: 100%; display: block; }
@@ -3455,6 +3467,115 @@
   background: var(--orange-500);
 }
 
+/* Cuerpo del artículo en dos columnas: el texto, con su ancho de lectura, y
+   un índice que acompaña al bajar. */
+.gi-mkt .article-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 72px;
+  align-items: start;
+}
+.gi-mkt .article-layout .prose { max-width: 74ch; }
+.gi-mkt .prose-h2 { scroll-margin-top: 112px; }
+.gi-mkt .article-aside {
+  position: sticky;
+  top: 112px;
+}
+.gi-mkt .article-aside-box {
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+}
+.gi-mkt .article-toc {
+  list-style: none;
+  margin: 16px 0 24px;
+  padding: 0;
+  counter-reset: apartado;
+  display: grid;
+  gap: 12px;
+}
+.gi-mkt .article-toc li {
+  counter-increment: apartado;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+.gi-mkt .article-toc li::before {
+  content: counter(apartado, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--orange-700);
+}
+.gi-mkt .article-toc a {
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--gray-700);
+  transition: color 0.15s;
+}
+.gi-mkt .article-toc a:hover { color: var(--ink); }
+.gi-mkt .article-aside-box .btn { width: 100%; justify-content: center; }
+@media (max-width: 1000px) {
+  .gi-mkt .article-layout { grid-template-columns: minmax(0, 1fr); }
+  .gi-mkt .article-aside { display: none; }
+}
+
+/* Pasos numerados dentro de un artículo. */
+.gi-mkt .prose-steps {
+  list-style: none;
+  padding: 0;
+  counter-reset: paso;
+  display: grid;
+  gap: 14px;
+}
+.gi-mkt .prose-steps li {
+  counter-increment: paso;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--gray-700);
+}
+.gi-mkt .prose-steps li::before {
+  content: counter(paso, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--orange-700);
+}
+
+/* Las tablas de un artículo pueden pasar de la medida del texto. */
+.gi-mkt .prose-table {
+  max-width: none;
+  overflow-x: auto;
+}
+.gi-mkt .prose-table .svc-table tbody th { white-space: normal; min-width: 130px; }
+@media (max-width: 600px) {
+  .gi-mkt .prose-table .svc-table thead th { padding: 12px 16px; }
+  .gi-mkt .prose-table .svc-table tbody th,
+  .gi-mkt .prose-table .svc-table tbody td { padding: 14px 16px; font-size: 14px; }
+  .gi-mkt .prose-table .svc-table tbody th { font-size: 15px; }
+}
+
+/* A dónde seguir al terminar de leer. */
+.gi-mkt .prose-next {
+  margin-top: 3em;
+  padding-top: 2em;
+  border-top: 1px solid var(--gray-200);
+}
+.gi-mkt .prose-next-links {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .gi-mkt .prose-quote {
   position: relative;
   padding: 8px 0 8px 32px;
@@ -4118,36 +4239,41 @@
   max-width: 760px;
 }
 .gi-mkt .faq .faq-body { padding-top: 24px; }
-/* El índice va arriba, como accesos: `.gi-mkt` recorta el desborde
-   horizontal y eso anula `position: sticky` en una columna lateral. */
+/* Dos columnas: los temas a la izquierda, fijos al bajar, y las preguntas a
+   la derecha con un ancho de lectura acotado. */
 .gi-mkt .faq .faq-layout {
   display: grid;
-  grid-template-columns: minmax(0, 880px);
-  gap: 56px;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 72px;
+  align-items: start;
+}
+.gi-mkt .faq .faq-index {
+  position: sticky;
+  top: 112px;
 }
 .gi-mkt .faq .faq-index ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  gap: 4px;
+  border-left: 1px solid var(--gray-200);
 }
 .gi-mkt .faq .faq-index a {
   display: block;
-  padding: 9px 16px;
-  border: 1px solid var(--gray-200);
-  border-radius: 999px;
-  background: #fff;
-  font-size: 14px;
+  padding: 8px 0 8px 18px;
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  font-size: 15px;
   font-weight: 600;
   color: var(--gray-700);
   transition: color 0.15s, border-color 0.15s;
 }
 .gi-mkt .faq .faq-index a:hover {
   color: var(--ink);
-  border-color: var(--orange-500);
+  border-left-color: var(--orange-500);
 }
+.gi-mkt .faq .faq-groups { max-width: 880px; }
 .gi-mkt .faq .faq-group { scroll-margin-top: 112px; }
 .gi-mkt .faq .faq-group + .faq-group { margin-top: 88px; }
 .gi-mkt .faq .faq-group-t {
@@ -4228,7 +4354,24 @@
 }
 
 @media (max-width: 900px) {
-  .gi-mkt .faq .faq-layout { gap: 40px; }
+  /* En pantallas angostas los temas pasan arriba, como accesos. */
+  .gi-mkt .faq .faq-layout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .gi-mkt .faq .faq-index { position: static; }
+  .gi-mkt .faq .faq-index ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-left: 0;
+  }
+  .gi-mkt .faq .faq-index a {
+    margin: 0;
+    padding: 9px 16px;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 14px;
+  }
+  .gi-mkt .faq .faq-index a:hover { border-color: var(--orange-500); }
   .gi-mkt .faq .faq-group + .faq-group { margin-top: 64px; }
   .gi-mkt .faq .faq-q { font-size: 20px; max-width: none; }
   .gi-mkt .faq .faq-table .svc-table tbody th { white-space: normal; }

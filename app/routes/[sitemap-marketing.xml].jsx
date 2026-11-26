@@ -3,7 +3,8 @@
 // can't be produced by `getSitemap`/`getSitemapIndex` — instead this route
 // hand-builds a urlset from `~/lib/site-content`, the single source of truth
 // for marketing ids. Linked from `[sitemap.xml].jsx` via `customChildSitemaps`.
-import {BLOG_POSTS, SERVICE_DETAIL_IDS} from '~/lib/site-content';
+import {SERVICE_DETAIL_IDS} from '~/lib/site-content';
+import {BLOG_POSTS} from '~/lib/blog';
 import {getJobs} from '~/lib/cms';
 
 const STATIC_PATHS = [

@@ -203,31 +203,9 @@ export const SOCIAL_LINKS = {
 export const BUSINESS_HOURS = 'Lunes a viernes · 8:30 a 18:00 h';
 
 // ---------------------------------------------------------------------------
-// Blog posts
+// Blog
 // ---------------------------------------------------------------------------
-/**
- * @typedef {object} BlogPost
- * @property {string} id
- * @property {string} cat
- * @property {string} title
- * @property {string} excerpt
- * @property {string} img
- * @property {string} date
- * @property {string} iso
- * @property {string} read
- */
-
-/** @type {BlogPost[]} */
-export const BLOG_POSTS = [
-  {id: 'tendencias-2026', cat: 'Tendencias', title: '10 artículos promocionales que dominarán 2026', excerpt: 'De los wearables sustentables a los gadgets IoT personalizados. Esto es lo que veremos en el próximo año.', img: IMAGES.img30, date: 'Ene 15, 2026', iso: '2026-01-15', read: '6 min'},
-  {id: 'fulfillment-escala', cat: 'Operaciones', title: 'Cómo escalamos fulfillment para 4 ciudades sin contratar un operador más', excerpt: 'Un caso real: operamos 15,000 kits corporativos mensuales con el mismo equipo de 2023.', img: '/fulfillment.jpg', date: 'Ene 8, 2026', iso: '2026-01-08', read: '8 min'},
-  {id: 'textiles-sustentables', cat: 'Sustentabilidad', title: 'Textiles sustentables: más allá del algodón orgánico', excerpt: 'rPET, tencel, cáñamo y bambú. Guía práctica para elegir el material correcto según tu marca.', img: IMAGES.img32, date: 'Dic 20, 2025', iso: '2025-12-20', read: '5 min'},
-  {id: 'mundial-2026', cat: 'Casos de estudio', title: 'Kits promocionales para el Mundial 2026: qué funciona y qué no', excerpt: 'Colaboramos con marcas locales en activaciones durante el Mundial. Lo que aprendimos.', img: IMAGES.img33, date: 'Dic 10, 2025', iso: '2025-12-10', read: '7 min'},
-  {id: 'impresion-tecnicas', cat: 'Técnicas', title: 'Serigrafía vs sublimación vs DTF: cuándo usar cada una', excerpt: 'Las tres técnicas más comunes en textil promocional, comparadas por costo, durabilidad y volumen.', img: IMAGES.img34, date: 'Nov 28, 2025', iso: '2025-11-28', read: '9 min'},
-  {id: 'roi-promocionales', cat: 'Estrategia', title: 'El ROI real de los artículos promocionales (con datos)', excerpt: '¿Cuánto retorno genera cada peso invertido en promocionales? Lo medimos con 8 clientes.', img: IMAGES.img35, date: 'Nov 15, 2025', iso: '2025-11-15', read: '6 min'},
-];
-
-export const BLOG_CATEGORIES = ['Todos', 'Tendencias', 'Operaciones', 'Sustentabilidad', 'Casos de estudio', 'Técnicas', 'Estrategia'];
+// Los artículos, sus categorías y su autora viven en ~/lib/blog.
 
 // ---------------------------------------------------------------------------
 // Service detail content

@@ -7,27 +7,45 @@
 // MarketingLayout's useMarketingReveal(). The hero zoom-parallax
 // (scale 1.04 -> 1.14 while scrolling) is ported as a client-only useEffect
 // using the shared ~/lib/motion GSAP/ScrollTrigger helpers, guarded by
-// prefersReducedMotion(), mirroring servicios.$id.jsx. The article body below
-// the lead paragraph is static boilerplate shared by every post in the
-// source .astro file — copied verbatim.
+// prefersReducedMotion(), mirroring servicios.$id.jsx.
+//
+// El cuerpo sale de ~/lib/blog: cada artículo trae su respuesta directa, su
+// resumen y sus apartados (pregunta + respuesta inmediata). Antes los seis
+// artículos compartían el mismo texto genérico. Todo se sirve en el HTML del
+// servidor, sin nada que abrir.
 import {useEffect, useRef} from 'react';
 import {Link, redirect, useLoaderData} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
-import {BLOG_POSTS, COMPANY_FACTS, ROUTES} from '~/lib/site-content';
+import {ROUTES} from '~/lib/site-content';
+import {BLOG_POSTS, BLOG_REDIRECTS} from '~/lib/blog';
+import {SITE_URL, ORGANIZATION_ID} from '~/lib/seo';
 
 export async function loader({params}) {
   const post = BLOG_POSTS.find((p) => p.id === params.slug);
-  if (!post) throw redirect(ROUTES.blog);
-  return {post};
+  if (post) return {post};
+  // Artículo retirado: de forma permanente a su reemplazo (o al índice).
+  const destino = BLOG_REDIRECTS[params.slug];
+  if (destino) throw redirect(destino, 301);
+  throw redirect(ROUTES.blog);
 }
+
+/** Las imágenes locales se declaran con dirección completa. */
+const absoluta = (ruta) => (ruta.startsWith('/') ? `${SITE_URL}${ruta}` : ruta);
 
 export const meta = ({data}) => {
   const post = data?.post;
   if (!post) return [];
-  const url = `https://generandoideas.com/blog/${post.id}`;
+  const url = `${SITE_URL}/blog/${post.id}`;
+  const titulo = `${post.title} — Blog Generando Ideas`;
   return [
-    {title: `${post.title} — Blog Generando Ideas`},
+    {title: titulo},
     {name: 'description', content: post.excerpt},
+    {tagName: 'link', rel: 'canonical', href: url},
+    {property: 'og:title', content: post.title},
+    {property: 'og:description', content: post.excerpt},
+    {property: 'og:type', content: 'article'},
+    {property: 'og:url', content: url},
+    {property: 'og:image', content: absoluta(post.img)},
     {
       'script:ld+json': {
         '@context': 'https://schema.org',
@@ -36,24 +54,30 @@ export const meta = ({data}) => {
             '@type': 'BlogPosting',
             headline: post.title,
             description: post.excerpt,
-            image: {'@type': 'ImageObject', url: post.img},
+            abstract: post.answer,
+            image: {'@type': 'ImageObject', url: absoluta(post.img)},
             datePublished: post.iso,
             dateModified: post.iso,
-            author: {'@id': 'https://generandoideas.com/#organization'},
+            author: {
+              '@type': 'Person',
+              name: post.author.name,
+              worksFor: {'@id': ORGANIZATION_ID},
+            },
             publisher: {
-              '@id': 'https://generandoideas.com/#organization',
-              logo: {'@type': 'ImageObject', url: 'https://generandoideas.com/favicon.svg'},
+              '@id': ORGANIZATION_ID,
+              logo: {'@type': 'ImageObject', url: `${SITE_URL}/favicon.svg`},
             },
             inLanguage: 'es-MX',
             articleSection: post.cat,
+            wordCount: post.words,
             mainEntityOfPage: {'@type': 'WebPage', '@id': url},
             url,
           },
           {
             '@type': 'BreadcrumbList',
             itemListElement: [
-              {'@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://generandoideas.com/'},
-              {'@type': 'ListItem', position: 2, name: 'Blog', item: 'https://generandoideas.com/blog'},
+              {'@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE_URL}/`},
+              {'@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog`},
               {'@type': 'ListItem', position: 3, name: post.title, item: url},
             ],
           },
@@ -62,6 +86,64 @@ export const meta = ({data}) => {
     },
   ];
 };
+
+/** Un bloque de un apartado: párrafo, lista, pasos o tabla. */
+function Bloque({bloque}) {
+  if (bloque.p) return <p>{bloque.p}</p>;
+  if (bloque.ul) {
+    return (
+      <ul className="prose-list">
+        {bloque.ul.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    );
+  }
+  if (bloque.ol) {
+    return (
+      <ol className="prose-steps">
+        {bloque.ol.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ol>
+    );
+  }
+  if (bloque.table) {
+    return (
+      <div className="svc-table-wrap prose-table">
+        {/* Con tres o más columnas la tabla conserva un ancho legible y se
+            desliza de lado en pantallas angostas, en vez de apretar el texto. */}
+        <table
+          className="svc-table"
+          style={bloque.table.cols.length >= 3 ? {minWidth: bloque.table.cols.length * 170} : undefined}
+        >
+          <thead>
+            <tr>
+              {bloque.table.cols.map((c) => (
+                <th key={c} scope="col">
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {bloque.table.rows.map(([primera, ...resto]) => (
+              <tr key={primera}>
+                <th scope="row">{primera}</th>
+                {resto.map((celda, i) => (
+                  // Las celdas de una fila no cambian de orden.
+                  // eslint-disable-next-line react/no-array-index-key
+                  <td key={i}>{celda}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  return null;
+}
 
 export default function BlogArticle() {
   const {post} = useLoaderData();
@@ -108,7 +190,7 @@ export default function BlogArticle() {
   }, [post.img]);
 
   return (
-    <MarketingLayout>
+    <MarketingLayout className="gi-mkt-sticky">
       <article className="page article">
         <section className="section article-head">
           <div className="wrap">
@@ -129,7 +211,10 @@ export default function BlogArticle() {
               Volver al blog
             </Link>
             <span className="eyebrow article-meta reveal">
-              {post.cat} · <time dateTime={post.iso}>{post.date}</time> · {post.read} lectura
+              {post.cat} · <time dateTime={post.iso}>{post.date}</time> · {post.read} lectura ·{' '}
+              {/* La firma va aquí, antes del título, para que el primer párrafo
+                  después del h1 sea la respuesta directa y no la firma. */}
+              <span className="article-author">Por {post.author.name}</span>
             </span>
             <h1 className="display article-title reveal">{post.title}</h1>
           </div>
@@ -140,7 +225,7 @@ export default function BlogArticle() {
             <figure className="article-figure" ref={figureRef} data-figure>
               <img
                 src={post.img}
-                alt={post.title}
+                alt={post.imgAlt}
                 width={1400}
                 height={700}
                 loading="eager"
@@ -154,34 +239,61 @@ export default function BlogArticle() {
         </section>
 
         <section className="section article-body-section">
-          <div className="wrap">
+          <div className="wrap article-layout">
             <div className="prose">
-              <p className="prose-lead">{post.excerpt}</p>
+              {/* La respuesta directa: lo primero que lee quien llega y lo que
+                  un buscador o un asistente de IA puede citar tal cual. */}
+              <p className="prose-lead">{post.answer}</p>
 
-              <p>
-                En Generando Ideas llevamos más de 12 años observando cómo las marcas usan los
-                artículos promocionales para conectar con su audiencia. Este artículo recopila lo
-                que hemos aprendido trabajando con{' '}
-                <span className="text-accent">más de {COMPANY_FACTS.clients} clientes</span> en México.
-              </p>
-
-              <h2 className="display prose-h2">Lo esencial en 30 segundos</h2>
+              <h2 className="display prose-h2">En resumen</h2>
               <ul className="prose-list">
-                <li>Empieza siempre por el objetivo de la campaña, no por el producto.</li>
-                <li>El costo por impresión del promocional vence al CPM digital a los 6 meses.</li>
-                <li>La sustentabilidad ya no es opcional para audiencias menores de 35.</li>
-                <li>Medir retorno es posible — con los tags correctos desde el día 0.</li>
+                {post.takeaways.map((punto) => (
+                  <li key={punto}>{punto}</li>
+                ))}
               </ul>
 
-              <blockquote className="prose-quote">
-                El promocional no es un gasto de marketing. Es una inversión que se lleva puesta.
-              </blockquote>
+              {post.sections.map((seccion, n) => [
+                <h2 className="display prose-h2" id={`s${n + 1}`} key={seccion.h}>
+                  {seccion.h}
+                </h2>,
+                ...seccion.blocks.map((bloque, i) => (
+                  // Los bloques de un apartado no cambian de orden.
+                  // eslint-disable-next-line react/no-array-index-key
+                  <Bloque bloque={bloque} key={`${seccion.h}-${i}`} />
+                )),
+              ])}
 
-              <p>
-                Si quieres seguir la conversación, escríbenos. Compartimos hallazgos con clientes
-                aliados cada trimestre en sesiones cerradas.
-              </p>
+              <div className="prose-next">
+                <span className="eyebrow">Siguiente paso</span>
+                <div className="prose-next-links">
+                  {post.next.map((n, i) => (
+                    <Link className={`btn ${i === 0 ? 'btn-accent' : 'btn-ghost'}`} to={n.to} key={n.to}>
+                      {n.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            {/* Índice lateral: el texto tiene un ancho de lectura acotado y
+                esta columna acompaña al bajar, para no dejar media pantalla
+                vacía. Va después del texto en el HTML, así no se mete entre
+                una pregunta y su respuesta. En pantallas angostas se oculta. */}
+            <aside className="article-aside" aria-label="En este artículo">
+              <div className="article-aside-box">
+                <span className="eyebrow">En este artículo</span>
+                <ol className="article-toc">
+                  {post.sections.map((seccion, n) => (
+                    <li key={seccion.h}>
+                      <a href={`#s${n + 1}`}>{seccion.h}</a>
+                    </li>
+                  ))}
+                </ol>
+                <Link className="btn btn-accent" to={post.next[0].to}>
+                  {post.next[0].label}
+                </Link>
+              </div>
+            </aside>
           </div>
         </section>
       </article>

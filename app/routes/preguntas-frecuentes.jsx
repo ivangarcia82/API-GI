@@ -79,7 +79,7 @@ function Detalle({item}) {
 
 export default function PreguntasFrecuentes() {
   return (
-    <MarketingLayout>
+    <MarketingLayout className="gi-mkt-sticky">
       <div className="page faq">
         <section className="section faq-hero">
           <div className="wrap">

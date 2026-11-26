@@ -7,7 +7,8 @@ describe('site-content', () => {
     expect(C.SERVICE_DETAIL_IDS).toEqual([
       'promo', 'print-shop', 'promotional-workshop', 'digital-evolution', 'importaciones',
     ]);
-    expect(C.BLOG_POSTS.length).toBeGreaterThanOrEqual(6);
+    // Los artículos del blog viven en ~/lib/blog (blog.test.js).
+    expect(C.BLOG_POSTS).toBeUndefined();
     expect(C.OFFICES.map((o) => o.id)).toEqual(['cdmx', 'sonora', 'yucatan']);
     expect(C.NAV_ITEMS.map((n) => n.href)).toEqual([
       '/', '/conocenos', '/servicios', '/catalogo', '/blog', '/contacto',

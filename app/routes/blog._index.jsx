@@ -9,7 +9,7 @@
 import {useState} from 'react';
 import {Link} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
-import {BLOG_POSTS, BLOG_CATEGORIES} from '~/lib/site-content';
+import {BLOG_POSTS, BLOG_CATEGORIES} from '~/lib/blog';
 
 const cx = (...parts) => parts.filter(Boolean).join(' ');
 
@@ -68,7 +68,7 @@ export default function BlogIndex() {
               {featured ? (
                 <Link className="blog-feature reveal in" to={`/blog/${featured.id}`}>
                   <div className="blog-feature-img">
-                    <img src={featured.img} alt={featured.title} loading="lazy" />
+                    <img src={featured.img} alt={featured.imgAlt} loading="lazy" />
                   </div>
                   <div className="blog-feature-body">
                     <span className="eyebrow">Destacado · {featured.cat}</span>
@@ -91,7 +91,7 @@ export default function BlogIndex() {
                     to={`/blog/${p.id}`}
                   >
                     <div className="blog-card-img">
-                      <img src={p.img} alt={p.title} loading="lazy" />
+                      <img src={p.img} alt={p.imgAlt} loading="lazy" />
                     </div>
                     <div className="blog-card-body">
                       <span className="blog-card-cat">{p.cat}</span>
