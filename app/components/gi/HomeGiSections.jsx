@@ -61,7 +61,12 @@ export function ServicesStrip() {
   );
 }
 
-/** Client quotes — relationships that last years. */
+/**
+ * Client quotes — relationships that last years.
+ *
+ * Oculta de momento por decisión del negocio (nov-2026): la sección sigue
+ * montada y basta quitar el `display: none` para volver a mostrarla.
+ */
 export function ClientTestimonials() {
   const featured = TESTIMONIALS.slice(0, 6);
   return (

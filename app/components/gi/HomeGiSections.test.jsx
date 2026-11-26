@@ -29,12 +29,16 @@ describe('HomeGiSections', () => {
     // At least the first testimonial's company appears
     expect(screen.getAllByText(TESTIMONIALS[0].company).length).toBeGreaterThan(0);
   });
-  it('ClientTestimonials renders the marketing-site header', () => {
+  /* Decisión del negocio (nov-2026): los testimonios están ocultos de momento.
+     La sección sigue montada con su contenido para poder volver a mostrarla
+     quitando el `display: none`; por eso el encabezado se busca con
+     `hidden: true` y lo que se fija es que no esté a la vista. */
+  it('ClientTestimonials está oculto de momento, con su contenido intacto', () => {
     renderWithRouter(<ClientTestimonials />);
     expect(screen.getByText('Lo que dicen nuestros clientes')).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', {name: 'Relaciones que duran años.'}),
-    ).toBeInTheDocument();
+    const titulo = screen.getByRole('heading', {name: 'Relaciones que duran años.', hidden: true});
+    expect(titulo).toBeInTheDocument();
+    expect(titulo).not.toBeVisible();
   });
   it('AboutTeaser renders a Conócenos CTA', () => {
     renderWithRouter(<AboutTeaser />);
