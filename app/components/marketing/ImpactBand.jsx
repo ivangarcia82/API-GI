@@ -4,10 +4,12 @@
 // The count-up itself (IntersectionObserver + rAF, reduced-motion guarded) is
 // handled by the shared <CountUp> primitive instead of a bespoke GSAP effect.
 import {CountUp} from './CountUp';
+import {COMPANY_FACTS} from '~/lib/site-content';
 
 const STATS = [
   {prefix: '+', value: 12, suffix: '', decimals: 0, label: 'Años amplificando marcas'},
-  {prefix: '+', value: 2700, suffix: '', decimals: 0, label: 'Clientes activos'},
+  // Clientes, no usuarios: son datos distintos (ver COMPANY_FACTS).
+  {prefix: '+', value: COMPANY_FACTS.clients, suffix: '', decimals: 0, label: 'Clientes'},
   {prefix: '+', value: 67000, suffix: '', decimals: 0, label: 'Decorados diarios'},
   {prefix: '', value: 4.9, suffix: '', decimals: 1, label: 'Nivel de satisfacción'},
 ];

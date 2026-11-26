@@ -30,6 +30,7 @@ import {ProductCard} from '~/components/gi/ProductCard';
 import {RecentlyViewed} from '~/components/gi/RecentlyViewed';
 import DecorationSelector from '~/components/gi/DecorationSelector.jsx';
 import {PdpPrice} from '~/components/gi/PdpPrice';
+import {TIEMPO_ENTREGA} from '~/lib/quotes/notasImportantes';
 import {getTechniques, calcDecoration, effectiveUnitPrice, round2} from '~/lib/decoration/engine.js';
 import {getVariantInventory} from '~/lib/admin/operations';
 
@@ -646,16 +647,20 @@ export default function Product() {
           {tab === 'logistics' && (
             <table>
               <tbody>
-                {/* "Según técnica y volumen" no es una respuesta: el comprador
-                    llega aquí porque necesita saber si le da tiempo, y unas
-                    pantallas después le pedimos una fecha objetivo. Mientras no
-                    haya plazos por técnica en los metafields, se dice cuándo
-                    tendrá el dato y quién se lo da. */}
+                {/* Plazo y envío confirmados por el negocio (26-nov-2026). El
+                    plazo es el mismo que va en las notas del PDF de cotización
+                    y sale de la misma constante. */}
                 <tr>
-                  <td>Tiempo de producción</td>
-                  <td>Tu asesor lo confirma al cotizar, en menos de 24 h hábiles</td>
+                  <td>Tiempo de entrega</td>
+                  <td>{TIEMPO_ENTREGA}. Servicio urgente: consúltalo con tu ejecutivo</td>
                 </tr>
-                <tr><td>Flete</td><td>CDMX y Zona Metropolitana</td></tr>
+                <tr>
+                  <td>Envío</td>
+                  <td>
+                    A toda la República. Entrega en CDMX sin costo en un solo punto; el resto
+                    del país se cobra aparte
+                  </td>
+                </tr>
                 <tr><td>Devoluciones</td><td>Reposición sin costo en defectos de fabricación</td></tr>
               </tbody>
             </table>

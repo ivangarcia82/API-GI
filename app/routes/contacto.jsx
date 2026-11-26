@@ -51,32 +51,32 @@ function toFriendlyErrors(codes) {
   return errors;
 }
 
-// E.164-ish formatted numbers for structured data (source's `phoneMap`);
-// `OFFICES[].phone` is the human-readable display format shown on the card.
-const PHONE_MAP = {
-  cdmx: '+52-55-7098-8100',
-  sonora: '+52-662-789-0012',
-  yucatan: '+52-999-456-7890',
-};
+/* Datos estructurados: sólo la sucursal de CDMX. El negocio no publica la
+   dirección de las otras dos (26-nov-2026), y aquí salían con dirección y
+   teléfono aunque la página no los enseñara. */
+const CDMX = OFFICES.find((o) => o.id === 'cdmx');
 
 const localBusinessGraph = {
   '@context': 'https://schema.org',
-  '@graph': OFFICES.map((o) => ({
-    '@type': ['LocalBusiness', 'ProfessionalService'],
-    '@id': `https://generandoideas.com/contacto#office-${o.id}`,
-    name: `Generando Ideas — ${o.name}`,
-    url: 'https://generandoideas.com/contacto',
-    telephone: PHONE_MAP[o.id] ?? o.phone,
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: o.address,
-      addressLocality: o.state,
-      addressRegion: o.state,
-      addressCountry: 'MX',
+  '@graph': [
+    {
+      '@type': ['LocalBusiness', 'ProfessionalService'],
+      '@id': 'https://generandoideas.com/contacto#office-cdmx',
+      name: `Generando Ideas — ${CDMX.name}`,
+      url: 'https://generandoideas.com/contacto',
+      // Formato E.164 del teléfono que la tarjeta muestra como (55) 7098 8100.
+      telephone: '+52-55-7098-8100',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: CDMX.address,
+        addressLocality: CDMX.state,
+        addressRegion: CDMX.state,
+        addressCountry: 'MX',
+      },
+      areaServed: {'@type': 'Country', name: 'México'},
+      parentOrganization: {'@id': 'https://generandoideas.com/#organization'},
     },
-    areaServed: {'@type': 'Country', name: 'México'},
-    parentOrganization: {'@id': 'https://generandoideas.com/#organization'},
-  })),
+  ],
 };
 
 export const meta = () => [
@@ -96,7 +96,7 @@ export default function Contacto() {
   const [active, setActive] = useState('cdmx');
   const fieldRefs = useRef({});
 
-  const office = OFFICES.find((o) => o.id === 'cdmx');
+  const office = CDMX;
 
   function handleChange(field) {
     return (e) => setValues((v) => ({...v, [field]: e.target.value}));

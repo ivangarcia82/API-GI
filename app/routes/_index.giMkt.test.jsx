@@ -55,7 +55,7 @@ describe('home: secciones de marketing', () => {
     // loader en sí sea síncrono): react-router renderiza un fallback vacío
     // durante esa carga inicial. findByText espera a que el home real
     // termine de hidratar antes de buscar el texto.
-    const label = await screen.findByText('Clientes activos');
+    const label = await screen.findByText('Clientes');
     expect(label.closest('.gi-mkt')).not.toBeNull();
   });
 
@@ -126,5 +126,20 @@ describe('home: qué somos y dónde', () => {
     render(<Stub initialEntries={['/']} />);
     const parrafo = await screen.findByText(/artículos promocionales/i, {selector: '.home-hero-sub'});
     expect(parrafo.textContent).toMatch(/empresas en México/);
+  });
+
+  /* Cifras confirmadas por el negocio (26-nov-2026): el catálogo tiene más de
+     7,000 productos (no 1,800) y los clientes son más de 400 (los 2,700 que
+     decía la banda eran usuarios mal etiquetados). */
+  it('el inicio dice las cifras confirmadas', async () => {
+    const Stub = createRoutesStub([
+      {path: '/', Component: Homepage, loader: () => datosLoader},
+    ]);
+    const {container} = render(<Stub initialEntries={['/']} />);
+    const parrafo = await screen.findByText(/artículos promocionales/i, {selector: '.home-hero-sub'});
+    expect(parrafo.textContent).toMatch(/Más de 7,000 artículos/);
+    expect(container.textContent).toMatch(/7,000\+ productos/);
+    expect(container.textContent).toMatch(/\+\s*400/);
+    expect(container.textContent).not.toMatch(/1,800|2,700/);
   });
 });

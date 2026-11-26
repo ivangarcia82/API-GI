@@ -159,8 +159,8 @@ export const TESTIMONIALS = [
  * @property {string} id
  * @property {string} name
  * @property {string} state
- * @property {string} address
- * @property {string} phone
+ * @property {string} [address] sólo CDMX
+ * @property {string} [phone] sólo CDMX
  * @property {number} mx
  * @property {number} my
  */
@@ -168,9 +168,30 @@ export const TESTIMONIALS = [
 /** @type {Office[]} */
 export const OFFICES = [
   {id: 'cdmx', name: 'CDMX', state: 'Ciudad de México', address: 'Cda. Antonio Maceo 67, Col. Escandón I Secc, Alc. Miguel Hidalgo, CP 11800', phone: '(55) 7098 8100', mx: 605, my: 672},
-  {id: 'sonora', name: 'Sonora', state: 'Hermosillo, Sonora', address: 'Blvd. Navarrete 201, Col. Valle Verde', phone: '(662) 789 0012', mx: 210, my: 300},
-  {id: 'yucatan', name: 'Yucatán', state: 'Mérida, Yucatán', address: 'Calle 60 Norte 299-E, Col. Residencial', phone: '(999) 456 7890', mx: 920, my: 612},
+  // Sin dirección ni teléfono: el negocio sólo publica los de CDMX
+  // (26-nov-2026). Estas dos se nombran y se marcan en el mapa.
+  {id: 'sonora', name: 'Sonora', state: 'Hermosillo, Sonora', mx: 210, my: 300},
+  {id: 'yucatan', name: 'Yucatán', state: 'Mérida, Yucatán', mx: 920, my: 612},
 ];
+
+// ---------------------------------------------------------------------------
+// Cifras y plazos confirmados por el negocio (26-nov-2026)
+// ---------------------------------------------------------------------------
+/* Única fuente. El inicio, la banda de cifras, el blog, el cotizador y las
+   preguntas frecuentes leen de aquí: antes cada página decía un número
+   distinto de productos, de clientes y de horas de respuesta, y un buscador o
+   un asistente de IA que encuentra dos cifras no cita ninguna (las versiones
+   viejas están listadas en cifras.test.js para que no vuelvan).
+   - catalogProducts: se dice "más de 7,000"; la tienda tenía 7,485 activos.
+   - clients / users: son datos distintos; la banda llamaba clientes a los
+     usuarios.
+   - quoteResponse: productos de catálogo. Los de fabricación, 48 horas. */
+export const COMPANY_FACTS = {
+  catalogProducts: 7000,
+  clients: 400,
+  users: 2500,
+  quoteResponse: '24 a 48 horas hábiles',
+};
 
 export const SOCIAL_LINKS = {
   instagram: 'https://www.instagram.com/generandoideasgi/',

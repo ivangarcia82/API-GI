@@ -11,7 +11,7 @@ import {Link, redirect, useLoaderData} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
 import {MagneticButton} from '~/components/marketing/MagneticButton';
 import {ServiceBlocks} from '~/components/marketing/ServiceBlocks';
-import {SERVICE_DETAILS, ROUTES} from '~/lib/site-content';
+import {COMPANY_FACTS, SERVICE_DETAILS, ROUTES} from '~/lib/site-content';
 
 export async function loader({params}) {
   const s = SERVICE_DETAILS[params.id];
@@ -175,7 +175,7 @@ export default function ServiceDetail() {
                 </>
               )}
             </h2>
-            <p className="svc-cta-sub">Hablemos. Respuesta en menos de 24 horas hábiles.</p>
+            <p className="svc-cta-sub">Hablemos. Respuesta en {COMPANY_FACTS.quoteResponse}.</p>
             <div className="svc-cta-actions">
               <MagneticButton>
                 <Link to={ROUTES.contact} className="btn btn-accent btn-lg">

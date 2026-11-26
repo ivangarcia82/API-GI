@@ -3,13 +3,21 @@
 // revise condiciones — y para poder probarlas.
 //
 // El tiempo de entrega lo confirmó Gil el 2026-08-31. Ojo: NO es lo mismo que
-// las "24 horas hábiles" que aparecen en el sitio, que son tiempo de respuesta
-// a una solicitud, no de entrega.
+// el tiempo de respuesta a una solicitud (COMPANY_FACTS.quoteResponse en
+// ~/lib/site-content), que no es de entrega.
+//
+// Entrega, pago y vigencia se exportan sueltos porque el sitio también los
+// cita (preguntas frecuentes, ficha de producto): así no pueden decir algo
+// distinto de la cotización que recibe el cliente.
+
+export const TIEMPO_ENTREGA = '15 a 20 días hábiles';
+export const CONDICIONES_PAGO = 'Contado';
+export const VIGENCIA_COTIZACION = '15 días';
 
 export const NOTAS_IMPORTANTES = [
   'Precios expresados en moneda nacional. Sujeto a paridad de precio - dólar.',
-  'Condiciones de pago: Contado',
-  'Vigencia de cotización: 15 días.',
-  'Tiempo de entrega: 15 a 20 días hábiles',
+  `Condiciones de pago: ${CONDICIONES_PAGO}`,
+  `Vigencia de cotización: ${VIGENCIA_COTIZACION}.`,
+  `Tiempo de entrega: ${TIEMPO_ENTREGA}`,
   'El precio unitario incluye entrega en la CDMX sin costo en un solo punto. No incluye ningún servicio de maquila, empaque o entrega especial, a menos que se especifique.',
 ];

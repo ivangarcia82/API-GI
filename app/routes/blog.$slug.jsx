@@ -13,7 +13,7 @@
 import {useEffect, useRef} from 'react';
 import {Link, redirect, useLoaderData} from 'react-router';
 import MarketingLayout from '~/components/marketing/MarketingLayout';
-import {BLOG_POSTS, ROUTES} from '~/lib/site-content';
+import {BLOG_POSTS, COMPANY_FACTS, ROUTES} from '~/lib/site-content';
 
 export async function loader({params}) {
   const post = BLOG_POSTS.find((p) => p.id === params.slug);
@@ -162,7 +162,7 @@ export default function BlogArticle() {
                 En Generando Ideas llevamos más de 12 años observando cómo las marcas usan los
                 artículos promocionales para conectar con su audiencia. Este artículo recopila lo
                 que hemos aprendido trabajando con{' '}
-                <span className="text-accent">más de 500 marcas</span> en México.
+                <span className="text-accent">más de {COMPANY_FACTS.clients} clientes</span> en México.
               </p>
 
               <h2 className="display prose-h2">Lo esencial en 30 segundos</h2>

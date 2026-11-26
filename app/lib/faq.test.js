@@ -7,7 +7,8 @@ import {describe, it, expect} from 'vitest';
 import {FAQ_GROUPS, FAQ_PATH, faqItems, faqAnswerText, faqSchema} from './faq.js';
 import {PRICE_MATRIX} from './decoration/engine.js';
 import {IVA_RATE} from './quotes/discount.js';
-import {BRAND, SERVICES, SERVICE_DETAILS} from './site-content.js';
+import {BRAND, COMPANY_FACTS, SERVICES, SERVICE_DETAILS} from './site-content.js';
+import {CONDICIONES_PAGO, TIEMPO_ENTREGA, VIGENCIA_COTIZACION} from './quotes/notasImportantes.js';
 import {HOME_CATEGORIES} from './gi.js';
 
 const plano = (s) =>
@@ -26,7 +27,7 @@ const de = (fragmento) => {
 describe('forma de las preguntas', () => {
   it('hay grupos con preguntas, y ninguna se repite', () => {
     expect(FAQ_GROUPS.length).toBeGreaterThanOrEqual(4);
-    expect(items.length).toBeGreaterThanOrEqual(12);
+    expect(items.length).toBeGreaterThanOrEqual(18);
     expect(new Set(items.map((i) => i.q)).size).toBe(items.length);
   });
 
@@ -125,5 +126,69 @@ describe('datos estructurados', () => {
 
   it('dice quién responde', () => {
     expect(schema.publisher).toEqual({'@id': 'https://generandoideas.com/#organization'});
+  });
+});
+
+/* Datos que confirmó el negocio el 26-nov-2026. Los que también salen en el
+   PDF de cotización (entrega, pago, vigencia) se leen de la misma constante
+   para que el sitio y la cotización no puedan decir cosas distintas. */
+describe('datos confirmados por el negocio', () => {
+  const todo = items.map((i) => faqAnswerText(i)).join(' ');
+
+  it('no hay cantidad mínima', () => {
+    expect(de('cantidad mínima').a).toMatch(/no maneja cantidad mínima/);
+  });
+
+  it('la entrega es la misma que promete la cotización', () => {
+    expect(TIEMPO_ENTREGA).toBe('15 a 20 días hábiles');
+    expect(de('tarda la entrega').a).toContain(TIEMPO_ENTREGA);
+    expect(de('tarda la entrega').a).toMatch(/servicio urgente/);
+  });
+
+  it('la aprobación es con un virtual y la muestra física sólo si se acuerda', () => {
+    const a = de('muestra antes').a;
+    expect(a).toMatch(/virtual/);
+    expect(a).toMatch(/muestra física/);
+    expect(a).toMatch(/se acuerda/);
+  });
+
+  it('factura, con su razón social', () => {
+    const a = de('emite factura').a;
+    expect(a).toMatch(/^Sí\./);
+    expect(a).toContain(BRAND.legalName);
+  });
+
+  it('envía a toda la República: CDMX incluida en un punto, el resto aparte', () => {
+    const a = de('envíos a toda la República').a;
+    expect(a).toMatch(/Ciudad de México sin costo/);
+    expect(a).toMatch(/un solo punto/);
+    expect(a).toMatch(/se cobran aparte/);
+  });
+
+  it('el pago y la vigencia son los del PDF de cotización', () => {
+    const a = de('condiciones de pago').a;
+    expect(plano(a)).toContain(plano(CONDICIONES_PAGO));
+    expect(a).toContain(`vigencia de ${VIGENCIA_COTIZACION}`);
+    // La forma de pago (transferencia, tarjeta) sigue sin confirmar.
+    expect(todo).not.toMatch(/transferencia|tarjeta/i);
+  });
+
+  it('las cotizaciones se responden en 24 a 48 horas; las de fabricación, en 48', () => {
+    const a = de('tiempo responde').a;
+    expect(a).toMatch(/productos de catálogo en un plazo de 24 a 48 horas/);
+    expect(a).toMatch(/productos de fabricación.*en 48 horas/);
+    expect(todo).not.toMatch(/menos de 24 horas/);
+  });
+
+  it('las cifras salen de COMPANY_FACTS', () => {
+    expect(COMPANY_FACTS).toMatchObject({clients: 400, users: 2500, catalogProducts: 7000});
+    const a = de('Qué es Generando Ideas').a;
+    expect(a).toContain('más de 400 clientes');
+    expect(a).toContain('más de 2,500 usuarios');
+  });
+
+  it('sólo publica la dirección de la sucursal de CDMX', () => {
+    expect(todo).toMatch(/Antonio Maceo 67/);
+    expect(todo).not.toMatch(/Navarrete|Calle 60/);
   });
 });

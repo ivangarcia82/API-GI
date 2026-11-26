@@ -10,6 +10,7 @@ import {
 import {ImpactBand} from '~/components/marketing/ImpactBand';
 import {ProcessSection} from '~/components/marketing/ProcessSection';
 import {ClosingCTA} from '~/components/marketing/ClosingCTA';
+import {COMPANY_FACTS} from '~/lib/site-content';
 import {useMarketingReveal} from '~/components/marketing/MarketingLayout';
 import {useApp} from '~/lib/AppContext';
 import {fetchCollectionCards} from '~/lib/giFragments';
@@ -92,8 +93,8 @@ export default function Homepage() {
               </h1>
 
               <p className="home-hero-sub fade-up" style={{animationDelay: '160ms'}}>
-                Más de 1,800 artículos promocionales personalizables para empresas en
-                México: campañas, kits de bienvenida y eventos corporativos. Cotiza,
+                Más de {COMPANY_FACTS.catalogProducts.toLocaleString('en-US')} artículos
+                promocionales personalizables para empresas en México: campañas, kits de bienvenida y eventos corporativos. Cotiza,
                 aprueba arte y produce en una sola plataforma.
               </p>
 

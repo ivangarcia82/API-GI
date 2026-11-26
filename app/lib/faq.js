@@ -9,14 +9,21 @@
  *          comparación.
  *
  * REGLA: aquí sólo entran datos que el sitio ya declara en otra parte
- * (Conócenos, Servicios, Contacto, el cotizador). Nada de mínimos, plazos de
- * producción, muestras, envíos ni formas de pago mientras el negocio no los
- * confirme. Tampoco importes: los precios son sólo para clientes con sesión.
+ * (Conócenos, Servicios, Contacto, el cotizador, las notas del PDF de
+ * cotización) o que el negocio confirmó. El 26-nov-2026 confirmó: sin
+ * cantidad mínima, aprobación con virtual, muestra física si se acuerda,
+ * factura, envíos a toda la República y los tiempos de respuesta. Sigue sin
+ * confirmar la FORMA de pago (transferencia, tarjeta): no se menciona.
+ * Tampoco importes: los precios son sólo para clientes con sesión.
  * Las pruebas (faq.test.js) atan cada dato a su origen para que no se
  * despegue.
  */
-import {BRAND, ROUTES, SERVICE_DETAILS} from './site-content.js';
+import {BRAND, COMPANY_FACTS, ROUTES, SERVICE_DETAILS} from './site-content.js';
 import {ORGANIZATION_ID} from './seo.js';
+import {CONDICIONES_PAGO, TIEMPO_ENTREGA, VIGENCIA_COTIZACION} from './quotes/notasImportantes.js';
+
+const miles = (n) => n.toLocaleString('en-US');
+const RESPUESTA = COMPANY_FACTS.quoteResponse;
 
 export const FAQ_PATH = ROUTES.faq;
 
@@ -40,7 +47,7 @@ export const FAQ_GROUPS = [
     items: [
       {
         q: '¿Qué es Generando Ideas?',
-        a: 'Generando Ideas es una empresa 100% mexicana de artículos promocionales y regalos corporativos personalizados para empresas. Opera desde 2013, cuenta con sucursales en Ciudad de México, Yucatán y Sonora, y ofrece cinco servicios: promocionales, Print Shop, Promotional Workshop, Digital Evolution e importaciones.',
+        a: `Generando Ideas es una empresa 100% mexicana de artículos promocionales y regalos corporativos personalizados para empresas. Opera desde 2013, atiende a más de ${miles(COMPANY_FACTS.clients)} clientes y más de ${miles(COMPANY_FACTS.users)} usuarios, cuenta con sucursales en Ciudad de México, Yucatán y Sonora, y ofrece cinco servicios: promocionales, Print Shop, Promotional Workshop, Digital Evolution e importaciones.`,
       },
       {
         q: '¿Dónde se ubica Generando Ideas y cuál es su horario?',
@@ -58,13 +65,13 @@ export const FAQ_GROUPS = [
     items: [
       {
         q: '¿Cómo cotizo artículos promocionales en línea con Generando Ideas?',
-        a: 'Para cotizar en línea con Generando Ideas, elige los productos en el catálogo, selecciona color, decorado y cantidad, y agrégalos a tu lista de cotización. Después crea tu cuenta gratuita o inicia sesión y envía la solicitud. Un asesor responde en menos de 24 horas hábiles.',
+        a: `Para cotizar en línea con Generando Ideas, elige los productos en el catálogo, selecciona color, decorado y cantidad, y agrégalos a tu lista de cotización. Después crea tu cuenta gratuita o inicia sesión y envía la solicitud. Un asesor responde en un plazo de ${RESPUESTA}.`,
         steps: [
           'Explora el catálogo y abre el producto que te interesa.',
           'Elige el color, la técnica de decorado y la cantidad.',
           'Agrégalo a tu lista de cotización; puedes sumar varios productos.',
           'Crea tu cuenta gratuita o inicia sesión.',
-          'Envía la solicitud: un asesor te responde en menos de 24 horas hábiles.',
+          `Envía la solicitud: un asesor te responde en un plazo de ${RESPUESTA}.`,
         ],
       },
       {
@@ -80,8 +87,38 @@ export const FAQ_GROUPS = [
         a: 'Sí. Cada cotización enviada en generandoideas.com queda guardada en la cuenta del cliente, en la sección Mis cotizaciones, y desde ahí se puede descargar en PDF. El documento incluye los productos, las cantidades, el decorado elegido y el desglose de subtotal, IVA y total.',
       },
       {
-        q: '¿En cuánto tiempo responde Generando Ideas?',
-        a: 'Generando Ideas responde las solicitudes de cotización en línea en menos de 24 horas hábiles. Los mensajes enviados desde el formulario de contacto reciben respuesta en menos de 48 horas hábiles, con una propuesta inicial, tiempos de entrega y presupuesto estimado. La atención es de lunes a viernes, de 8:30 a 18:00 horas.',
+        q: '¿En cuánto tiempo responde Generando Ideas una cotización?',
+        a: `Generando Ideas responde las cotizaciones de productos de catálogo en un plazo de ${RESPUESTA}, y las de productos de fabricación, que son los que no están en el catálogo, en 48 horas hábiles. La atención es de lunes a viernes, de 8:30 a 18:00 horas.`,
+      },
+    ],
+  },
+  {
+    id: 'pedidos',
+    title: 'Pedidos y entregas',
+    items: [
+      {
+        q: '¿Hay cantidad mínima de compra en Generando Ideas?',
+        a: 'No. Generando Ideas no maneja cantidad mínima de compra: puedes cotizar desde una sola pieza. El precio por pieza cambia según la cantidad y la técnica de decorado que elijas, y el cotizador en línea recalcula el precio por pieza y el total cada vez que modificas cualquiera de los dos.',
+      },
+      {
+        q: '¿Cuánto tarda la entrega de un pedido?',
+        a: `El tiempo de entrega de un pedido en Generando Ideas es de ${TIEMPO_ENTREGA}, y ese plazo aparece en las notas de cada cotización. Si necesitas tu pedido antes, existe servicio urgente: se atiende directamente con tu ejecutivo, que es quien lo revisa contigo.`,
+      },
+      {
+        q: '¿Puedo ver una muestra antes de producir mi pedido?',
+        a: 'Sí. En Generando Ideas toda aprobación se hace con un virtual: una vista digital del producto con tu logotipo, que revisas y autorizas antes de que el pedido entre a producción. La muestra física no es automática: aplica cuando se acuerda con tu ejecutivo.',
+      },
+      {
+        q: '¿Hacen envíos a toda la República Mexicana?',
+        a: 'Sí. Generando Ideas envía pedidos a toda la República Mexicana. El precio incluye la entrega en la Ciudad de México sin costo, en un solo punto; los envíos al resto del país se cobran aparte. No incluye servicios de maquila, empaque o entrega especial, salvo que se especifiquen en la cotización.',
+      },
+      {
+        q: '¿Generando Ideas emite factura?',
+        a: `Sí. Generando Ideas factura sus pedidos. La empresa opera con la razón social ${BRAND.legalName}, que aparece en cada cotización junto con su RFC. Los precios se expresan en moneda nacional y sin IVA, y la cotización desglosa el subtotal, el IVA del 16% y el total.`,
+      },
+      {
+        q: '¿Cuáles son las condiciones de pago y la vigencia de una cotización?',
+        a: `En Generando Ideas las condiciones de pago son de ${CONDICIONES_PAGO.toLowerCase()} y cada cotización tiene una vigencia de ${VIGENCIA_COTIZACION}. Los precios se expresan en moneda nacional y están sujetos a la paridad peso-dólar. Estas condiciones aparecen en las notas de cada cotización, junto con el tiempo de entrega.`,
       },
     ],
   },

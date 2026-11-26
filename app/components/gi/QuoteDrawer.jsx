@@ -9,6 +9,7 @@ import {useApp, useToast} from '~/lib/AppContext';
 import {useDialogBehavior} from '~/lib/dialog';
 import {formatPrice} from '~/lib/gi';
 import {quoteTotals} from '~/lib/quotes/discount';
+import {COMPANY_FACTS} from '~/lib/site-content';
 
 export function QuoteDrawer() {
   const {
@@ -90,7 +91,7 @@ export function QuoteDrawer() {
       if (data.folio && !result) {
         setResult(data);
         if (data.quoteId) setDescargando(true);
-        toast('Cotización enviada · respuesta en menos de 24h', {icon: 'check', accent: true});
+        toast('Cotización enviada · respuesta en 24 a 48 h', {icon: 'check', accent: true});
         // The quote is already finalized server-side; clearing local state is
         // best-effort cleanup, so swallow any failure here.
         clearQuote().catch(() => {});
@@ -178,8 +179,8 @@ export function QuoteDrawer() {
         </div>
         <h3>Cotización enviada</h3>
         <p>
-          Tu solicitud llegó a nuestro equipo comercial. Recibirás una propuesta en menos
-          de <strong>24 horas hábiles</strong>.
+          Tu solicitud llegó a nuestro equipo comercial. Recibirás una propuesta en un plazo
+          de <strong>{COMPANY_FACTS.quoteResponse}</strong>.
         </p>
         <p style={{fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink-3)'}}>
           Folio · {result.folio}
@@ -442,7 +443,7 @@ export function QuoteDrawer() {
           )}
           <p className="qd-foot-note">
             {isLoggedIn
-              ? 'Precios estimados · sin compromiso de compra. Respuesta < 24h hábiles.'
+              ? 'Precios estimados · sin compromiso de compra. Respuesta en 24 a 48 h hábiles.'
               : 'Los precios se muestran al iniciar sesión. Tu lista se guarda y te espera: al entrar la vas a encontrar completa.'}
           </p>
         </div>

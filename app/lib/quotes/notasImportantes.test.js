@@ -1,5 +1,10 @@
 import {describe, it, expect} from 'vitest';
-import {NOTAS_IMPORTANTES} from './notasImportantes.js';
+import {
+  NOTAS_IMPORTANTES,
+  CONDICIONES_PAGO,
+  TIEMPO_ENTREGA,
+  VIGENCIA_COTIZACION,
+} from './notasImportantes.js';
 
 describe('NOTAS_IMPORTANTES', () => {
   it('trae las cinco condiciones acordadas', () => {
@@ -11,6 +16,14 @@ describe('NOTAS_IMPORTANTES', () => {
     expect(texto).toContain('Condiciones de pago: Contado');
     expect(texto).toContain('Vigencia de cotización: 15 días.');
     expect(texto).toContain('Tiempo de entrega: 15 a 20 días hábiles');
+  });
+
+  /* El sitio (preguntas frecuentes, ficha) cita estos mismos tres datos: salen
+     de constantes para que no puedan decir algo distinto de la cotización. */
+  it('expone entrega, pago y vigencia para quien los cite', () => {
+    expect(TIEMPO_ENTREGA).toBe('15 a 20 días hábiles');
+    expect(CONDICIONES_PAGO).toBe('Contado');
+    expect(VIGENCIA_COTIZACION).toBe('15 días');
   });
 
   it('no promete las 24 horas, que son tiempo de respuesta y no de entrega', () => {

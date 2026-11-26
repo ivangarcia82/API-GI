@@ -6,6 +6,7 @@ import {Icon} from './Icon';
 import {Button, CountUp, useInView} from './ui';
 import {AddControl} from './ProductCard';
 import {formatPrice, LOOKBOOK} from '~/lib/gi';
+import {COMPANY_FACTS} from '~/lib/site-content';
 
 /* ---- scroll parallax ---- */
 function useParallax(strength = 0.1) {
@@ -88,7 +89,9 @@ export function HeroCollage({images = []}) {
         <Icon name="package" size={14} />
         <div>
           <div className="hc-chip-l">Catálogo</div>
-          <div className="hc-chip-v">1,800+ SKUs</div>
+          <div className="hc-chip-v">
+            {COMPANY_FACTS.catalogProducts.toLocaleString('en-US')}+ productos
+          </div>
         </div>
       </div>
 

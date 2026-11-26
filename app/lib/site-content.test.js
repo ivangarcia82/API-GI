@@ -14,6 +14,14 @@ describe('site-content', () => {
     ]);
   });
 
+  /* Decisión del negocio (26-nov-2026): sólo se publica la dirección de la
+     sucursal de CDMX. Las otras dos se nombran, sin dirección. */
+  it('sólo la sucursal de CDMX lleva dirección', () => {
+    const conDireccion = C.OFFICES.filter((o) => o.address).map((o) => o.id);
+    expect(conDireccion).toEqual(['cdmx']);
+    expect(JSON.stringify(C.OFFICES)).not.toMatch(/Navarrete|Calle 60/);
+  });
+
   it('every SERVICE has a matching SERVICE_DETAILS entry', () => {
     for (const s of C.SERVICES) expect(C.SERVICE_DETAILS[s.id]).toBeTruthy();
   });
